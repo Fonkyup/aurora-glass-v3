@@ -1,0 +1,17 @@
+# ============================================================================
+#  AURORA GLASS v3 - dashboard completa in YAML
+#  Come usarla: Impostazioni -> Plance -> (la tua plancia) -> ⋮ -> "Modifica
+#  plancia" -> ⋮ -> "Editor di configurazione testuale" -> sostituisci tutto
+#  con questo testo -> Salva.
+#  Poi apri scheda-esempio.yaml per cambiare i nomi delle tue entità.
+# ============================================================================
+title: Aurora
+views:
+  - title: Casa
+    path: casa
+    icon: mdi:home-heart
+    panel: true            # la scheda occupa tutta la pagina
+    cards:
+      - type: custom:aurora-v3-card
+        assets: /local/aurora-v3/btn/
+        # entities: ...   <- aggiungi qui le tue entità (vedi scheda-esempio.yaml)

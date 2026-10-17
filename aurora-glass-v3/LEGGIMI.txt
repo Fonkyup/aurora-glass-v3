@@ -1,0 +1,68 @@
+AURORA GLASS v3 per Home Assistant
+====================================
+La dashboard animata: cielo che cambia con l'ora, 10 mondi, 11 effetti meteo,
+pulsanti fatti di immagini e GIF, allarme, clima, telecamere ed energia con costi in euro.
+
+GUIDA COMPLETA CON SCHERMATE: nella pagina «Guida» del sito (e nel video su YouTube).
+Qui sotto il riassunto, in 6 passi (circa 10 minuti).
+
+CONTENUTO
+  LEGGIMI.txt                  questo file
+  dashboard-esempio.yaml       la plancia pronta da incollare
+  scheda-esempio.yaml          TUTTE le opzioni della scheda, commentate
+  aurora-energia.yaml          contatori kWh giorno/mese/anno (facoltativo)
+  www/aurora-v3/aurora-v3.js   la scheda (un solo file)
+  www/aurora-v3/btn/           50 immagini e GIF dei pulsanti
+
+PASSI
+1) COPIA I FILE
+   Metti la cartella  www/aurora-v3  dentro la cartella  www  di Home Assistant
+   (File editor, Samba o Studio Code Server). Risultato:
+       www/aurora-v3/aurora-v3.js
+       www/aurora-v3/btn/...
+   Nel componente File editor la cartella di configurazione si chiama /homeassistant:
+   e' la stessa cartella. Se www e' nuova, riavvia Home Assistant una volta.
+   Prova: apri  <indirizzo di Home Assistant>/local/aurora-v3/aurora-v3.js  nel browser:
+   se vedi del testo, e' tutto a posto.
+
+2) AGGIUNGI LA RISORSA
+   Profilo -> attiva "Modalita' avanzata".
+   Impostazioni -> Plance -> menu (tre puntini) -> Risorse -> Aggiungi risorsa
+       URL:   /local/aurora-v3/aurora-v3.js?v=1
+       Tipo:  Modulo JavaScript
+   (quando aggiorni la scheda, alza il numero dopo ?v=)
+
+3) CREA LA PLANCIA
+   Impostazioni -> Plance -> Aggiungi plancia -> Nuova plancia da zero
+   Titolo "Aurora", icona mdi:home-heart, "Mostra nella barra laterale".
+
+4) INCOLLA LA SCHEDA
+   Apri la plancia -> matita -> menu -> "Editor di configurazione testuale"
+   Cancella tutto e incolla il contenuto di  dashboard-esempio.yaml  -> Salva.
+   Le luci saranno grigie: i nomi sono di esempio.
+
+5) COLLEGA LE TUE ENTITA'
+   Strumenti per sviluppatori -> Stati: cerca i nomi (light., binary_sensor., ...).
+   Aggiungi sotto "assets:" la sezione "entities:" con i tuoi nomi
+   (guarda scheda-esempio.yaml: contiene tutte le opzioni).
+
+6) ENERGIA E TARIFFA (facoltativo)
+   Indica il tuo sensore di potenza (W) in energy.power: compare la vista Energia.
+   Per i kWh di oggi/ieri/mese/anno usa aurora-energia.yaml.
+   Nella vista Energia tocca la barra "Tariffa" e scrivi quanto paghi un kWh
+   (o calcolalo dalla bolletta: totale da pagare / kWh). Da li' ogni costo e' kWh x tariffa.
+
+SE QUALCOSA NON VA
+ - Scheda rossa "Custom element doesn't exist": controlla la risorsa e ricarica con Ctrl+F5.
+ - Immagini vuote: "assets" deve essere /local/aurora-v3/btn/  (con la barra finale).
+ - Luci grigie: il nome dell'entita' non esiste o il dispositivo e' offline.
+ - Costi a zero: tocca la barra Tariffa.
+
+PRIVACY
+ Funziona tutta in locale. L'unica richiesta esterna sono i font Google (Manrope, Sora).
+ Nessun dato viene raccolto o inviato.
+
+RIMUOVERE
+ Elimina la plancia "Aurora", la risorsa e la cartella www/aurora-v3. Nient'altro viene toccato.
+
+Aurora Glass v3 - gratuito per uso personale.

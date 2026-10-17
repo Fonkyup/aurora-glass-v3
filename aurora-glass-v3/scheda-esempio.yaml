@@ -1,0 +1,83 @@
+# ============================================================================
+#  AURORA GLASS v3 - configurazione della scheda (tutte le opzioni)
+#  Incolla il contenuto nell'editor YAML della scheda, oppure usa
+#  dashboard-esempio.yaml che la contiene già dentro una vista a pannello.
+#
+#  Tutto è FACOLTATIVO: ciò che non scrivi usa i nomi di esempio qui sotto.
+#  Cambia solo le entità che nella tua casa hanno un nome diverso.
+#  (Dove trovi i nomi: Strumenti per sviluppatori -> Stati -> filtra "light.")
+# ============================================================================
+type: custom:aurora-v3-card
+assets: /local/aurora-v3/btn/        # cartella delle immagini dei pulsanti
+
+entities:
+  # --- LUCI (le 11 stanze). Puoi usare light.*, switch.* o qualsiasi entità accendibile
+  lights:
+    salotto: light.salotto
+    ingresso: light.ingresso
+    corridoio: light.corridoio
+    cucina: light.cucina
+    balcone: light.balcone
+    camera: light.camera
+    cameretta: light.cameretta
+    bagno_piccolo: light.bagno_piccolo
+    bagno_doccia: light.bagno_doccia
+    lavanderia: light.lavanderia
+    sgabuzzino: light.sgabuzzino
+
+  # --- LUCI IN PIÙ (oltre alle 11): compaiono nella stanza indicata e vengono spente da "Spegni tutto"
+  extraLights:
+    - { k: strip_led, n: Strip LED, id: light.strip_led, room: Cucina, ic: mdi-led-strip-variant }
+
+  # --- MOVIMENTO: per ogni stanza una lista; vale il primo sensore disponibile
+  motion:
+    salotto: [binary_sensor.salotto_movimento]
+    ingresso: [binary_sensor.ingresso_movimento]
+    cucina: [binary_sensor.cucina_movimento]
+    corridoio: [binary_sensor.corridoio_movimento]
+    cameretta: [binary_sensor.cameretta_movimento]
+    lavanderia: [binary_sensor.lavanderia_movimento]
+    sgabuzzino: [binary_sensor.sgabuzzino_movimento]
+    camera: [binary_sensor.camera_movimento]
+
+  # --- PORTE E FINESTRE (binary_sensor) e serratura (lock). Lascia fuori quelle che non hai
+  opens:
+    ingresso: binary_sensor.porta_ingresso
+    balcone_salotto: binary_sensor.balcone_salotto
+    balcone_cucina: binary_sensor.balcone_cucina
+    cameretta: binary_sensor.finestra_cameretta
+    balcone_camera: binary_sensor.balcone_camera
+    bagno: binary_sensor.finestra_bagno
+    lavanderia: binary_sensor.finestra_lavanderia
+    cancello: lock.serratura_ingresso
+
+  alarm: alarm_control_panel.allarme      # centrale allarme
+  weather: weather.forecast_home          # temperatura esterna e meteo
+  power: sensor.potenza_casa              # consumo istantaneo mostrato nella Home (W)
+  climate: climate.salotto                # climatizzatore
+
+  # --- TELECAMERE (vista Sicurezza). Tutte facoltative
+  cameras:
+    - { n: Ingresso, img: camera.ingresso_snapshot, live: camera.ingresso_live, poll: 20 }      # anteprima + diretta
+    - { n: Giardino, kind: motion, img: image.giardino_ultimo_movimento, cam: camera.giardino, poll: 60 }  # solo ultima immagine
+
+  # --- ENERGIA (vista Energia)
+  energy:
+    power: sensor.potenza_casa            # W istantanei           (obbligatorio per la vista)
+    voltage: sensor.tensione_casa         # V                      (facoltativo)
+    energyTotal: sensor.energia_totale    # kWh totali, state_class: total_increasing (per i 14 giorni)
+    today: sensor.aurora_energia_oggi     # kWh oggi
+    yesterday: sensor.aurora_energia_ieri
+    month: sensor.aurora_energia_mese
+    lastMonth: sensor.aurora_energia_mese_scorso
+    year: sensor.aurora_energia_anno
+    price: input_number.prezzo_energia    # costo del kWh: si imposta dalla scheda (viene creato da solo)
+    priceDefault: 0.30                    # prezzo di esempio finché non imposti il tuo
+    base: sensor.consumo_di_fondo         # facoltativo
+    avg3: sensor.potenza_media_3_ore      # facoltativo
+    limit: input_number.soglia_potenza    # facoltativo: limite del quadrante
+    limitDefault: 3000                    # W, se non hai l'entità sopra
+    liveRefresh: 3                        # secondi: ogni quanto chiedere il valore fresco (0 = no). Utile con Shelly e simili
+    appliances:                           # elettrodomestici (facoltativi): potenza W + kWh di oggi
+      - { n: Lavatrice, p: sensor.lavatrice_potenza, e: sensor.lavatrice_energia_oggi, ic: mdi-washing-machine, c: "#38BDF8" }
+      - { n: Frigorifero, p: sensor.frigo_potenza, e: null, ic: mdi-fridge, c: "#34D399" }
