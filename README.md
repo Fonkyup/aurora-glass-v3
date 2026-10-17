@@ -48,7 +48,7 @@ Delete the dashboard, the resource and the folder `www/aurora-v3`. Nothing else 
 Version 3, tested on Home Assistant 2026.9 by the author. Issues and suggestions are welcome — please open an issue.
 
 ## License
-Free for personal use, see [LICENSE](LICENSE).
+Free to download and use at home, **unmodified**. Editing the example YAML to configure your own entities is fine; modifying or redistributing the card, code or images is not allowed without permission. Full terms in [LICENSE](LICENSE) (EN/IT). Permissions: richieste@domotikpro.it
 
 ---
 Made by [DomotikPro.it](https://domotikpro.it) — practical guides for a reliable smart home.

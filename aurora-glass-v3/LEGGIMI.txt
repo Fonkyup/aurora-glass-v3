@@ -65,4 +65,5 @@ PRIVACY
 RIMUOVERE
  Elimina la plancia "Aurora", la risorsa e la cartella www/aurora-v3. Nient'altro viene toccato.
 
-Aurora Glass v3 - gratuito per uso personale.
+Aurora Glass v3 - gratuito per uso personale, da usare senza modifiche (i file YAML di esempio si possono modificare).
+Non e' consentito modificare, ridistribuire o usare a scopo commerciale: vedi LICENSE. Permessi: richieste@domotikpro.it
