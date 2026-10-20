@@ -6,7 +6,7 @@
 
 Una sola scheda personalizzata che trasforma la plancia di Home Assistant in una scena viva: cielo, sole, luna e finestre della casetta seguono l'ora reale. Dieci mondi animati, undici effetti meteo, pulsanti fatti di immagini e GIF, allarme, clima, telecamere ed energia con i costi in euro calcolati sulla tua tariffa.
 
-- **Demo dal vivo (senza installare nulla):** https://domotikpro.it/aurora-glass-v3-demo/
+- **Demo dal vivo (senza installare nulla):** https://domotikpro.it/aurora-glass-v3-demo/index.html
 - **Guida completa con schermate:** https://domotikpro.it/progetti/aurora-glass-v3
 - **Video passo passo:** https://www.youtube.com/@domotikproit
 

@@ -6,7 +6,7 @@
 
 A single custom card that turns a Home Assistant dashboard into a living scene: the sky, sun, moon and the windows of the little house follow the real time of day, ten animated "worlds", eleven weather effects, buttons made of images and GIFs, alarm, climate, cameras and an energy view that shows costs in euro (or any currency) from your own tariff.
 
-- **Live demo (no install):** https://domotikpro.it/aurora-glass-v3-demo/
+- **Live demo (no install):** https://domotikpro.it/aurora-glass-v3-demo/index.html
 - **Full illustrated guide (Italian):** https://domotikpro.it/progetti/aurora-glass-v3
 - **Video walkthrough (Italian):** https://www.youtube.com/@domotikproit
 
