@@ -26,6 +26,8 @@ A single custom card that turns a Home Assistant dashboard into a living scene: 
 ## Install (about 10 minutes)
 The commented, step-by-step version is in [`aurora-glass-v3/LEGGIMI.txt`](aurora-glass-v3/LEGGIMI.txt) (Italian). Short version:
 
+**With HACS (copies the card and its images and adds the resource for you):** HACS → ⋮ → *Custom repositories* → add `https://github.com/lucalux00/aurora-glass-v3`, type *Dashboard* → search **Aurora Glass v3** → *Download* → reload the browser, then go to step 3. Without HACS, follow steps 1–2.
+
 1. **Copy the files.** Put the folder `aurora-glass-v3/www/aurora-v3` into the `www` folder of your Home Assistant configuration (File editor, Samba or Studio Code Server). Result: `www/aurora-v3/aurora-v3.js` and `www/aurora-v3/btn/…`. If `www` is new, restart Home Assistant once. Test: open `<your HA address>/local/aurora-v3/aurora-v3.js` in the browser — you should see text.
 2. **Add the resource.** Profile → enable *Advanced mode*. Settings → Dashboards → ⋮ → Resources → Add resource: URL `/local/aurora-v3/aurora-v3.js?v=1`, type *JavaScript module*. Bump the number after `?v=` when you update the card.
 3. **Create a dashboard.** Settings → Dashboards → Add dashboard → New dashboard from scratch.

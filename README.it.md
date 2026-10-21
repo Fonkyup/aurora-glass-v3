@@ -26,6 +26,8 @@ Una sola scheda personalizzata che trasforma la plancia di Home Assistant in una
 ## Installazione (circa 10 minuti)
 La versione commentata è in [`aurora-glass-v3/LEGGIMI.txt`](aurora-glass-v3/LEGGIMI.txt). In breve:
 
+**Con HACS (copia la scheda e le immagini e aggiunge la risorsa da solo):** HACS → ⋮ → *Repository personalizzati* → aggiungi `https://github.com/lucalux00/aurora-glass-v3`, tipo *Dashboard* → cerca **Aurora Glass v3** → *Scarica* → ricarica il browser, poi passa al punto 3. Senza HACS segui i punti 1–2.
+
 1. **Copia i file.** Metti la cartella `aurora-glass-v3/www/aurora-v3` dentro la cartella `www` di Home Assistant (File editor, Samba o Studio Code Server). Risultato: `www/aurora-v3/aurora-v3.js` e `www/aurora-v3/btn/…`. Nel componente File editor la cartella di configurazione si chiama `/homeassistant`: è la stessa. Se `www` è nuova, riavvia Home Assistant una volta. Prova: apri `<indirizzo di Home Assistant>/local/aurora-v3/aurora-v3.js` nel browser: se vedi del testo è tutto a posto.
 2. **Aggiungi la risorsa.** Profilo → attiva *Modalità avanzata*. Impostazioni → Plance → ⋮ → Risorse → Aggiungi risorsa: URL `/local/aurora-v3/aurora-v3.js?v=1`, tipo *Modulo JavaScript*. Quando aggiorni la scheda, alza il numero dopo `?v=`.
 3. **Crea la plancia.** Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero.
