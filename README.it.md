@@ -50,7 +50,9 @@ Elimina la plancia, la risorsa e la cartella `www/aurora-v3`. Nient'altro viene 
 Versione 3, provata dall'autore su Home Assistant 2026.9. Segnalazioni e suggerimenti sono benvenuti: apri una issue.
 
 ## Licenza
-Gratuito da scaricare e usare in casa, **senza modifiche**. Puoi modificare i file YAML di esempio per configurare le tue entità; modificare o ridistribuire scheda, codice o immagini non è consentito senza permesso. Termini completi in [LICENSE](LICENSE) (IT/EN). Permessi: richieste@domotikpro.it
+[GPL-3.0](LICENSE). Puoi usare, studiare, modificare e condividere la scheda, anche a scopo commerciale, purché ogni versione modificata che distribuisci resti GPL-3.0, sia accompagnata dal codice sorgente e mantenga la nota originale: © 2026 DomotikPro.it (Luca Pinelli).
+
+Il nome "Aurora Glass" e il marchio DomotikPro.it non rientrano nella licenza: una versione modificata deve usare un nome diverso.
 
 ---
 Realizzato da [DomotikPro.it](https://domotikpro.it) — guide pratiche per una casa smart affidabile.

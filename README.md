@@ -50,7 +50,9 @@ Delete the dashboard, the resource and the folder `www/aurora-v3`. Nothing else 
 Version 3, tested on Home Assistant 2026.9 by the author. Issues and suggestions are welcome — please open an issue.
 
 ## License
-Free to download and use at home, **unmodified**. Editing the example YAML to configure your own entities is fine; modifying or redistributing the card, code or images is not allowed without permission. Full terms in [LICENSE](LICENSE) (EN/IT). Permissions: richieste@domotikpro.it
+[GPL-3.0](LICENSE). You can use, study, modify and share the card, also commercially, as long as every modified version you distribute stays under GPL-3.0, comes with its source code and keeps the original notice: © 2026 DomotikPro.it (Luca Pinelli).
+
+The name "Aurora Glass" and the DomotikPro.it brand are not covered by the license: a modified version must use a different name.
 
 ---
 Made by [DomotikPro.it](https://domotikpro.it) — practical guides for a reliable smart home.

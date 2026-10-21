@@ -66,4 +66,6 @@ RIMUOVERE
  Elimina la plancia "Aurora", la risorsa e la cartella www/aurora-v3. Nient'altro viene toccato.
 
 Aurora Glass v3 - gratuito per uso personale, da usare senza modifiche (i file YAML di esempio si possono modificare).
-Non e' consentito modificare, ridistribuire o usare a scopo commerciale: vedi LICENSE. Permessi: richieste@domotikpro.it
+Licenza GPL-3.0: puoi usare, modificare e condividere la scheda, anche a scopo
+commerciale, purche' le versioni modificate restino GPL-3.0, con il codice
+sorgente e un nome diverso da "Aurora Glass". Vedi LICENSE.
