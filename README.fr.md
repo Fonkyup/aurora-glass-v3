@@ -1,4 +1,4 @@
-```markdown
+
 # Aurora Glass v3 — Tableau de bord animé pour Home Assistant
 
 🇬🇧 [Lire en anglais](README.md) · 🇮🇹 [Lire en italien](README.it.md)
