@@ -1882,10 +1882,60 @@
 
       $("#cl-cur").textContent =
         climateText.indoors + " " + fmt(clima.cur) + " °C";
+      var hintTranslations = {
+        it: {
+          unavailable: "Il climatizzatore non risponde: controlla il cloud Panasonic.",
+          current: "Acceso ma in pausa: in casa ci sono ",
+          target: "° e hai impostato ",
+          lower: "°. Abbassa la temperatura per far partire il raffrescamento.",
+          raise: "°. Alza la temperatura per far partire il riscaldamento."
+        },
+        fr: {
+          unavailable: "L’appareil est indisponible dans Home Assistant. Vérifiez sa connexion et son intégration.",
+          current: "Appareil activé, mais en pause : température intérieure de ",
+          target: "°, température cible de ",
+          lower: "°. Une consigne plus basse peut permettre de demander de la climatisation.",
+          raise: "°. Une consigne plus élevée peut permettre de demander du chauffage."
+        },
+        en: {
+          unavailable: "The device is unavailable in Home Assistant. Check its connection and integration.",
+          current: "Device on but idle: indoor temperature is ",
+          target: "° and the target is ",
+          lower: "°. A lower setpoint may allow cooling to be requested.",
+          raise: "°. A higher setpoint may allow heating to be requested."
+        }
+      };
+
+      var hintText = hintTranslations[LANG] || hintTranslations.it;
       var hint = "";
-      if (!clima.avail) hint = "Il climatizzatore non risponde: controlla il cloud Panasonic.";
-      else if (m === "cool" && clima.action !== "cooling" && clima.tgt >= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Abbassa la temperatura per far partire il raffrescamento.";
-      else if (m === "heat" && clima.action !== "heating" && clima.tgt <= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Alza la temperatura per far partire il riscaldamento.";
+
+      if (!clima.avail) {
+        hint = hintText.unavailable;
+      } else if (
+        m === "cool" &&
+        clima.action !== "cooling" &&
+        clima.tgt >= clima.cur
+      ) {
+        hint =
+          hintText.current +
+          fmt(clima.cur) +
+          hintText.target +
+          fmt(clima.tgt) +
+          hintText.lower;
+      } else if (
+        m === "heat" &&
+        clima.action !== "heating" &&
+        clima.tgt <= clima.cur
+      ) {
+        hint =
+          hintText.current +
+          fmt(clima.cur) +
+          hintText.target +
+          fmt(clima.tgt) +
+          hintText.raise;
+      }
+
+      
       var hn = $("#cl-hint"); hn.textContent = hint; hn.hidden = !hint;
       $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       var art = $("#cl-art"); art.dataset.img = climaArt(); refreshImg(art);
