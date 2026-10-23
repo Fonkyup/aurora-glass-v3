@@ -886,6 +886,54 @@
   g.AuroraApp = function (ctx) {
     var ROOT = ctx.root, HOST = ctx.host, LAYER = ctx.layer || HOST, SCROLL = ctx.scroll || window;
     var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
+        // Language configuration: preserve Italian when no language is specified.
+    var LANG = String(CFG.language || "it").toLowerCase().split(/[-_]/)[0];
+
+    if (["it", "fr", "en"].indexOf(LANG) === -1) {
+      LANG = "it";
+    }
+
+    var LOCALE = {
+      it: "it-IT",
+      fr: "fr-CA",
+      en: "en-CA"
+    }[LANG];
+
+    var I18N = {
+      it: {
+        goodNight: "Buonanotte",
+        goodMorning: "Buongiorno",
+        goodAfternoon: "Buon pomeriggio",
+        goodEvening: "Buonasera",
+        realTimeRestored: "Ora reale ripristinata"
+      },
+      fr: {
+        goodNight: "Bonne nuit",
+        goodMorning: "Bonjour",
+        goodAfternoon: "Bon après-midi",
+        goodEvening: "Bonsoir",
+        realTimeRestored: "Heure réelle rétablie"
+      },
+      en: {
+        goodNight: "Good night",
+        goodMorning: "Good morning",
+        goodAfternoon: "Good afternoon",
+        goodEvening: "Good evening",
+        realTimeRestored: "Real time restored"
+      }
+    };
+
+    function tr(key) {
+      if (I18N[LANG][key] !== undefined) {
+        return I18N[LANG][key];
+      }
+
+      if (I18N.en[key] !== undefined) {
+        return I18N.en[key];
+      }
+
+      return key;
+    }
     var $ = function (s, r) { return (r || ROOT).querySelector(s); };
     var $$ = function (s, r) { return Array.prototype.slice.call((r || ROOT).querySelectorAll(s)); };
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1359,16 +1407,37 @@
       $("#phase-out").textContent = pad(hh) + ":" + pad(mm);
       $("#phase-range").value = h;
       setIco($("#phase-icon"), K.dy < .12 ? "mdi-weather-night" : K.dy > .8 ? "mdi-weather-sunny" : (h < 12 ? "mdi-weather-sunset-up" : "mdi-weather-sunset-down"));
-      var gr = (h >= 22 || h < 5) ? "Buonanotte" : h < 12 ? "Buongiorno" : h < 18 ? "Buon pomeriggio" : "Buonasera";
+            var gr = (h >= 22 || h < 5)
+        ? tr("goodNight")
+        : h < 12
+          ? tr("goodMorning")
+          : h < 18
+            ? tr("goodAfternoon")
+            : tr("goodEvening");
       $("#greet").textContent = gr + ", " + userName;
       setArt();
     }
     function tickClock() { if (!clockLive) return; var d = new Date(); applyHour(d.getHours() + d.getMinutes() / 60); }
-    var months = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"];
-    var days = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
-    function tickDate() { var n = new Date(); $("#date-text").textContent = days[n.getDay()] + " " + n.getDate() + " " + months[n.getMonth()]; }
+        function tickDate() {
+      var n = new Date();
+
+      $("#date-text").textContent = n.toLocaleDateString(LOCALE, {
+        weekday: "long",
+        day: "numeric",
+        month: "long"
+      });
+    }
     $("#phase-range").addEventListener("input", function (e) { clockLive = false; applyHour(parseFloat(e.target.value)); });
-    $("#phase-real").addEventListener("click", function () { clockLive = true; tickClock(); toast("Ora reale ripristinata", "mdi-clock-outline", "var(--acc-text)"); });
+        $("#phase-real").addEventListener("click", function () {
+      clockLive = true;
+      tickClock();
+
+      toast(
+        tr("realTimeRestored"),
+        "mdi-clock-outline",
+        "var(--acc-text)"
+      );
+    });
 
     /* ------------------------------------------------------------------ effetti */
     var fxHero = new FX.Fx($("#fx-hero"), { k: 1, alpha: 1, onFlash: flash });
@@ -1500,7 +1569,7 @@
       return ids.filter(Boolean);
     }
     function condIcon(c) { return { sunny: "mdi-weather-sunny", "clear-night": "mdi-weather-night", cloudy: "mdi-weather-cloudy", partlycloudy: "mdi-weather-partly-cloudy", rainy: "mdi-weather-rainy", pouring: "mdi-weather-pouring", snowy: "mdi-weather-snowy", "snowy-rainy": "mdi-weather-snowy-rainy", fog: "mdi-weather-fog", lightning: "mdi-weather-lightning", "lightning-rainy": "mdi-weather-lightning-rainy", windy: "mdi-weather-windy", hail: "mdi-weather-hail" }[c] || "mdi-weather-partly-cloudy"; }
-    function fmt(n, d) { return Number(n).toLocaleString("it-IT", { maximumFractionDigits: d === undefined ? 1 : d }); }
+    function fmt(n, d) { return Number(n).toLocaleString(LOCALE, { maximumFractionDigits: d === undefined ? 1 : d }); }
     function syncLights() { Object.keys(ENT.lights).forEach(function (k) { var s = sv(ENT.lights[k]); state.lights[k] = !!s && s.state === "on"; }); }
     function syncLive(first) {
       // luci
@@ -1682,7 +1751,7 @@
       else if (m === "cool" && clima.action !== "cooling" && clima.tgt >= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Abbassa la temperatura per far partire il raffrescamento.";
       else if (m === "heat" && clima.action !== "heating" && clima.tgt <= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Alza la temperatura per far partire il riscaldamento.";
       var hn = $("#cl-hint"); hn.textContent = hint; hn.hidden = !hint;
-      $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString("it-IT", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       var art = $("#cl-art"); art.dataset.img = climaArt(); refreshImg(art);
       var mw = $("#cl-modes"), msig = clima.modes.join("|") + "#" + m;
       if (mw.dataset.sig !== msig) {
@@ -1784,9 +1853,9 @@
     /* ------------------------------------------------------------------ energia / consumi (Shelly EM) */
     var EN = { range: "24h", series: [], busy: false, last: 0, rangeKey: "", days: [], daysAt: 0, tipIdx: -1, dayUnit: "kwh", pEff: 0.3, pDrawn: 0 };
     function enNum(id) { var s = sv(id); if (!s || isUnavail(s)) return null; var v = parseFloat(s.state); return isNaN(v) ? null : v; }
-    function fmtKwh(v) { return v === null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: v >= 100 ? 0 : 1, maximumFractionDigits: v >= 100 ? 0 : 2 }); }
-    function fmtEur(v) { return v === null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
-    function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString("it-IT"), u: "W" }; }
+    function fmtKwh(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: v >= 100 ? 0 : 1, maximumFractionDigits: v >= 100 ? 0 : 2 }); }
+    function fmtEur(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+    function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString(LOCALE), u: "W" }; }
     var demoE = { p: 180, t0: Date.now() };
     function demoPower() { var m = (Date.now() - demoE.t0) / 1000; return Math.max(60, 190 + 90 * Math.sin(m / 9) + 60 * Math.sin(m / 3.1) + (Math.sin(m / 47) > .8 ? 1400 : 0)); }
     /* tariffa €/kWh: helper di Home Assistant (vale su tutti i dispositivi) → copia locale → valore di esempio */
@@ -1887,7 +1956,7 @@
       if (ap.dataset.sig !== ah) { ap.dataset.sig = ah; ap.innerHTML = ah; hydrate(ap); $$(".app", ap).forEach(function (b) { b.addEventListener("click", function () { if (LIVE) moreInfo(ENT.energy.appliances[+b.dataset.app].p); }); }); }
     }
     /* ---- tariffa: finestra per impostare il costo del kWh ---- */
-    function fmtP(v) { return Number(v).toLocaleString("it-IT", { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
+    function fmtP(v) { return Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function prNum(sel) { var v = parseFloat(String($(sel).value).replace(",", ".")); return isNaN(v) ? null : v; }
     function prSet(v) { $("#pr-in").value = (Math.round(v * 1000) / 1000).toFixed(3); prMark(); }
     function prMark() { var v = prNum("#pr-in"); $$("#pr-pre button").forEach(function (b) { b.setAttribute("aria-pressed", v !== null && Math.abs(+b.dataset.v - v) < 0.0005 ? "true" : "false"); }); }
@@ -2022,7 +2091,7 @@
       var mx = Math.max.apply(null, vals) || 1, today = new Date().toDateString(), wd = ["D", "L", "M", "M", "G", "V", "S"], tk = 0;
       a.forEach(function (x) { tk += x.v; });
       box.innerHTML = a.map(function (x, i) {
-        return '<div class="day' + (x.d.toDateString() === today ? " today" : "") + '" title="' + x.d.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" }) + " · " + fmtKwh(x.v) + " kWh · " + fmtEur(x.v * EN.pEff) + '"><span class="d-v">' + (eur ? Number(vals[i]).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtKwh(vals[i])) + '</span><span class="bar2" style="height:' + Math.max(3, vals[i] / mx * 100) + '%"></span><span class="d-l">' + wd[x.d.getDay()] + x.d.getDate() + "</span></div>";
+        return '<div class="day' + (x.d.toDateString() === today ? " today" : "") + '" title="' + x.d.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" }) + " · " + fmtKwh(x.v) + " kWh · " + fmtEur(x.v * EN.pEff) + '"><span class="d-v">' + (eur ? Number(vals[i]).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtKwh(vals[i])) + '</span><span class="bar2" style="height:' + Math.max(3, vals[i] / mx * 100) + '%"></span><span class="d-l">' + wd[x.d.getDay()] + x.d.getDate() + "</span></div>";
       }).join("");
       if (sum) { sum.innerHTML = '<span class="echip"><i class="mdi mdi-sigma"></i>Totale <b>' + fmtKwh(tk) + ' kWh</b> · <b>' + fmtEur(tk * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-chart-line"></i>Media al giorno <b>' + fmtKwh(tk / a.length) + ' kWh</b> · <b>' + fmtEur(tk / a.length * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-information-outline"></i>Calcolato con ' + fmtP(EN.pEff) + ' €/kWh</span>'; hydrate(sum); }
     }
