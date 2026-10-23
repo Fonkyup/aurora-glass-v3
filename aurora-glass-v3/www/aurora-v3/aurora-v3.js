@@ -4842,7 +4842,7 @@
 
     translatePriceDialog();
 
-    hydrate(ROOT);
+
 
     function translateEnergyStaticLabels() {
       var translations = {
@@ -4943,7 +4943,85 @@
     }
 
     translateEnergyStaticLabels();
+    function translateImageEditorStaticLabels() {
+      var translations = {
+        it: {
+          restore: "Ripristina originale",
+          done: "Fatto",
+          close: "Chiudi",
+          library: "Libreria",
+          note: "Puoi anche trascinare un file PNG, JPG, GIF animata o WebP sopra un riquadro. Le immagini scelte restano salvate in questo browser."
+        },
+        fr: {
+          restore: "Rétablir l’original",
+          done: "Terminé",
+          close: "Fermer",
+          library: "Bibliothèque",
+          note: "Tu peux aussi déposer un fichier PNG, JPG, GIF animé ou WebP sur un emplacement. Les images personnalisées sont enregistrées dans ce navigateur."
+        },
+        en: {
+          restore: "Restore original",
+          done: "Done",
+          close: "Close",
+          library: "Library",
+          note: "You can also drop a PNG, JPG, animated GIF or WebP file onto an image slot. Custom images are saved in this browser."
+        }
+      };
 
+      var labels = translations[LANG] || translations.it;
+
+      function setButtonLabel(selector, text) {
+        var button = ROOT.querySelector(selector);
+
+        if (!button) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(
+          button.childNodes
+        ).filter(function (child) {
+          return child.nodeType === 3;
+        });
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          button.appendChild(document.createTextNode(text + " "));
+        }
+
+        button.setAttribute("aria-label", text);
+      }
+
+      setButtonLabel("#ed-reset", labels.restore);
+      setButtonLabel("#ed-done", labels.done);
+
+      var closeButton = ROOT.querySelector("#ed-close");
+
+      if (closeButton) {
+        closeButton.setAttribute("aria-label", labels.close);
+        closeButton.setAttribute("title", labels.close);
+      }
+
+      var libraryTabs = ROOT.querySelector("#lib-tabs");
+
+      if (libraryTabs) {
+        libraryTabs.setAttribute("aria-label", labels.library);
+      }
+
+      var note = ROOT.querySelector("#editor p.note-sm");
+
+      if (note) {
+        note.textContent = labels.note;
+      }
+    }
+
+    translateImageEditorStaticLabels();
+    
+    hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
     var EFFECT_I18N = {
