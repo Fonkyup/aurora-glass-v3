@@ -2323,7 +2323,7 @@
           ""
         ]
       ];
-      
+
       var kh = kp.map(function (k) { return '<article class="card kpi' + (k[2] === null ? " na" : "") + '"><span class="k-l"><i class="mdi ' + k[0] + '"></i>' + k[1] + '</span><span class="k-v">' + fmtKwh(k[2]) + "<small>kWh</small></span><span class=\"k-c\">" + fmtEur(k[3]) + '</span><span class="k-s">' + (k[4] || "&nbsp;") + "</span></article>"; }).join("");
       var kb = $("#en-kpis"); if (kb.dataset.sig !== kh) { kb.dataset.sig = kh; kb.innerHTML = kh; hydrate(kb); }
       // elettrodomestici
@@ -2469,18 +2469,141 @@
       }).catch(function () { EN.days = []; drawDays(); });
     }
     function drawDays() {
-      var box = $("#en-days"), a = EN.days, sum = $("#en-days-sum"); if (!box) return;
+      var box = $("#en-days");
+      var a = EN.days;
+      var sum = $("#en-days-sum");
+
+      if (!box) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          dailyCost: "Costo giornaliero",
+          dailyEnergy: "Consumo giornaliero",
+          noHistory: "Storico non disponibile",
+          total: "Totale",
+          average: "Media al giorno",
+          calculatedWith: "Calcolato con ",
+          weekdays: ["D", "L", "M", "M", "G", "V", "S"]
+        },
+        fr: {
+          dailyCost: "Coût quotidien",
+          dailyEnergy: "Consommation quotidienne",
+          noHistory: "Historique indisponible",
+          total: "Total",
+          average: "Moyenne par jour",
+          calculatedWith: "Calculé avec ",
+          weekdays: ["D", "L", "M", "M", "J", "V", "S"]
+        },
+        en: {
+          dailyCost: "Daily cost",
+          dailyEnergy: "Daily energy consumption",
+          noHistory: "History unavailable",
+          total: "Total",
+          average: "Daily average",
+          calculatedWith: "Calculated using ",
+          weekdays: ["S", "M", "T", "W", "T", "F", "S"]
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
       EN.pDrawn = EN.pEff;
+
       var eur = EN.dayUnit === "eur";
-      $("#en-days-t").textContent = eur ? "Costo giornaliero" : "Consumo giornaliero";
-      if (!a.length) { box.innerHTML = '<div class="en-empty" style="position:static;height:120px;display:grid">Storico non disponibile</div>'; if (sum) sum.innerHTML = ""; return; }
-      var vals = a.map(function (x) { return eur ? x.v * EN.pEff : x.v; });
-      var mx = Math.max.apply(null, vals) || 1, today = new Date().toDateString(), wd = ["D", "L", "M", "M", "G", "V", "S"], tk = 0;
-      a.forEach(function (x) { tk += x.v; });
+
+      $("#en-days-t").textContent = eur
+        ? labels.dailyCost
+        : labels.dailyEnergy;
+
+      if (!a.length) {
+        box.innerHTML =
+          '<div class="en-empty" ' +
+          'style="position:static;height:120px;display:grid">' +
+          labels.noHistory +
+          "</div>";
+
+        if (sum) {
+          sum.innerHTML = "";
+        }
+
+        return;
+      }
+
+      var vals = a.map(function (x) {
+        return eur ? x.v * EN.pEff : x.v;
+      });
+
+      var mx = Math.max.apply(null, vals) || 1;
+      var today = new Date().toDateString();
+      var tk = 0;
+
+      a.forEach(function (x) {
+        tk += x.v;
+      });
+
       box.innerHTML = a.map(function (x, i) {
-        return '<div class="day' + (x.d.toDateString() === today ? " today" : "") + '" title="' + x.d.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" }) + " · " + fmtKwh(x.v) + " kWh · " + fmtEur(x.v * EN.pEff) + '"><span class="d-v">' + (eur ? Number(vals[i]).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtKwh(vals[i])) + '</span><span class="bar2" style="height:' + Math.max(3, vals[i] / mx * 100) + '%"></span><span class="d-l">' + wd[x.d.getDay()] + x.d.getDate() + "</span></div>";
+        var isToday = x.d.toDateString() === today;
+
+        var dateLabel = x.d.toLocaleDateString(LOCALE, {
+          weekday: "long",
+          day: "numeric",
+          month: "long"
+        });
+
+        var valueLabel = eur
+          ? Number(vals[i]).toLocaleString(LOCALE, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+          : fmtKwh(vals[i]);
+
+        var tooltip =
+          dateLabel +
+          " · " + fmtKwh(x.v) + " kWh" +
+          " · " + fmtEur(x.v * EN.pEff);
+
+        var height = Math.max(3, vals[i] / mx * 100);
+
+        var dayLabel =
+          labels.weekdays[x.d.getDay()] + x.d.getDate();
+
+        return (
+          '<div class="day' + (isToday ? " today" : "") +
+          '" title="' + tooltip + '">' +
+            '<span class="d-v">' + valueLabel + "</span>" +
+            '<span class="bar2" style="height:' +
+              height + '%"></span>' +
+            '<span class="d-l">' + dayLabel + "</span>" +
+          "</div>"
+        );
       }).join("");
-      if (sum) { sum.innerHTML = '<span class="echip"><i class="mdi mdi-sigma"></i>Totale <b>' + fmtKwh(tk) + ' kWh</b> · <b>' + fmtEur(tk * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-chart-line"></i>Media al giorno <b>' + fmtKwh(tk / a.length) + ' kWh</b> · <b>' + fmtEur(tk / a.length * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-information-outline"></i>Calcolato con ' + fmtP(EN.pEff) + ' €/kWh</span>'; hydrate(sum); }
+
+      if (sum) {
+        sum.innerHTML =
+          '<span class="echip">' +
+            '<i class="mdi mdi-sigma"></i>' +
+            labels.total + " " +
+            "<b>" + fmtKwh(tk) + " kWh</b>" +
+            " · <b>" + fmtEur(tk * EN.pEff) + "</b>" +
+          "</span>" +
+          '<span class="echip">' +
+            '<i class="mdi mdi-chart-line"></i>' +
+            labels.average + " " +
+            "<b>" + fmtKwh(tk / a.length) + " kWh</b>" +
+            " · <b>" +
+              fmtEur(tk / a.length * EN.pEff) +
+            "</b>" +
+          "</span>" +
+          '<span class="echip">' +
+            '<i class="mdi mdi-information-outline"></i>' +
+            labels.calculatedWith +
+            fmtP(EN.pEff) + " €/kWh" +
+          "</span>";
+
+        hydrate(sum);
+      }
     }
     function enEnter() { renderEnergy(); enLoad(true); daysLoad(); }
     function buildEnergy() {
