@@ -884,6 +884,7 @@
    ========================================================================== */
 (function (g) {
   "use strict";
+
   g.AuroraApp = function (ctx) {
     var ROOT = ctx.root, HOST = ctx.host, LAYER = ctx.layer || HOST, SCROLL = ctx.scroll || window;
     var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
