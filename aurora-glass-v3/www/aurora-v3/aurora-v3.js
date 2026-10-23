@@ -1191,7 +1191,7 @@
         var na = LIVE && isUnavail(sv(ENT.lights[o.dataset.light]));
         if (na) nUn++;
         o.classList.toggle("na", na);
-        $(".o-state", o).textContent = na ? "Non disponibile" : (on ? "Accesa" : "Spenta");
+        $(".o-state", o).textContent = lightStateLabel(na, on);
         refreshImg(o);
       });
       $$(".room").forEach(function (r) {
@@ -1201,8 +1201,7 @@
       });
       $$(".wglow").forEach(function (w) { w.classList.toggle("on", !!state.lights[w.dataset.k]); });
       var a = ALARM[state.alarm] || ALARM.disarmed;
-      var lt = total ? total + (total === 1 ? " luce accesa" : " luci accese") : (LIVE ? "Nessuna luce accesa" : "Tutte le luci spente");
-      if (LIVE && nUn) lt += " · " + nUn + (nUn === 1 ? " non risponde" : " non rispondono");
+      var lt = lightSummary(total, nUn);
       $("#status-text").textContent = lt + " · " + a.short;
       $$(".scene").forEach(function (b) { var act = b.dataset.scene === state.scene; b.classList.toggle("active", act); b.dataset.on = act ? "1" : "0"; refreshImg(b); });
     }
@@ -2792,7 +2791,82 @@
     }
 
     translateHomeLabels();
-      
+
+    // Light state labels, evaluated whenever the interface updates.
+    function lightStateLabel(isUnavailable, isOn) {
+      var labels = {
+        it: {
+          unavailable: "Non disponibile",
+          on: "Accesa",
+          off: "Spenta"
+        },
+        fr: {
+          unavailable: "Indisponible",
+          on: "Allumée",
+          off: "Éteinte"
+        },
+        en: {
+          unavailable: "Unavailable",
+          on: "On",
+          off: "Off"
+        }
+      };
+
+      var selected = labels[LANG] || labels.it;
+
+      return isUnavailable
+        ? selected.unavailable
+        : isOn
+          ? selected.on
+          : selected.off;
+    }
+
+    // Summary of lights currently on and devices not responding.
+    function lightSummary(total, unavailableCount) {
+      var text;
+
+      if (LANG === "fr") {
+        text = total
+          ? total + (total === 1 ? " lumière allumée" : " lumières allumées")
+          : (LIVE ? "Aucune lumière allumée" : "Toutes les lumières éteintes");
+
+        if (LIVE && unavailableCount) {
+          text += " · " + unavailableCount +
+            (unavailableCount === 1
+              ? " appareil ne répond pas"
+              : " appareils ne répondent pas");
+        }
+
+        return text;
+      }
+
+      if (LANG === "en") {
+        text = total
+          ? total + (total === 1 ? " light on" : " lights on")
+          : (LIVE ? "No lights on" : "All lights off");
+
+        if (LIVE && unavailableCount) {
+          text += " · " + unavailableCount +
+            (unavailableCount === 1
+              ? " device not responding"
+              : " devices not responding");
+        }
+
+        return text;
+      }
+
+      text = total
+        ? total + (total === 1 ? " luce accesa" : " luci accese")
+        : (LIVE ? "Nessuna luce accesa" : "Tutte le luci spente");
+
+      if (LIVE && unavailableCount) {
+        text += " · " + unavailableCount +
+          (unavailableCount === 1 ? " non risponde" : " non rispondono");
+      }
+
+      return text;
+    }
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
@@ -2876,6 +2950,103 @@
     }
 
     translateEffectButtons();
+    // Translate room and light labels without changing configuration keys.
+    var ROOM_I18N = {
+      fr: {
+        groups: {
+          "Zona giorno": "Zone de vie",
+          "Cucina": "Cuisine",
+          "Zona notte": "Chambres",
+          "Bagni": "Salles de bain",
+          "Servizi": "Pièces utilitaires"
+        },
+        lights: {
+          salotto: "Salon",
+          ingresso: "Entrée",
+          corridoio: "Couloir",
+          cucina: "Cuisine",
+          balcone: "Balcon",
+          camera: "Chambre",
+          cameretta: "Chambre d’enfant",
+          bagno_piccolo: "Petite salle de bain",
+          bagno_doccia: "Salle de douche",
+          lavanderia: "Salle de lavage",
+          sgabuzzino: "Rangement"
+        },
+        lightPrefix: "Éclairage : "
+      },
+      en: {
+        groups: {
+          "Zona giorno": "Living area",
+          "Cucina": "Kitchen",
+          "Zona notte": "Bedrooms",
+          "Bagni": "Bathrooms",
+          "Servizi": "Utility rooms"
+        },
+        lights: {
+          salotto: "Living room",
+          ingresso: "Entrance",
+          corridoio: "Hallway",
+          cucina: "Kitchen",
+          balcone: "Balcony",
+          camera: "Bedroom",
+          cameretta: "Child’s bedroom",
+          bagno_piccolo: "Small bathroom",
+          bagno_doccia: "Shower room",
+          lavanderia: "Laundry room",
+          sgabuzzino: "Storage"
+        },
+        lightPrefix: "Light: "
+      }
+    };
+
+    function translateRoomLabels() {
+      var labels = ROOM_I18N[LANG];
+
+      // Italian keeps the original labels.
+      if (!labels) {
+        return;
+      }
+
+      var headings = ROOT.querySelectorAll("#rooms .room-head h3");
+
+      Array.prototype.forEach.call(headings, function (heading) {
+        var originalName = heading.textContent.trim();
+
+        if (Object.prototype.hasOwnProperty.call(labels.groups, originalName)) {
+          heading.textContent = labels.groups[originalName];
+        }
+      });
+
+      var buttons = ROOT.querySelectorAll("#rooms .orb[data-light]");
+
+      Array.prototype.forEach.call(buttons, function (button) {
+        var key = button.getAttribute("data-light");
+
+        if (!Object.prototype.hasOwnProperty.call(labels.lights, key)) {
+          return;
+        }
+
+        var translatedName = labels.lights[key];
+        var nameElement = button.querySelector(".o-name");
+
+        if (nameElement) {
+          nameElement.textContent = translatedName;
+        }
+
+        button.setAttribute(
+          "data-label",
+          labels.lightPrefix + translatedName
+        );
+
+        button.setAttribute(
+          "aria-label",
+          labels.lightPrefix + translatedName
+        );
+      });
+    }
+
+    translateRoomLabels();    
 
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
     setBtn(S.btn === "compact" ? "compact" : "img");
