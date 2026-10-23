@@ -2092,12 +2092,57 @@
     }
     function chipPower(v) { showDelta(v); tweenW($("#power-val"), null, v); }
     function enAge() {
-      var n = $("#en-age"); if (!n) return;
-      if (!LIVE) { n.textContent = "· in tempo reale"; return; }
+      var n = $("#en-age");
+
+      if (!n) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          preview: "in tempo reale",
+          updatedNow: "aggiornata ora",
+          updatedBefore: "aggiornata ",
+          updatedAfter: " s fa"
+        },
+        fr: {
+          preview: "simulation en cours",
+          updatedNow: "mise à jour à l’instant",
+          updatedBefore: "mise à jour il y a ",
+          updatedAfter: " s"
+        },
+        en: {
+          preview: "simulation running",
+          updatedNow: "updated just now",
+          updatedBefore: "updated ",
+          updatedAfter: " s ago"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      if (!LIVE) {
+        n.textContent = labels.preview;
+        return;
+      }
+
       var s = sv(ENT.energy.power) || sv(ENT.power);
-      if (!s || !s.last_updated) { n.textContent = ""; return; }
-      var sec = Math.max(0, Math.round((Date.now() - new Date(s.last_updated).getTime()) / 1000));
-      n.textContent = "· aggiornata " + (sec < 2 ? "ora" : sec + " s fa");
+
+      if (!s || !s.last_updated) {
+        n.textContent = "";
+        return;
+      }
+
+      var sec = Math.max(
+        0,
+        Math.round(
+          (Date.now() - new Date(s.last_updated).getTime()) / 1000
+        )
+      );
+
+      n.textContent = sec < 2
+        ? labels.updatedNow
+        : labels.updatedBefore + sec + labels.updatedAfter;
     }
     /* chiede a Home Assistant di rileggere il contatore ogni pochi secondi, finché guardi la dashboard */
     var lastPoll = 0;
