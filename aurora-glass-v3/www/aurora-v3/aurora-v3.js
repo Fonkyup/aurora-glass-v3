@@ -2475,7 +2475,87 @@
         timeSlider.setAttribute("aria-label", labels.timeSlider);
       }
     }
+    // Scene labels: only presentation text is changed.
+    var SCENE_I18N = {
+      fr: {
+        morning: {
+          name: "Bonjour",
+          description: "Cuisine, couloir et salle de bain",
+          message: "Bonjour ! Cuisine, couloir et salle de bain allumés."
+        },
+        cinema: {
+          name: "Cinéma",
+          description: "Salon seulement",
+          message: "Scène Cinéma : seul le salon reste allumé."
+        },
+        dinner: {
+          name: "Repas",
+          description: "Cuisine et salon",
+          message: "Scène Repas : cuisine et salon allumés."
+        },
+        night: {
+          name: "Bonne nuit",
+          description: "Tout éteindre · alarme de nuit",
+          message: "Bonne nuit ! Lumières éteintes, alarme en mode nuit."
+        },
+        away: {
+          name: "Départ",
+          description: "Tout éteindre · alarme en mode absence",
+          message: "Maison fermée : lumières éteintes, alarme activée."
+        }
+      },
+      en: {
+        morning: {
+          name: "Good morning",
+          description: "Kitchen, hallway and bathroom",
+          message: "Good morning! Kitchen, hallway and bathroom lights are on."
+        },
+        cinema: {
+          name: "Cinema",
+          description: "Living room only",
+          message: "Cinema scene: only the living room light remains on."
+        },
+        dinner: {
+          name: "Dinner",
+          description: "Kitchen and living room",
+          message: "Dinner scene: kitchen and living room lights are on."
+        },
+        night: {
+          name: "Good night",
+          description: "Turn all off · night alarm",
+          message: "Good night! Lights off, alarm in night mode."
+        },
+        away: {
+          name: "Leaving",
+          description: "Turn all off · away alarm",
+          message: "House secured: lights off, alarm armed."
+        }
+      }
+    };
 
+    function translateScenes() {
+      var labels = SCENE_I18N[LANG];
+
+      // Keep the original Italian text when no translation applies.
+      if (!labels) {
+        return;
+      }
+
+      SCENES.forEach(function (scene) {
+        var translatedScene = labels[scene.id];
+
+        if (!translatedScene) {
+          return;
+        }
+
+        scene.n = translatedScene.name;
+        scene.sub = translatedScene.description;
+        scene.msg = translatedScene.message;
+      });
+    }
+
+    translateScenes();
+    
     translateAppearanceSections();
 
     // World names and tooltip descriptions for this card instance.
