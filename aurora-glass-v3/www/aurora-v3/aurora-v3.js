@@ -2210,7 +2210,82 @@
     }
 
     translateNavigation();
-        
+    // Static labels in the appearance panel.
+    var APPEARANCE_I18N = {
+      it: {
+        title: "Personalizza lo stile",
+        realTime: "Usa l'ora reale",
+        images: "Immagini e GIF",
+        compact: "Compatti",
+        editImages: "Modifica le immagini dei pulsanti",
+        reset: "Ripristina tutto",
+        close: "Chiudi"
+      },
+      fr: {
+        title: "Personnaliser l’apparence",
+        realTime: "Utiliser l’heure réelle",
+        images: "Images et GIF",
+        compact: "Compacts",
+        editImages: "Modifier les images des boutons",
+        reset: "Tout réinitialiser",
+        close: "Fermer"
+      },
+      en: {
+        title: "Customize appearance",
+        realTime: "Use real time",
+        images: "Images and GIFs",
+        compact: "Compact",
+        editImages: "Edit button images",
+        reset: "Reset all",
+        close: "Close"
+      }
+    };
+
+    function translateAppearance() {
+      var labels = APPEARANCE_I18N[LANG] || APPEARANCE_I18N.it;
+
+      // Replace direct text only, preserving icons and child elements.
+      function setLabel(selector, text) {
+        var node = ROOT.querySelector(selector);
+
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text));
+        }
+      }
+
+      setLabel("#dr-title", labels.title);
+      setLabel("#phase-real", labels.realTime);
+      setLabel('#btn-style [data-v="img"]', labels.images);
+      setLabel('#btn-style [data-v="compact"]', labels.compact);
+      setLabel("#edit-start", labels.editImages);
+      setLabel("#reset-all", labels.reset);
+
+      var closeButton = ROOT.querySelector("#dr-close");
+
+      if (closeButton) {
+        closeButton.setAttribute("aria-label", labels.close);
+        closeButton.setAttribute("title", labels.close);
+      }
+    }
+
+    translateAppearance();
+            
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
