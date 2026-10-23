@@ -7,9 +7,9 @@
 
 Une seule carte personnalisée qui transforme le tableau de bord de Home Assistant en une scène vivante : le ciel, le soleil, la lune et les fenêtres de la petite maison suivent l’heure réelle. Dix univers animés, onze effets météo, des boutons utilisant des images et des GIF, une alarme, le contrôle de la climatisation et du chauffage, des caméras et un suivi de l’énergie avec les coûts en euros calculés selon votre tarif.
 
-- Démonstration en ligne, sans rien installer : https://domotikpro.it/aurora-glass-v3-demo/index.html
-- Guide complet avec captures d’écran : https://domotikpro.it/progetti/aurora-glass-v3
-- Vidéos pas à pas : https://www.youtube.com/@domotikproit
+- Démonstration en ligne, sans rien installer (en italien) : https://domotikpro.it/aurora-glass-v3-demo/index.html
+- Guide complet avec captures d’écran (en italien) : https://domotikpro.it/progetti/aurora-glass-v3
+- Vidéos pas à pas (en italien): https://www.youtube.com/@domotikproit
 
 | Tablette | Énergie | Téléphone |
 |---|---|---|
