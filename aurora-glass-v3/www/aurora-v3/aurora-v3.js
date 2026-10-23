@@ -2223,16 +2223,84 @@
       var dash = Math.max(0, Math.min(100, (m.power || 0) / m.limit * 100)).toFixed(1);
       $("#en-arc").setAttribute("stroke-dasharray", dash + " 100"); $("#en-glow").setAttribute("stroke-dasharray", dash + " 100");
       $("#en-title").textContent = lv[1];
-      $("#en-sub").textContent =
-        energyLevelLabels().summary +
-        fmtW(m.limit).n + " " + fmtW(m.limit).u;
+      $("#en-sub").textContent = energyLevelLabels().summary + fmtW(m.limit).n + " " + fmtW(m.limit).u;
+      
+      // Instantaneous energy chips.
+      var powerChipTranslations = {
+        it: {
+          changeRate: "Tocca per cambiare la tariffa",
+          currentCost: "Costa adesso",
+          baseline: "Fondo",
+          average: "Media 3 h",
+          voltage: "Tensione"
+        },
+        fr: {
+          changeRate: "Modifier le tarif",
+          currentCost: "Coût actuel",
+          baseline: "Consommation de fond",
+          average: "Moyenne sur 3 h",
+          voltage: "Tension"
+        },
+        en: {
+          changeRate: "Change the rate",
+          currentCost: "Current cost",
+          baseline: "Baseline",
+          average: "3-hour average",
+          voltage: "Voltage"
+        }
+      };
+
+      var powerChipLabels =
+        powerChipTranslations[LANG] || powerChipTranslations.it;
+
       var chips = "";
       EN.pEff = m.pEff;
-      if (m.power !== null && !m.na) chips += '<span class="echip cost" title="Tocca per cambiare la tariffa"><i class="mdi mdi-currency-eur"></i>Costa adesso <b>' + fmtEur(m.power / 1000 * m.pEff) + "/h</b></span>";
-      if (m.base !== null) chips += '<span class="echip"><i class="mdi mdi-sleep"></i>Fondo <b>' + Math.round(m.base) + " W</b></span>";
-      if (m.avg3 !== null) chips += '<span class="echip"><i class="mdi mdi-chart-bell-curve"></i>Media 3 h <b>' + Math.round(m.avg3) + " W</b></span>";
-      if (m.volt !== null) chips += '<span class="echip"><i class="mdi mdi-sine-wave"></i>Tensione <b>' + fmtKwh(m.volt).replace(",0", "") + " V</b></span>";
-      var ch = $("#en-chips"); if (ch.dataset.sig !== chips) { ch.dataset.sig = chips; ch.innerHTML = chips; hydrate(ch); }
+
+      if (m.power !== null && !m.na) {
+        chips +=
+          '<span class="echip cost" title="' +
+          powerChipLabels.changeRate +
+          '"><i class="mdi mdi-currency-eur"></i>' +
+          powerChipLabels.currentCost +
+          ' <b>' +
+          fmtEur(m.power / 1000 * m.pEff) +
+          "/h</b></span>";
+      }
+
+      if (m.base !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-sleep"></i>' +
+          powerChipLabels.baseline +
+          ' <b>' +
+          Math.round(m.base) +
+          " W</b></span>";
+      }
+
+      if (m.avg3 !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-chart-bell-curve"></i>' +
+          powerChipLabels.average +
+          ' <b>' +
+          Math.round(m.avg3) +
+          " W</b></span>";
+      }
+
+      if (m.volt !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-sine-wave"></i>' +
+          powerChipLabels.voltage +
+          ' <b>' +
+          fmtKwh(m.volt).replace(",0", "") +
+          " V</b></span>";
+      }
+
+      var ch = $("#en-chips");
+
+      if (ch.dataset.sig !== chips) {
+        ch.dataset.sig = chips;
+        ch.innerHTML = chips;
+        hydrate(ch);
+      }
       // Energy rate bar.
       var pb = $("#en-price"), P = m.price;
 
