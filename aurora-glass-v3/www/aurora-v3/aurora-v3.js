@@ -2155,14 +2155,65 @@
       m.cToday = cost(m.today, sc.today); m.cYest = cost(m.yest, sc.yest); m.cMonth = cost(m.month, sc.month); m.cLmonth = cost(m.lmonth, sc.lmonth); m.cYear = cost(m.year, sc.year);
       return m;
     }
+    function energyLevelLabels() {
+      var translations = {
+        it: {
+          unavailable: "Dato non disponibile",
+          background: "Solo consumo di fondo",
+          low: "Consumo basso",
+          normal: "Consumo nella norma",
+          high: "Consumo alto",
+          critical: "Attenzione: vicino al limite",
+          summary: "Misura generale della casa · limite di avviso "
+        },
+        fr: {
+          unavailable: "Donnée indisponible",
+          background: "Puissance de fond seulement",
+          low: "Puissance faible",
+          normal: "Puissance modérée",
+          high: "Puissance élevée",
+          critical: "Attention : seuil approché",
+          summary: "Mesure globale de la maison · seuil d’avertissement "
+        },
+        en: {
+          unavailable: "Data unavailable",
+          background: "Background load only",
+          low: "Low power usage",
+          normal: "Moderate power usage",
+          high: "High power usage",
+          critical: "Warning: approaching threshold",
+          summary: "Whole-home measurement · warning threshold "
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function enLevel(m) {
+      var labels = energyLevelLabels();
       var pct = m.power / m.limit;
-      if (m.na) return ["low", "Dato non disponibile", 0];
-      if (m.base && m.power <= m.base * 1.25) return ["low", "Solo consumo di fondo", pct];
-      if (pct < .25) return ["low", "Consumo basso", pct];
-      if (pct < .55) return ["mid", "Consumo nella norma", pct];
-      if (pct < .8) return ["high", "Consumo alto", pct];
-      return ["crit", "Attenzione: vicino al limite", pct];
+
+      if (m.na) {
+        return ["low", labels.unavailable, 0];
+      }
+
+      if (m.base && m.power <= m.base * 1.25) {
+        return ["low", labels.background, pct];
+      }
+
+      if (pct < .25) {
+        return ["low", labels.low, pct];
+      }
+
+      if (pct < .55) {
+        return ["mid", labels.normal, pct];
+      }
+
+      if (pct < .8) {
+        return ["high", labels.high, pct];
+      }
+
+      return ["crit", labels.critical, pct];
     }
     function renderEnergy() {
       if (!$("#en-hero")) return;
@@ -2172,7 +2223,9 @@
       var dash = Math.max(0, Math.min(100, (m.power || 0) / m.limit * 100)).toFixed(1);
       $("#en-arc").setAttribute("stroke-dasharray", dash + " 100"); $("#en-glow").setAttribute("stroke-dasharray", dash + " 100");
       $("#en-title").textContent = lv[1];
-      $("#en-sub").textContent = "Misura generale della casa · limite di avviso " + fmtW(m.limit).n + " " + fmtW(m.limit).u;
+      $("#en-sub").textContent =
+        energyLevelLabels().summary +
+        fmtW(m.limit).n + " " + fmtW(m.limit).u;
       var chips = "";
       EN.pEff = m.pEff;
       if (m.power !== null && !m.na) chips += '<span class="echip cost" title="Tocca per cambiare la tariffa"><i class="mdi mdi-currency-eur"></i>Costa adesso <b>' + fmtEur(m.power / 1000 * m.pEff) + "/h</b></span>";
@@ -3838,7 +3891,7 @@
     }
 
     translateEnergyStaticLabels();
-        
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
