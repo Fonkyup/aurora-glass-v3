@@ -2989,7 +2989,54 @@
     }
 
     translateAlarmLabels();    
+    // Static labels in the alarm code dialog.
+    var CODE_DIALOG_I18N = {
+      it: {
+        title: "Inserisci il codice",
+        cancel: "Annulla",
+        confirm: "Conferma",
+        inputLabel: "Codice allarme"
+      },
+      fr: {
+        title: "Saisir le code",
+        cancel: "Annuler",
+        confirm: "Confirmer",
+        inputLabel: "Code de l’alarme"
+      },
+      en: {
+        title: "Enter the code",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        inputLabel: "Alarm code"
+      }
+    };
 
+    function translateCodeDialog() {
+      var labels = CODE_DIALOG_I18N[LANG] || CODE_DIALOG_I18N.it;
+
+      var targets = [
+        ["#code-title", labels.title],
+        ["#code-cancel", labels.cancel],
+        ["#code-ok", labels.confirm]
+      ];
+
+      targets.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.textContent = item[1];
+        }
+      });
+
+      var input = ROOT.querySelector("#code-in");
+
+      if (input) {
+        input.setAttribute("aria-label", labels.inputLabel);
+      }
+    }
+
+    translateCodeDialog();
+    
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
