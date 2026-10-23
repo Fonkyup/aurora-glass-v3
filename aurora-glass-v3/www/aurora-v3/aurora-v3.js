@@ -2301,9 +2301,8 @@
           : rateLabels.set;
       }
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
-      // KPI
-      var dom = new Date(), dim = new Date(dom.getFullYear(), dom.getMonth() + 1, 0).getDate(), est = (m.month !== null && dom.getDate() > 0) ? m.month / dom.getDate() * dim : null;
-      var periodTranslations = {
+      // Energy KPI labels.
+      var kpiTranslations = {
         it: {
           today: "Oggi",
           yesterday: "Ieri",
@@ -2330,52 +2329,62 @@
         }
       };
 
-      var periodLabels =
-        periodTranslations[LANG] || periodTranslations.it;
+      var kpiLabels = kpiTranslations[LANG] || kpiTranslations.it;
 
-      var monthEstimateText = est !== null
-        ? periodLabels.monthEstimate +
-          Math.round(est) +
-          " kWh" +
-          (
-            m.cMonth !== null
-              ? " · " + fmtEur(m.cMonth / dom.getDate() * dim)
-              : ""
-          )
-        : "";
+      var dom = new Date();
+      var dim = new Date(
+        dom.getFullYear(),
+        dom.getMonth() + 1,
+        0
+      ).getDate();
+
+      var est = (m.month !== null && dom.getDate() > 0)
+        ? m.month / dom.getDate() * dim
+        : null;
 
       var kp = [
         [
           "mdi-calendar-today",
-          periodLabels.today,
+          kpiLabels.today,
           m.today,
           m.cToday,
           ""
         ],
         [
           "mdi-calendar-arrow-left",
-          periodLabels.yesterday,
+          kpiLabels.yesterday,
           m.yest,
           m.cYest,
           ""
         ],
         [
           "mdi-calendar-month",
-          periodLabels.thisMonth,
+          kpiLabels.thisMonth,
           m.month,
           m.cMonth,
-          monthEstimateText
+          est !== null
+            ? kpiLabels.monthEstimate +
+              Math.round(est) +
+              " kWh" +
+              (
+                m.cMonth !== null
+                  ? " · " + fmtEur(
+                      m.cMonth / dom.getDate() * dim
+                    )
+                  : ""
+              )
+            : ""
         ],
         [
           "mdi-calendar-month-outline",
-          periodLabels.lastMonth,
+          kpiLabels.lastMonth,
           m.lmonth,
           m.cLmonth,
           ""
         ],
         [
           "mdi-calendar-star",
-          periodLabels.thisYear,
+          kpiLabels.thisYear,
           m.year,
           m.cYear,
           ""
