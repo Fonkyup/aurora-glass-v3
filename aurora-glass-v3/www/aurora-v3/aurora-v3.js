@@ -1393,11 +1393,28 @@
       });
     }
     function applyWorld() {
-      $("#hero-tag-text").textContent = AMB.W[S.world].name;
+      $("#hero-tag-text").textContent = worldName(S.world);
       buildWindows(); setArt(true); store("world", S.world);
       $$(".wcard").forEach(function (c) { c.classList.toggle("sel", c.dataset.world === S.world); });
     }
-    function setWorld(id, quiet) { S.world = id; applyWorld(); if (!quiet) toast("Mondo: " + AMB.W[id].name, AMB.W[id].icon, "var(--acc-text)"); }
+    function setWorld(id, quiet) {
+      S.world = id;
+      applyWorld();
+
+      if (!quiet) {
+        var prefix = {
+          it: "Mondo: ",
+          fr: "Univers : ",
+          en: "World: "
+        }[LANG] || "Mondo: ";
+
+        toast(
+          prefix + worldName(id),
+          AMB.W[id].icon,
+          "var(--acc-text)"
+        );
+      }
+    }
     function applyHour(h) {
       hour = h;
       var K = AMB.palette(h);
@@ -1461,7 +1478,22 @@
     function buildDrawer() {
       var w = $("#worlds");
       Object.keys(AMB.W).forEach(function (id) {
-        var d = AMB.W[id], b = el("button", "wcard", '<img alt="" draggable="false"><span><i class="mdi ' + d.icon + '"></i>' + d.name + "</span>", { type: "button", "data-world": id, title: d.desc });
+        var d = AMB.W[id];
+
+        var b = el(
+          "button",
+          "wcard",
+          '<img alt="" draggable="false"><span><i class="mdi ' +
+            d.icon +
+            '"></i>' +
+            worldName(id) +
+            "</span>",
+          {
+            type: "button",
+            "data-world": id,
+            title: worldDescription(id)
+          }
+        );
         b.addEventListener("click", function () { setWorld(id); });
         w.appendChild(b);
       });
@@ -2446,6 +2478,116 @@
 
     translateAppearanceSections();
 
+    // World names and tooltip descriptions for this card instance.
+    var WORLD_I18N = {
+      fr: {
+        casetta: [
+          "Maison",
+          "Soleil, lune, nuages et maison aux fenêtres qui s’illuminent"
+        ],
+        citta: [
+          "Ville",
+          "Gratte-ciel, fenêtres éclairées, voitures, avion et enseignes au néon"
+        ],
+        montagna: [
+          "Montagne",
+          "Sommets enneigés, téléphérique, chalet et aurore boréale"
+        ],
+        mare: [
+          "Mer et phare",
+          "Vagues, voilier, mouettes, dauphin et phare au faisceau tournant"
+        ],
+        foresta: [
+          "Forêt magique",
+          "Rayons de soleil, lucioles, champignons lumineux et hibou"
+        ],
+        spazio: [
+          "Espace",
+          "Nébuleuses, planète à anneaux, astronaute, satellite et OVNI"
+        ],
+        giappone: [
+          "Japon",
+          "Mont Fuji, torii, pagode, cerisier et lanternes"
+        ],
+        cyberpunk: [
+          "Cyberpunk",
+          "Métropole au néon sous la pluie, voitures volantes et hologramme"
+        ],
+        natale: [
+          "Noël",
+          "Maison enneigée, lumières colorées, sapin et traîneau du père Noël"
+        ],
+        oceano: [
+          "Océan",
+          "Poissons, méduses lumineuses, baleine, sous-marin et bulles"
+        ]
+      },
+      en: {
+        casetta: [
+          "House",
+          "Sun, moon, clouds and a house with windows that light up"
+        ],
+        citta: [
+          "City",
+          "Skyscrapers, illuminated windows, cars, a plane and neon signs"
+        ],
+        montagna: [
+          "Mountain",
+          "Snowy peaks, cable car, chalet and northern lights"
+        ],
+        mare: [
+          "Sea and lighthouse",
+          "Waves, sailboat, seagulls, dolphin and a rotating lighthouse beam"
+        ],
+        foresta: [
+          "Magic forest",
+          "Sunbeams, fireflies, glowing mushrooms and an owl"
+        ],
+        spazio: [
+          "Space",
+          "Nebulae, ringed planet, astronaut, satellite and UFO"
+        ],
+        giappone: [
+          "Japan",
+          "Mount Fuji, torii gate, pagoda, cherry tree and lanterns"
+        ],
+        cyberpunk: [
+          "Cyberpunk",
+          "Rainy neon metropolis, flying cars and a hologram"
+        ],
+        natale: [
+          "Christmas",
+          "Snow-covered house, colorful lights, Christmas tree and Santa’s sleigh"
+        ],
+        oceano: [
+          "Ocean",
+          "Fish, glowing jellyfish, whale, submarine and bubbles"
+        ]
+      }
+    };
+
+    function worldName(id) {
+      var translations = WORLD_I18N[LANG];
+      var translatedWorld = translations && translations[id];
+
+      if (translatedWorld) {
+        return translatedWorld[0];
+      }
+
+      return AMB.W[id] ? AMB.W[id].name : id;
+    }
+
+    function worldDescription(id) {
+      var translations = WORLD_I18N[LANG];
+      var translatedWorld = translations && translations[id];
+
+      if (translatedWorld) {
+        return translatedWorld[1];
+      }
+
+      return AMB.W[id] ? AMB.W[id].desc : "";
+    }    
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
@@ -2529,7 +2671,7 @@
     }
 
     translateEffectButtons();
-    
+
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
     setBtn(S.btn === "compact" ? "compact" : "img");
     tickDate(); tickClock(); applyWorld();
