@@ -2224,7 +2224,7 @@
       $("#en-arc").setAttribute("stroke-dasharray", dash + " 100"); $("#en-glow").setAttribute("stroke-dasharray", dash + " 100");
       $("#en-title").textContent = lv[1];
       $("#en-sub").textContent = energyLevelLabels().summary + fmtW(m.limit).n + " " + fmtW(m.limit).u;
-      
+
       // Instantaneous energy chips.
       var powerChipTranslations = {
         it: {
@@ -2462,18 +2462,43 @@
       var kh = kp.map(function (k) { return '<article class="card kpi' + (k[2] === null ? " na" : "") + '"><span class="k-l"><i class="mdi ' + k[0] + '"></i>' + k[1] + '</span><span class="k-v">' + fmtKwh(k[2]) + "<small>kWh</small></span><span class=\"k-c\">" + fmtEur(k[3]) + '</span><span class="k-s">' + (k[4] || "&nbsp;") + "</span></article>"; }).join("");
       var kb = $("#en-kpis"); if (kb.dataset.sig !== kh) { kb.dataset.sig = kh; kb.innerHTML = kh; hydrate(kb); }
       // elettrodomestici
+      var applianceTranslations = {
+        it: {
+          other: "Altro (luci, standby…)",
+          noneOn: "Nessun elettrodomestico acceso",
+          todaySuffix: " kWh oggi",
+          unavailable: "Non disponibile"
+        },
+        fr: {
+          other: "Autres (éclairage, veille…)",
+          noneOn: "Aucun appareil au-dessus du seuil d’affichage",
+          todaySuffix: " kWh aujourd’hui",
+          unavailable: "Indisponible"
+        },
+        en: {
+          other: "Other (lights, standby…)",
+          noneOn: "No appliance above the display threshold",
+          todaySuffix: " kWh today",
+          unavailable: "Unavailable"
+        }
+      };
+
+      var applianceLabels =
+        applianceTranslations[LANG] || applianceTranslations.it;      
       var apps = m.apps, sum = 0; apps.forEach(function (x) { if (x.w) sum += x.w; });
       var other = Math.max(0, (m.power || 0) - sum), tot = Math.max(m.power || 0, sum, 1);
       var segs = apps.filter(function (x) { return x.w > 3; }).map(function (x) { return [x.n, x.c, x.w]; });
-      if (other > 3) segs.push(["Altro (luci, standby…)", "#64748B", other]);
+      if (other > 3) {
+        segs.push([applianceLabels.other, "#64748B", other]);
+      }
       var sh = $("#en-share"), shHtml = segs.map(function (g2) { return '<i style="width:' + (g2[2] / tot * 100).toFixed(1) + "%;background:" + g2[1] + '"></i>'; }).join("");
       if (sh.dataset.sig !== shHtml) { sh.dataset.sig = shHtml; sh.innerHTML = shHtml; }
       var lg = $("#en-share-legend");
       if (!lg) { lg = el("div", "share-legend"); lg.id = "en-share-legend"; sh.insertAdjacentElement("afterend", lg); }
-      lg.innerHTML = segs.map(function (g2) { return '<span style="--c:' + g2[1] + '">' + g2[0] + " <b>" + Math.round(g2[2]) + " W</b></span>"; }).join("") || '<span style="--c:#34D399">Nessun elettrodomestico acceso</span>';
+      lg.innerHTML = segs.map(function (g2) { return '<span style="--c:' + g2[1] + '">' + g2[0] + " <b>" + Math.round(g2[2]) + " W</b></span>"; }).join("") || '<span style="--c:#34D399">' + applianceLabels.noneOn + '</span>';
       var ap = $("#en-apps"), ah = apps.map(function (x, i) {
         var run = x.w !== null && x.w >= 5;
-        return '<button class="app' + (run ? " run" : "") + (x.na ? " na" : "") + '" type="button" data-app="' + i + '" style="--c:' + x.c + '"><span class="a-ico"><i class="mdi ' + x.ic + '"></i></span><span class="a-name">' + x.n + '</span><span class="a-w">' + (x.na || x.w === null ? "—" : (x.w >= 1000 ? fmtW(x.w).n + " kW" : Math.round(x.w) + " W")) + '</span><span class="a-e">' + (x.e !== null ? fmtKwh(x.e) + " kWh oggi" : (x.na ? "Non disponibile" : "&nbsp;")) + "</span></button>";
+        return '<button class="app' + (run ? " run" : "") + (x.na ? " na" : "") + '" type="button" data-app="' + i + '" style="--c:' + x.c + '"><span class="a-ico"><i class="mdi ' + x.ic + '"></i></span><span class="a-name">' + x.n + '</span><span class="a-w">' + (x.na || x.w === null ? "—" : (x.w >= 1000 ? fmtW(x.w).n + " kW" : Math.round(x.w) + " W")) + '</span><span class="a-e">' + (x.e !== null ? fmtKwh(x.e) + applianceLabels.todaySuffix : (x.na ? applianceLabels.unavailable : "&nbsp;")) + "</span></button>";
       }).join("");
       if (ap.dataset.sig !== ah) { ap.dataset.sig = ah; ap.innerHTML = ah; hydrate(ap); $$(".app", ap).forEach(function (b) { b.addEventListener("click", function () { if (LIVE) moreInfo(ENT.energy.appliances[+b.dataset.app].p); }); }); }
     }
