@@ -2285,7 +2285,167 @@
     }
 
     translateAppearance();
-            
+    // Section headings and descriptions in the appearance panel.
+    var SECTION_I18N = {
+      it: {
+        headings: [
+          "Mondo",
+          "Ora del giorno",
+          "Meteo ed effetti",
+          "Sorpresa",
+          "Pulsanti"
+        ],
+        descriptions: [
+          "10 paesaggi animati, tutti con alba, giorno, tramonto e notte",
+          "simula cielo e colori",
+          "si sovrappongono a qualsiasi mondo",
+          "",
+          ""
+        ],
+        pageEffect: "Anche sullo sfondo della pagina",
+        pageEffectDescription: "Particelle dietro a tutte le card",
+        cycle: "Cambia mondo ogni 30 secondi",
+        cycleDescription: "Una playlist di paesaggi",
+        timeSlider: "Simula l'ora del giorno",
+        pageToggle: "Effetto su tutta la pagina",
+        cycleToggle: "Cambia mondo automaticamente"
+      },
+      fr: {
+        headings: [
+          "Univers",
+          "Heure de la journée",
+          "Météo et effets",
+          "Surprise",
+          "Boutons"
+        ],
+        descriptions: [
+          "10 paysages animés : aube, jour, crépuscule et nuit",
+          "Simuler le ciel et les couleurs",
+          "Des effets qui se superposent à tous les univers",
+          "",
+          ""
+        ],
+        pageEffect: "Également à l’arrière-plan de la page",
+        pageEffectDescription: "Des particules derrière toutes les cartes",
+        cycle: "Changer d’univers toutes les 30 secondes",
+        cycleDescription: "Un défilement de paysages",
+        timeSlider: "Simuler l’heure de la journée",
+        pageToggle: "Afficher l’effet sur toute la page",
+        cycleToggle: "Changer automatiquement d’univers"
+      },
+      en: {
+        headings: [
+          "World",
+          "Time of day",
+          "Weather and effects",
+          "Surprise",
+          "Buttons"
+        ],
+        descriptions: [
+          "10 animated landscapes: dawn, day, sunset and night",
+          "Simulate the sky and colors",
+          "Effects that overlay any world",
+          "",
+          ""
+        ],
+        pageEffect: "Also on the page background",
+        pageEffectDescription: "Particles behind all cards",
+        cycle: "Change world every 30 seconds",
+        cycleDescription: "A slideshow of landscapes",
+        timeSlider: "Simulate the time of day",
+        pageToggle: "Show the effect across the page",
+        cycleToggle: "Change world automatically"
+      }
+    };
+
+    function translateAppearanceSections() {
+      var labels = SECTION_I18N[LANG] || SECTION_I18N.it;
+
+      // Change direct text without removing icons or descriptions.
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text));
+        }
+      }
+
+      var headings = ROOT.querySelectorAll("#drawer .dr-sec h3");
+
+      Array.prototype.forEach.call(headings, function (heading, index) {
+        if (labels.headings[index] === undefined) {
+          return;
+        }
+
+        setDirectText(heading, labels.headings[index]);
+
+        var description = heading.querySelector("small");
+
+        if (description) {
+          description.textContent = labels.descriptions[index] || "";
+        }
+      });
+
+      function translateToggleRow(selector, text, description, accessibleName) {
+        var toggle = ROOT.querySelector(selector);
+
+        if (!toggle) {
+          return;
+        }
+
+        toggle.setAttribute("aria-label", accessibleName);
+
+        var row = toggle.closest(".row");
+        var label = row ? row.querySelector(".grow") : null;
+
+        if (label) {
+          setDirectText(label, text);
+
+          var small = label.querySelector("small");
+
+          if (small) {
+            small.textContent = description;
+          }
+        }
+      }
+
+      translateToggleRow(
+        "#fx-page-toggle",
+        labels.pageEffect,
+        labels.pageEffectDescription,
+        labels.pageToggle
+      );
+
+      translateToggleRow(
+        "#cycle-toggle",
+        labels.cycle,
+        labels.cycleDescription,
+        labels.cycleToggle
+      );
+
+      var timeSlider = ROOT.querySelector("#phase-range");
+
+      if (timeSlider) {
+        timeSlider.setAttribute("aria-label", labels.timeSlider);
+      }
+    }
+
+    translateAppearanceSections();
+                
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
