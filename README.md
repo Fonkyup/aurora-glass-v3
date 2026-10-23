@@ -1,6 +1,6 @@
 # Aurora Glass v3 — animated dashboard card for Home Assistant
 
-🇮🇹 [Leggi in italiano](README.it.md)
+🇮🇹 [Leggi in italiano](README.it.md) GB [Read in English](README.md) FR [Lire en Français](README.fr.md)
 
 ![Aurora Glass v3](docs/dashboard-casa-notte-intera.webp)
 
