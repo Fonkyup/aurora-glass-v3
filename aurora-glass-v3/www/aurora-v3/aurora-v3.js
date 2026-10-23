@@ -1596,8 +1596,49 @@
     $("#fx-page-toggle").addEventListener("click", function () { S.fxPage = !S.fxPage; applyFx(); });
     var cycleT = 0;
     $("#cycle-toggle").addEventListener("click", function () {
-      S.cycle = !S.cycle; this.setAttribute("aria-pressed", S.cycle ? "true" : "false"); clearInterval(cycleT);
-      if (S.cycle) { cycleT = setInterval(function () { var ids = Object.keys(AMB.W), i = ids.indexOf(S.world); setWorld(ids[(i + 1) % ids.length], true); }, 30000); timers.push(cycleT); toast("Il mondo cambierà ogni 30 secondi", "mdi-shuffle-variant", "var(--acc-text)"); }
+      S.cycle = !S.cycle;
+
+      this.setAttribute(
+        "aria-pressed",
+        S.cycle ? "true" : "false"
+      );
+
+      clearInterval(cycleT);
+
+      if (S.cycle) {
+        cycleT = setInterval(function () {
+          var ids = Object.keys(AMB.W);
+          var i = ids.indexOf(S.world);
+
+          setWorld(ids[(i + 1) % ids.length], true);
+        }, 30000);
+
+        timers.push(cycleT);
+      }
+
+      var cycleMessages = {
+        it: {
+          enabled: "Il mondo cambierà ogni 30 secondi",
+          disabled: "Cambio automatico del mondo disattivato"
+        },
+        fr: {
+          enabled: "L’univers changera toutes les 30 secondes",
+          disabled: "Changement automatique d’univers désactivé"
+        },
+        en: {
+          enabled: "The world will change every 30 seconds",
+          disabled: "Automatic world switching disabled"
+        }
+      };
+
+      var cycleLabels =
+        cycleMessages[LANG] || cycleMessages.it;
+
+      toast(
+        S.cycle ? cycleLabels.enabled : cycleLabels.disabled,
+        "mdi-shuffle-variant",
+        "var(--acc-text)"
+      );
     });
     $$("#btn-style button").forEach(function (b) { b.addEventListener("click", function () { setBtn(b.dataset.v); }); });
     $("#reset-all").addEventListener("click", function () { try { Object.keys(localStorage).filter(function (k) { return k.indexOf("aurora-v3-") === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); });
