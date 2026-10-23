@@ -1320,10 +1320,75 @@
       $("#open-sub").textContent = n === 0 ? (nn ? "Nessuna aperta · " + off : "Tutto chiuso") : n + (n === 1 ? " apertura attiva" : " aperture attive") + (nn ? " · " + off : "");
     }
     function onOpenTap(id) { if (LIVE) moreInfo(ENT.opens[id]); else setOpenUI(id, !OP[id], false); }
+    function motionHistoryLabels() {
+      var translations = {
+        it: {
+          last: "Ultimo movimento: ",
+          now: "adesso",
+          before: "",
+          after: " fa",
+          offlineOne: " sensore offline",
+          offlineMany: " sensori offline",
+          noRecent: "Nessun movimento recente",
+          noneResponding: "Nessun sensore di movimento risponde"
+        },
+        fr: {
+          last: "Dernier mouvement : ",
+          now: "à l’instant",
+          before: "il y a ",
+          after: "",
+          offlineOne: " détecteur hors ligne",
+          offlineMany: " détecteurs hors ligne",
+          noRecent: "Aucun mouvement récent",
+          noneResponding: "Aucun détecteur de mouvement ne répond"
+        },
+        en: {
+          last: "Last motion: ",
+          now: "just now",
+          before: "",
+          after: " ago",
+          offlineOne: " detector offline",
+          offlineMany: " detectors offline",
+          noRecent: "No recent motion",
+          noneResponding: "No motion detector is responding"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function lastMotionText() {
-      if (!lastMotion) return;
-      var s = Math.round((Date.now() - lastAt) / 1000), t = s < 4 ? "adesso" : s < 60 ? s + " s fa" : s < 3600 ? Math.round(s / 60) + " min fa" : Math.round(s / 3600) + " h fa";
-      $("#last-motion").textContent = "Ultimo movimento: " + lastMotion + " · " + t + (motNa ? " · " + motNa + (motNa === 1 ? " sensore offline" : " sensori offline") : "");
+      if (!lastMotion) {
+        return;
+      }
+
+      var labels = motionHistoryLabels();
+      var seconds = Math.max(
+        0,
+        Math.round((Date.now() - lastAt) / 1000)
+      );
+
+      var elapsed;
+
+      if (seconds < 4) {
+        elapsed = labels.now;
+      } else {
+        var duration = seconds < 60
+          ? seconds + " s"
+          : seconds < 3600
+            ? Math.round(seconds / 60) + " min"
+            : Math.round(seconds / 3600) + " h";
+
+        elapsed = labels.before + duration + labels.after;
+      }
+
+      var offline = motNa
+        ? " · " + motNa +
+          (motNa === 1 ? labels.offlineOne : labels.offlineMany)
+        : "";
+
+      $("#last-motion").textContent =
+        labels.last + lastMotion + " · " + elapsed + offline;
     }
 
     /* ------------------------------------------------------------------ viste + dock */
@@ -1627,7 +1692,18 @@
       });
       motNa = mNa;
       $("#hero-motion").textContent = act ? "Movimento: " + act : (mTot && mNa === mTot ? "Sensori di movimento offline" : mNa ? "Nessun movimento · " + mNa + (mNa === 1 ? " sensore offline" : " sensori offline") : "Casa tranquilla");
-      if (newest) { lastMotion = newest.label; lastAt = newest.t.getTime(); lastMotionText(); } else $("#last-motion").textContent = mTot && mNa === mTot ? "Nessun sensore di movimento risponde" : "Nessun movimento recente";
+      if (newest) {
+        lastMotion = newest.label;
+        lastAt = newest.t.getTime();
+        lastMotionText();
+      } else {
+        var historyLabels = motionHistoryLabels();
+
+        $("#last-motion").textContent =
+          mTot && mNa === mTot
+            ? historyLabels.noneResponding
+            : historyLabels.noRecent;
+      }
       // aperture
       Object.keys(OPENS).forEach(function (id) {
         if (!ENT.opens[id]) return;
