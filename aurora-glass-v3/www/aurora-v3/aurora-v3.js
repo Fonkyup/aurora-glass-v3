@@ -882,7 +882,24 @@
    ctx = { root, host, layer, scroll, assets, live, embedded, haIcons, config, call, moreInfo }
    ========================================================================== */
 (function (g) {
-  "use strict";
+  "use strict";    var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
+
+    // Select the language requested in the card configuration.
+    var LANG = String(CFG.language || "it").toLowerCase().split(/[-_]/)[0];
+
+    if (["it", "fr", "en"].indexOf(LANG) === -1) {
+      LANG = "it";
+    }
+
+    var LOCALE = {
+      it: "it-IT",
+      fr: "fr-CA",
+      en: "en-CA"
+    }[LANG];
+
+    // Temporary diagnostic message.
+    console.warn("[Aurora langue test-3] YAML=" + CFG.language + " | LANG=" + LANG + " | LOCALE=" + LOCALE);
+
   g.AuroraApp = function (ctx) {
     var ROOT = ctx.root, HOST = ctx.host, LAYER = ctx.layer || HOST, SCROLL = ctx.scroll || window;
     var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
