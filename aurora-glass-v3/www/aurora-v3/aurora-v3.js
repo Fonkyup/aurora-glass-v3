@@ -2827,8 +2827,55 @@
       svg.innerHTML = '<defs><linearGradient id="enarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc-text)" stop-opacity=".45"/><stop offset="1" stop-color="var(--acc-text)" stop-opacity="0"/></linearGradient></defs>' + grid + bl + '<path class="area" d="' + area + '"/><path class="line" d="' + line + '"/><line class="cursor" id="en-cur" x1="0" x2="0" y1="0" y2="' + H + '" style="display:none"/>';
       var ax = $("#en-axis"), lab = []; for (var k = 0; k < 5; k++) { var tt = t0 + dt * k / 4, d2 = new Date(tt); lab.push("<span>" + (EN.range === "7g" ? ["dom", "lun", "mar", "mer", "gio", "ven", "sab"][d2.getDay()] + " " + pad(d2.getHours()) + "h" : fmtHM(tt)) + "</span>"); }
       ax.innerHTML = lab.join("");
-      var pk = fmtW(peak.v), av = Math.round(sum / data.length);
-      $("#en-stats").innerHTML = '<span class="echip"><i class="mdi mdi-arrow-up-bold"></i>Picco <b>' + pk.n + " " + pk.u + '</b> alle <b>' + fmtHM(peak.t) + '</b></span><span class="echip"><i class="mdi mdi-chart-line"></i>Media <b>' + av + ' W</b></span>' + (base !== null ? '<span class="echip"><i class="mdi mdi-minus"></i>Linea tratteggiata = consumo di fondo</span>' : "");
+            var chartStatTranslations = {
+        it: {
+          peak: "Picco",
+          at: "alle",
+          average: "Media",
+          baseline: "Linea tratteggiata = consumo di fondo"
+        },
+        fr: {
+          peak: "Pic",
+          at: "à",
+          average: "Moyenne",
+          baseline: "Ligne pointillée = consommation de fond"
+        },
+        en: {
+          peak: "Peak",
+          at: "at",
+          average: "Average",
+          baseline: "Dashed line = baseline consumption"
+        }
+      };
+
+      var chartStatLabels =
+        chartStatTranslations[LANG] || chartStatTranslations.it;
+
+      var pk = fmtW(peak.v);
+      var av = Math.round(sum / data.length);
+
+      $("#en-stats").innerHTML =
+        '<span class="echip">' +
+          '<i class="mdi mdi-arrow-up-bold"></i>' +
+          chartStatLabels.peak +
+          ' <b>' + pk.n + " " + pk.u + "</b> " +
+          chartStatLabels.at +
+          ' <b>' + fmtHM(peak.t) + "</b>" +
+        "</span>" +
+        '<span class="echip">' +
+          '<i class="mdi mdi-chart-line"></i>' +
+          chartStatLabels.average +
+          ' <b>' + av + " W</b>" +
+        "</span>" +
+        (
+          base !== null
+            ? '<span class="echip">' +
+                '<i class="mdi mdi-minus"></i>' +
+                chartStatLabels.baseline +
+              "</span>"
+            : ""
+        );
+
       hydrate($("#en-stats"));
       EN.geo = { xs: xs, ys: ys, t0: t0, dt: dt, W: W, data: data };
     }
@@ -4683,7 +4730,7 @@
     }
 
     translateEnergyStaticLabels();
-        
+
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
     var EFFECT_I18N = {
