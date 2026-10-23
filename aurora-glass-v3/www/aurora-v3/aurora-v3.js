@@ -2578,18 +2578,50 @@
     }
     function closePrice() { var box = $("#pricebox"); box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); }
     function prDone(msg) { $("#pr-ok").disabled = false; closePrice(); toast(msg, "mdi-cash-check", "var(--ok)"); renderEnergy(); drawDays(); }
+    function priceSaveLabels() {
+      var translations = {
+        it: {
+          invalid: "Inserisci un prezzo tra 0,001 e 5 €/kWh",
+          saved: "Tariffa salvata: ",
+          local: "Tariffa salvata su questo dispositivo",
+          homeAssistant: "Tariffa salvata in Home Assistant: ",
+          admin: "serve un utente amministratore per salvarla in HA",
+          failed: "non sono riuscito a scriverla in HA"
+        },
+        fr: {
+          invalid: "Saisis un prix entre 0,001 et 5 €/kWh",
+          saved: "Tarif enregistré : ",
+          local: "Tarif enregistré uniquement dans ce navigateur",
+          homeAssistant: "Tarif enregistré dans Home Assistant : ",
+          admin: "un compte administrateur est requis pour l’enregistrer dans Home Assistant",
+          failed: "l’écriture dans Home Assistant a échoué"
+        },
+        en: {
+          invalid: "Enter a price between 0.001 and 5 €/kWh",
+          saved: "Rate saved: ",
+          local: "Rate saved only in this browser",
+          homeAssistant: "Rate saved in Home Assistant: ",
+          admin: "an administrator account is required to save it in Home Assistant",
+          failed: "saving to Home Assistant failed"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function savePrice() {
+      var labels = priceSaveLabels();
+      var v = prNum("#pr-in");      
       var v = prNum("#pr-in");
-      if (v === null || v < 0.001 || v > 5) { toast("Inserisci un prezzo tra 0,001 e 5 €/kWh", "mdi-alert-circle", "var(--warn)"); return; }
+      if (v === null || v < 0.001 || v > 5) { toast(labels.invalid, "mdi-alert-circle", "var(--warn)"); return; }
       v = Math.round(v * 10000) / 10000;
-      if (!LIVE) { store("price", String(v)); prDone("Tariffa salvata: " + fmtP(v) + " €/kWh"); return; }
+      if (!LIVE) { store("price", String(v)); prDone(labels.saved + fmtP(v) + " €/kWh"); return; }
       var id = ENT.energy.price, btn = $("#pr-ok"); btn.disabled = true;
-      var local = function (why) { store("price", String(v)); prDone("Tariffa salvata su questo dispositivo" + (why ? " (" + why + ")" : "")); };
+      var local = function (why) { store("price", String(v)); prDone(labels.local + (why ? " (" + why + ")" : "")); };
       var name = id.split(".")[1].replace(/_/g, " ").replace(/\bkwh\b/i, "kWh"); name = name.charAt(0).toUpperCase() + name.slice(1);
       var req = sv(id) ? Promise.resolve(ctx.call("input_number", "set_value", { entity_id: id, value: v }))
         : HASS.callWS({ type: "input_number/create", name: name, icon: "mdi:cash-multiple", min: 0, max: 5, step: 0.001, mode: "box", unit_of_measurement: "€/kWh", initial: v });
-      req.then(function () { PEND = { v: v, src: "ha", until: Date.now() + 8000 }; prDone("Tariffa salvata in Home Assistant: " + fmtP(v) + " €/kWh"); })
-        .catch(function (e) { local(/unauthor|admin|permission/i.test((e && e.message) || (e && e.code) || "") ? "serve un utente amministratore per salvarla in HA" : "non sono riuscito a scriverla in HA"); });
+      req.then(function () { PEND = { v: v, src: "ha", until: Date.now() + 8000 }; prDone(labels.homeAssistant + fmtP(v) + " €/kWh"); })
+        .catch(function (e) { local(/unauthor|admin|permission/i.test((e && e.message) || (e && e.code) || "") ? labels.admin : labels.failed); });
     }
     function buildPrice() {
       var open = function () { openPrice(); };
