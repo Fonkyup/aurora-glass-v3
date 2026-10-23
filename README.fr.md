@@ -1,7 +1,7 @@
 
 # Aurora Glass v3 — Tableau de bord animé pour Home Assistant
 
-🇬🇧 [Lire en anglais](README.md) · 🇮🇹 [Lire en italien](README.it.md)
+🇬🇧 [Read in english](README.md) · 🇮🇹 [Leggi in italiano](README.it.md)
 
 ![Aurora Glass v3](docs/dashboard-casa-notte-intera.webp)
 
