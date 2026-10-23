@@ -1690,15 +1690,37 @@
         lib.appendChild(c);
       });
     }
+    function imageImportLabels() {
+      var translations = {
+        it: {
+          invalidType: "Scegli un file immagine: PNG, JPG, GIF, WebP",
+          tooLarge: "File troppo pesante: massimo 3 MB",
+          updated: "Immagine aggiornata"
+        },
+        fr: {
+          invalidType: "Choisis un fichier image : PNG, JPG, GIF ou WebP",
+          tooLarge: "Fichier trop volumineux : maximum 3 Mo",
+          updated: "Image mise à jour"
+        },
+        en: {
+          invalidType: "Choose an image file: PNG, JPG, GIF or WebP",
+          tooLarge: "File too large: maximum 3 MB",
+          updated: "Image updated"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function readFile(file, slot) {
-      if (!/^image\//.test(file.type)) { toast("Scegli un file immagine (PNG, JPG, GIF, WebP)", "mdi-alert-circle", "var(--warn)"); return; }
-      if (file.size > 3 * 1024 * 1024) { toast("File troppo pesante (massimo 3 MB)", "mdi-alert-circle", "var(--warn)"); return; }
+      var labels = imageImportLabels();
+      if (!/^image\//.test(file.type)) { toast(labels.invalidType, "mdi-alert-circle", "var(--warn)"); return; }
+      if (file.size > 3 * 1024 * 1024) { toast(labels.tooLarge, "mdi-alert-circle", "var(--warn)"); return; }
       var fr = new FileReader();
       fr.onload = function () {
         var prev = OV[edOv] ? JSON.parse(JSON.stringify(OV[edOv])) : null;
         OV[edOv] = OV[edOv] || {}; OV[edOv][slot] = fr.result;
         if (!saveOV()) { if (prev) OV[edOv] = prev; else delete OV[edOv]; return; }
-        refreshAll(); renderEditor(); toast("Immagine aggiornata", "mdi-image-check", "var(--ok)");
+        refreshAll(); renderEditor(); toast(labels.updated, "mdi-image-check", "var(--ok)");
       };
       fr.readAsDataURL(file);
     }
