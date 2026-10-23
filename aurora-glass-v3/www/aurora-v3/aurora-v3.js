@@ -2461,22 +2461,120 @@
       }
     }
     function openPrice() {
-      var m = enModel(), cur = m.price.v > 0 ? m.price.v : m.pEff, box = $("#pricebox");
+      var translations = {
+        it: {
+          sensorsBefore: "I sensori che avevi già calcolano i costi a circa ",
+          sensorsAfter: ".",
+          useValue: "Usa questo",
+          preview: "Anteprima: la tariffa resta salvata solo in questo browser.",
+          savedBefore: "Viene salvata in Home Assistant (",
+          savedAfter: "): vale su tutti i tuoi dispositivi.",
+          createBefore: "Al primo salvataggio creo in Home Assistant l'helper ",
+          createAfter: " (serve un utente amministratore); altrimenti resta su questo dispositivo."
+        },
+        fr: {
+          sensorsBefore: "Les coûts de tes capteurs correspondent à environ ",
+          sensorsAfter: ".",
+          useValue: "Utiliser cette valeur",
+          preview: "Démonstration : le tarif reste enregistré uniquement dans ce navigateur.",
+          savedBefore: "Le tarif sera enregistré dans Home Assistant (",
+          savedAfter: ") et pourra être utilisé par cette carte sur tes autres appareils.",
+          createBefore: "Au premier enregistrement, la carte tentera de créer dans Home Assistant le helper ",
+          createAfter: " (compte administrateur requis). En cas d’échec, le tarif sera conservé uniquement dans ce navigateur."
+        },
+        en: {
+          sensorsBefore: "Your sensor costs correspond to approximately ",
+          sensorsAfter: ".",
+          useValue: "Use this value",
+          preview: "Preview: the rate is saved only in this browser.",
+          savedBefore: "The rate will be saved in Home Assistant (",
+          savedAfter: ") and can be used by this card on your other devices.",
+          createBefore: "On first save, the card will attempt to create the Home Assistant helper ",
+          createAfter: " (administrator account required). If this fails, the rate will be saved only in this browser."
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var m = enModel();
+      var cur = m.price.v > 0 ? m.price.v : m.pEff;
+      var box = $("#pricebox");
+
       prSet(cur);
-      var pre = $("#pr-pre"); pre.innerHTML = "";
-      [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50].forEach(function (v) { var b = el("button", "", fmtP(v).slice(0, 4), { type: "button", "data-v": v }); b.addEventListener("click", function () { prSet(v); }); pre.appendChild(b); });
+
+      var pre = $("#pr-pre");
+      pre.innerHTML = "";
+
+      [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50].forEach(
+        function (value) {
+          var button = el(
+            "button",
+            "",
+            fmtP(value).slice(0, 4),
+            {
+              type: "button",
+              "data-v": value
+            }
+          );
+
+          button.addEventListener("click", function () {
+            prSet(value);
+          });
+
+          pre.appendChild(button);
+        }
+      );
+
       prMark();
-      var h = $("#pr-hint");
+
+      var hint = $("#pr-hint");
+
       if (m.implied > 0 && m.price.v <= 0) {
-        h.hidden = false; h.innerHTML = "I sensori che avevi già calcolano i costi a circa <b>" + fmtP(m.implied) + " €/kWh</b>.";
-        var u = el("button", "linkb", "Usa questo", { type: "button" }); u.addEventListener("click", function () { prSet(m.implied); }); h.appendChild(u);
-      } else h.hidden = true;
-      $("#pr-bill").value = ""; $("#pr-kwh").value = ""; $("#pr-calc-out").textContent = ""; $("#pr-calc").open = false;
-      $("#pr-where").textContent = !LIVE ? "Anteprima: la tariffa resta salvata solo in questo browser."
-        : sv(ENT.energy.price) ? "Viene salvata in Home Assistant (" + ENT.energy.price + "): vale su tutti i tuoi dispositivi."
-        : "Al primo salvataggio creo in Home Assistant l'helper " + ENT.energy.price + " (serve un utente amministratore); altrimenti resta su questo dispositivo.";
-      box.classList.add("open"); box.setAttribute("aria-hidden", "false");
-      later(function () { var i = $("#pr-in"); i.focus(); i.select(); }, 220);
+        hint.hidden = false;
+
+        hint.innerHTML =
+          labels.sensorsBefore +
+          "<b>" + fmtP(m.implied) + " €/kWh</b>" +
+          labels.sensorsAfter;
+
+        var useButton = el(
+          "button",
+          "linkb",
+          labels.useValue,
+          { type: "button" }
+        );
+
+        useButton.addEventListener("click", function () {
+          prSet(m.implied);
+        });
+
+        hint.appendChild(useButton);
+      } else {
+        hint.hidden = true;
+      }
+
+      $("#pr-bill").value = "";
+      $("#pr-kwh").value = "";
+      $("#pr-calc-out").textContent = "";
+      $("#pr-calc").open = false;
+
+      $("#pr-where").textContent = !LIVE
+        ? labels.preview
+        : sv(ENT.energy.price)
+          ? labels.savedBefore +
+            ENT.energy.price +
+            labels.savedAfter
+          : labels.createBefore +
+            ENT.energy.price +
+            labels.createAfter;
+
+      box.classList.add("open");
+      box.setAttribute("aria-hidden", "false");
+
+      later(function () {
+        var input = $("#pr-in");
+        input.focus();
+        input.select();
+      }, 220);
     }
     function closePrice() { var box = $("#pricebox"); box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); }
     function prDone(msg) { $("#pr-ok").disabled = false; closePrice(); toast(msg, "mdi-cash-check", "var(--ok)"); renderEnergy(); drawDays(); }
