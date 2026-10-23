@@ -2825,9 +2825,40 @@
       var grid = [.25, .5, .75].map(function (g3) { return '<line class="grid" x1="0" x2="' + W + '" y1="' + ys(top * g3).toFixed(1) + '" y2="' + ys(top * g3).toFixed(1) + '"/>'; }).join("");
       var bl = base !== null && base < top ? '<line class="base" x1="0" x2="' + W + '" y1="' + ys(base).toFixed(1) + '" y2="' + ys(base).toFixed(1) + '"/>' : "";
       svg.innerHTML = '<defs><linearGradient id="enarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc-text)" stop-opacity=".45"/><stop offset="1" stop-color="var(--acc-text)" stop-opacity="0"/></linearGradient></defs>' + grid + bl + '<path class="area" d="' + area + '"/><path class="line" d="' + line + '"/><line class="cursor" id="en-cur" x1="0" x2="0" y1="0" y2="' + H + '" style="display:none"/>';
-      var ax = $("#en-axis"), lab = []; for (var k = 0; k < 5; k++) { var tt = t0 + dt * k / 4, d2 = new Date(tt); lab.push("<span>" + (EN.range === "7g" ? ["dom", "lun", "mar", "mer", "gio", "ven", "sab"][d2.getDay()] + " " + pad(d2.getHours()) + "h" : fmtHM(tt)) + "</span>"); }
+      var chartAxisTranslations = {
+        it: {
+          weekdays: ["dom", "lun", "mar", "mer", "gio", "ven", "sab"]
+        },
+        fr: {
+          weekdays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."]
+        },
+        en: {
+          weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        }
+      };
+
+      var chartAxisLabels =
+        chartAxisTranslations[LANG] || chartAxisTranslations.it;
+
+      var ax = $("#en-axis");
+      var lab = [];
+
+      for (var k = 0; k < 5; k++) {
+        var tt = t0 + dt * k / 4;
+        var d2 = new Date(tt);
+
+        var axisLabel = EN.range === "7g"
+          ? chartAxisLabels.weekdays[d2.getDay()] +
+            " " +
+            pad(d2.getHours()) +
+            " h"
+          : fmtHM(tt);
+
+        lab.push("<span>" + axisLabel + "</span>");
+      }
+
       ax.innerHTML = lab.join("");
-            var chartStatTranslations = {
+      var chartStatTranslations = {
         it: {
           peak: "Picco",
           at: "alle",
