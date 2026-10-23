@@ -1680,12 +1680,39 @@
     }, true);
 
     var edBase = "", edOv = "", edTab = 0;
+    function imageEditorHeaderLabels() {
+      var translations = {
+        it: {
+          title: "Modifica immagine",
+          pair: "Un’immagine da spento (PNG) e una da acceso (meglio una GIF animata)",
+          single: "L’immagine mostrata per questo stato"
+        },
+        fr: {
+          title: "Modifier l’image",
+          pair: "Une image pour l’état éteint (PNG) et une pour l’état allumé (de préférence un GIF animé)",
+          single: "L’image affichée pour cet état"
+        },
+        en: {
+          title: "Edit image",
+          pair: "One image for the off state (PNG) and one for the on state (preferably an animated GIF)",
+          single: "The image displayed for this state"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function openEditor(node) {
       edBase = node.dataset.img; edOv = node.dataset.ov || edBase;
       var b = IMG[edBase]; edTab = 0;
       LIBGROUPS.forEach(function (g2, i) { if (edBase.indexOf(g2[1]) === 0) edTab = i; });
-      $("#ed-title").textContent = node.dataset.label || "Modifica immagine";
-      $("#ed-sub").textContent = b.kind === "pair" ? "Un'immagine da spento (PNG) e una da acceso (meglio una GIF animata)" : "L'immagine mostrata per questo stato";
+      var headerLabels = imageEditorHeaderLabels();
+
+      $("#ed-title").textContent =
+        node.dataset.label || headerLabels.title;
+
+      $("#ed-sub").textContent = b.kind === "pair"
+        ? headerLabels.pair
+        : headerLabels.single;
       renderEditor();
       $("#editor").classList.add("open"); $("#editor").setAttribute("aria-hidden", "false");
     }
