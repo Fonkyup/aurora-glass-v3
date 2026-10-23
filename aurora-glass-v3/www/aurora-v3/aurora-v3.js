@@ -2142,6 +2142,75 @@
     /* ------------------------------------------------------------------ avvio */
     if (LIVE) { HOST.setAttribute("data-live", "1"); var fnote = $("footer.note"); if (fnote) fnote.textContent = "Aurora Glass v3 · collegata a Home Assistant"; }
     if (EMB) HOST.setAttribute("data-embedded", "1");
+    // Navigation labels for the selected language.
+    var NAV_I18N = {
+      it: {
+        home: "Casa",
+        security: "Sicurezza",
+        energy: "Energia",
+        scenes: "Scene",
+        allOff: "Spegni tutto",
+        appearance: "Stile",
+        navigation: "Navigazione"
+      },
+      fr: {
+        home: "Maison",
+        security: "Sécurité",
+        energy: "Énergie",
+        scenes: "Scènes",
+        allOff: "Tout éteindre",
+        appearance: "Apparence",
+        navigation: "Navigation"
+      },
+      en: {
+        home: "Home",
+        security: "Security",
+        energy: "Energy",
+        scenes: "Scenes",
+        allOff: "Turn all off",
+        appearance: "Appearance",
+        navigation: "Navigation"
+      }
+    };
+
+    function translateNavigation() {
+      var labels = NAV_I18N[LANG] || NAV_I18N.it;
+
+      var targets = [
+        ['.dock [data-view="home"]', labels.home],
+        ['.dock [data-view="sic"]', labels.security],
+        ['.dock [data-view="en"]', labels.energy],
+        ['#dock-scenes', labels.scenes],
+        ['#dock-off', labels.allOff],
+        ['#dock-style', labels.appearance],
+        ['#style-btn', labels.appearance]
+      ];
+
+      targets.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (!button) {
+          return;
+        }
+
+        var label = button.querySelector("span");
+
+        if (label) {
+          label.textContent = item[1];
+        }
+
+        button.setAttribute("aria-label", item[1]);
+      });
+
+      var navigation = ROOT.querySelector(".dock");
+
+      if (navigation) {
+        navigation.setAttribute("aria-label", labels.navigation);
+      }
+    }
+
+    translateNavigation();
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
