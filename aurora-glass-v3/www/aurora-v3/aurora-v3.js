@@ -1690,13 +1690,53 @@
       $("#editor").classList.add("open"); $("#editor").setAttribute("aria-hidden", "false");
     }
     function closeEditor() { $("#editor").classList.remove("open"); $("#editor").setAttribute("aria-hidden", "true"); }
+    function imageSlotLabels() {
+      var translations = {
+        it: {
+          off: "Spento",
+          on: "Acceso",
+          image: "Immagine",
+          chooseFile: "Clic o trascina un file"
+        },
+        fr: {
+          off: "Éteint",
+          on: "Allumé",
+          image: "Image",
+          chooseFile: "Cliquer ou déposer un fichier"
+        },
+        en: {
+          off: "Off",
+          on: "On",
+          image: "Image",
+          chooseFile: "Click or drop a file"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function slotHTML(label, slot) {
-      return '<div class="slot"><h4>' + label + '</h4><label class="drop" data-slot="' + slot + '"><img alt="" src="' + resolve(edOv, edBase, slot === "on") + '"><span class="hintt">Clic o trascina un file</span><input type="file" accept="image/*"></label></div>';
+      var labels = imageSlotLabels();
+
+      return (
+        '<div class="slot">' +
+          "<h4>" + label + "</h4>" +
+          '<label class="drop" data-slot="' + slot + '">' +
+            '<img alt="" src="' +
+              resolve(edOv, edBase, slot === "on") +
+            '">' +
+            '<span class="hintt">' +
+              labels.chooseFile +
+            "</span>" +
+            '<input type="file" accept="image/*">' +
+          "</label>" +
+        "</div>"
+      );
     }
     function renderEditor() {
+      var slotLabels = imageSlotLabels();
       var b = IMG[edBase], slots = $("#ed-slots");
-      if (b.kind === "pair") { slots.className = "slots"; slots.innerHTML = slotHTML("Spento", "off") + slotHTML("Acceso", "on"); }
-      else { slots.className = "slots one"; slots.innerHTML = '<div class="slot"><h4>Immagine</h4><label class="drop" data-slot="src"><img alt="" src="' + resolve(edOv, edBase, true) + '"><span class="hintt">Clic o trascina un file</span><input type="file" accept="image/*"></label></div>'; }
+      if (b.kind === "pair") { slots.className = "slots"; slots.innerHTML = slotHTML(slotLabels.off, "off") + slotHTML(slotLabels.on, "on"); }
+      else { slots.className = "slots one"; slots.innerHTML = slotHTML(slotLabels.image, "src"); }
       $$(".drop", slots).forEach(function (d) {
         var slot = d.dataset.slot;
         $("input", d).addEventListener("change", function (e) { if (e.target.files[0]) readFile(e.target.files[0], slot); });
