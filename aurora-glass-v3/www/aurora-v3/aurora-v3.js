@@ -2245,10 +2245,85 @@
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
       // KPI
       var dom = new Date(), dim = new Date(dom.getFullYear(), dom.getMonth() + 1, 0).getDate(), est = (m.month !== null && dom.getDate() > 0) ? m.month / dom.getDate() * dim : null;
+      var periodTranslations = {
+        it: {
+          today: "Oggi",
+          yesterday: "Ieri",
+          thisMonth: "Questo mese",
+          lastMonth: "Mese scorso",
+          thisYear: "Quest'anno",
+          monthEstimate: "Stima fine mese ≈ "
+        },
+        fr: {
+          today: "Aujourd’hui",
+          yesterday: "Hier",
+          thisMonth: "Ce mois-ci",
+          lastMonth: "Mois dernier",
+          thisYear: "Cette année",
+          monthEstimate: "Estimation de fin de mois ≈ "
+        },
+        en: {
+          today: "Today",
+          yesterday: "Yesterday",
+          thisMonth: "This month",
+          lastMonth: "Last month",
+          thisYear: "This year",
+          monthEstimate: "Month-end estimate ≈ "
+        }
+      };
+
+      var periodLabels =
+        periodTranslations[LANG] || periodTranslations.it;
+
+      var monthEstimateText = est !== null
+        ? periodLabels.monthEstimate +
+          Math.round(est) +
+          " kWh" +
+          (
+            m.cMonth !== null
+              ? " · " + fmtEur(m.cMonth / dom.getDate() * dim)
+              : ""
+          )
+        : "";
+
       var kp = [
-        ["mdi-calendar-today", "Oggi", m.today, m.cToday, ""], ["mdi-calendar-arrow-left", "Ieri", m.yest, m.cYest, ""],
-        ["mdi-calendar-month", "Questo mese", m.month, m.cMonth, est !== null ? "Stima fine mese ≈ " + Math.round(est) + " kWh" + (m.cMonth !== null ? " · " + fmtEur(m.cMonth / dom.getDate() * dim) : "") : ""],
-        ["mdi-calendar-month-outline", "Mese scorso", m.lmonth, m.cLmonth, ""], ["mdi-calendar-star", "Quest'anno", m.year, m.cYear, ""]];
+        [
+          "mdi-calendar-today",
+          periodLabels.today,
+          m.today,
+          m.cToday,
+          ""
+        ],
+        [
+          "mdi-calendar-arrow-left",
+          periodLabels.yesterday,
+          m.yest,
+          m.cYest,
+          ""
+        ],
+        [
+          "mdi-calendar-month",
+          periodLabels.thisMonth,
+          m.month,
+          m.cMonth,
+          monthEstimateText
+        ],
+        [
+          "mdi-calendar-month-outline",
+          periodLabels.lastMonth,
+          m.lmonth,
+          m.cLmonth,
+          ""
+        ],
+        [
+          "mdi-calendar-star",
+          periodLabels.thisYear,
+          m.year,
+          m.cYear,
+          ""
+        ]
+      ];
+      
       var kh = kp.map(function (k) { return '<article class="card kpi' + (k[2] === null ? " na" : "") + '"><span class="k-l"><i class="mdi ' + k[0] + '"></i>' + k[1] + '</span><span class="k-v">' + fmtKwh(k[2]) + "<small>kWh</small></span><span class=\"k-c\">" + fmtEur(k[3]) + '</span><span class="k-s">' + (k[4] || "&nbsp;") + "</span></article>"; }).join("");
       var kb = $("#en-kpis"); if (kb.dataset.sig !== kh) { kb.dataset.sig = kh; kb.innerHTML = kh; hydrate(kb); }
       // elettrodomestici
