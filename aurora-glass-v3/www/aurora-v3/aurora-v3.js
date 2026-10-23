@@ -1935,7 +1935,7 @@
           hintText.raise;
       }
 
-      
+
       var hn = $("#cl-hint"); hn.textContent = hint; hn.hidden = !hint;
       $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       var art = $("#cl-art"); art.dataset.img = climaArt(); refreshImg(art);
@@ -1960,16 +1960,89 @@
       if (local) local();
       renderClima();
     }
-    function climaToast(m, nt) {
-      var lab = (CL_MODES.filter(function (x) { return x[0] === m; })[0] || [0, m])[1];
-      if (!LIVE) { toast("Clima: " + CL_STATUS[m] + (nt !== null ? " a " + fmt(nt) + "° (in casa " + fmt(clima.cur) + "°)" : ""), "mdi-air-conditioner", CL_COL[m]); return; }
-      toast("Clima: comando «" + lab + "»" + (nt !== null ? " a " + fmt(nt) + "°" : "") + " inviato", "mdi-air-conditioner", CL_COL[m]);
+    function climateCommandLabels() {
+      var translations = {
+        it: {
+          prefix: "Clima: ",
+          command: "comando «",
+          endQuote: "»",
+          target: " a ",
+          indoors: " (in casa ",
+          sent: " inviato",
+          unavailable: "Climatizzatore non raggiungibile: nessun comando inviato"
+        },
+        fr: {
+          prefix: "Climat : ",
+          command: "commande « ",
+          endQuote: " »",
+          target: " à ",
+          indoors: " (à l’intérieur ",
+          sent: " envoyée",
+          unavailable: "Appareil indisponible : aucune commande envoyée"
+        },
+        en: {
+          prefix: "Climate: ",
+          command: "command “",
+          endQuote: "”",
+          target: " at ",
+          indoors: " (indoors ",
+          sent: " sent",
+          unavailable: "Device unavailable: no command sent"
+        }
+      };
+
+      return translations[LANG] || translations.it;
     }
+
+    function climaToast(m, nt) {
+      var labels = climateCommandLabels();
+
+      var mode = CL_MODES.filter(function (item) {
+        return item[0] === m;
+      })[0];
+
+      var modeName = mode ? mode[1] : m;
+
+      var targetText = nt !== null && nt !== undefined
+        ? labels.target + fmt(nt) + "°"
+        : "";
+
+      if (!LIVE) {
+        var indoorsText = nt !== null && nt !== undefined
+          ? labels.indoors + fmt(clima.cur) + "°)"
+          : "";
+
+        toast(
+          labels.prefix + (CL_STATUS[m] || modeName) +
+            targetText + indoorsText,
+          "mdi-air-conditioner",
+          CL_COL[m]
+        );
+
+        return;
+      }
+
+      toast(
+        labels.prefix + labels.command + modeName +
+          labels.endQuote + targetText + labels.sent,
+        "mdi-air-conditioner",
+        CL_COL[m]
+      );
+    }
+
     function buildClima() {
       if (!$("#clima")) return;
       $("#cl-modes").addEventListener("click", function (e) {
         var b = e.target.closest("[data-mode]"); if (!b) return; var m = b.dataset.mode, wasOff = clima.mode === "off";
-        if (LIVE && !clima.avail) { toast("Climatizzatore non raggiungibile: nessun comando inviato", "mdi-alert-circle", "var(--warn)"); return; }
+        if (LIVE && !clima.avail) {
+          toast(
+            climateCommandLabels().unavailable,
+            "mdi-alert-circle",
+            "var(--warn)"
+          );
+
+          return;
+        }
         climaCall(m === "off" ? "turn_off" : "set_hvac_mode", m === "off" ? {} : { hvac_mode: m }, function () { clima.mode = m; clima.action = m === "off" ? "off" : ""; });
         // accendendo in freddo/caldo, se la temperatura impostata non farebbe partire nulla, la porto 2° oltre quella di casa
         var nt = null, st = clima.step || .5;
