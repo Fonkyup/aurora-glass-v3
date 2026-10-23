@@ -2233,79 +2233,72 @@
       if (m.avg3 !== null) chips += '<span class="echip"><i class="mdi mdi-chart-bell-curve"></i>Media 3 h <b>' + Math.round(m.avg3) + " W</b></span>";
       if (m.volt !== null) chips += '<span class="echip"><i class="mdi mdi-sine-wave"></i>Tensione <b>' + fmtKwh(m.volt).replace(",0", "") + " V</b></span>";
       var ch = $("#en-chips"); if (ch.dataset.sig !== chips) { ch.dataset.sig = chips; ch.innerHTML = chips; hydrate(ch); }
-      // tariffa
+      // Energy rate bar.
       var pb = $("#en-price"), P = m.price;
-      var tariffTranslations = {
-        it: {
-          tariff: "Tariffa ",
-          unset: "Tariffa non impostata",
-          example: "Tariffa di esempio ",
-          savedHA: "Salvata in Home Assistant · ogni costo è kWh × tariffa",
-          savedLocal: "Salvata su questo dispositivo · ogni costo è kWh × tariffa",
-          sensorsBefore: "I costi arrivano dai tuoi sensori (≈ ",
-          sensorsAfter: " €/kWh). Imposta la tariffa della bolletta per i costi reali",
-          configure: "Imposta il prezzo della tua bolletta per vedere i costi reali",
-          edit: "Modifica",
-          set: "Imposta",
-          accessibleName: "Imposta la tariffa dell’energia"
-        },
-        fr: {
-          tariff: "Tarif ",
-          unset: "Tarif non défini",
-          example: "Tarif d’exemple ",
-          savedHA: "Enregistré dans Home Assistant · coût = kWh × tarif",
-          savedLocal: "Enregistré sur cet appareil · coût = kWh × tarif",
-          sensorsBefore: "Les coûts proviennent de tes capteurs (≈ ",
-          sensorsAfter: " €/kWh). Définis le tarif de ta facture pour le calcul des coûts",
-          configure: "Définis le tarif de ta facture pour le calcul des coûts",
-          edit: "Modifier",
-          set: "Définir",
-          accessibleName: "Définir le tarif de l’énergie"
-        },
-        en: {
-          tariff: "Rate ",
-          unset: "Rate not set",
-          example: "Example rate ",
-          savedHA: "Saved in Home Assistant · cost = kWh × rate",
-          savedLocal: "Saved on this device · cost = kWh × rate",
-          sensorsBefore: "Costs come from your sensors (≈ ",
-          sensorsAfter: " €/kWh). Set your electricity bill rate to calculate costs",
-          configure: "Set your electricity bill rate to calculate costs",
-          edit: "Edit",
-          set: "Set",
-          accessibleName: "Set the energy rate"
-        }
-      };
-
-      var tariffText =
-        tariffTranslations[LANG] || tariffTranslations.it;
-
-      var pb = $("#en-price");
-      var P = m.price;
 
       if (pb) {
+        var rateTranslations = {
+          it: {
+            rate: "Tariffa ",
+            unset: "Tariffa non impostata",
+            example: "Tariffa di esempio ",
+            savedHA: "Salvata in Home Assistant · ogni costo è kWh × tariffa",
+            savedLocal: "Salvata su questo dispositivo · ogni costo è kWh × tariffa",
+            sensorsBefore: "I costi arrivano dai tuoi sensori (≈ ",
+            sensorsAfter: " €/kWh). Imposta la tariffa della bolletta per i costi reali",
+            prompt: "Imposta il prezzo della tua bolletta per vedere i costi reali",
+            edit: "Modifica",
+            set: "Imposta"
+          },
+          fr: {
+            rate: "Tarif ",
+            unset: "Tarif non défini",
+            example: "Tarif de démonstration ",
+            savedHA: "Enregistré dans Home Assistant · coût = kWh × tarif",
+            savedLocal: "Enregistré dans ce navigateur · coût = kWh × tarif",
+            sensorsBefore: "Les coûts proviennent de tes capteurs (≈ ",
+            sensorsAfter: " €/kWh). Définis le tarif de ta facture pour calculer les coûts avec ce tarif",
+            prompt: "Définis le tarif de ta facture pour estimer les coûts",
+            edit: "Modifier",
+            set: "Définir"
+          },
+          en: {
+            rate: "Rate ",
+            unset: "Rate not set",
+            example: "Demo rate ",
+            savedHA: "Saved in Home Assistant · cost = kWh × rate",
+            savedLocal: "Saved in this browser · cost = kWh × rate",
+            sensorsBefore: "Costs come from your sensors (≈ ",
+            sensorsAfter: " €/kWh). Set your bill rate to calculate costs using that rate",
+            prompt: "Set your bill rate to estimate costs",
+            edit: "Edit",
+            set: "Set"
+          }
+        };
+
+        var rateLabels = rateTranslations[LANG] || rateTranslations.it;
+
         pb.classList.toggle("unset", P.v <= 0);
-        pb.setAttribute("aria-label", tariffText.accessibleName);
 
         $("#pb-main").textContent = P.v > 0
-          ? tariffText.tariff + fmtP(P.v) + " €/kWh"
+          ? rateLabels.rate + fmtP(P.v) + " €/kWh"
           : m.src === "sensori"
-            ? tariffText.unset
-            : tariffText.example + fmtP(m.pEff) + " €/kWh";
+            ? rateLabels.unset
+            : rateLabels.example + fmtP(m.pEff) + " €/kWh";
 
         $("#pb-sub").textContent = P.src === "ha"
-          ? tariffText.savedHA
+          ? rateLabels.savedHA
           : P.src === "local"
-            ? tariffText.savedLocal
+            ? rateLabels.savedLocal
             : m.src === "sensori"
-              ? tariffText.sensorsBefore +
+              ? rateLabels.sensorsBefore +
                 fmtP(m.pEff) +
-                tariffText.sensorsAfter
-              : tariffText.configure;
+                rateLabels.sensorsAfter
+              : rateLabels.prompt;
 
         $("#pb-cta").textContent = P.v > 0
-          ? tariffText.edit
-          : tariffText.set;
+          ? rateLabels.edit
+          : rateLabels.set;
       }
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
       // KPI
