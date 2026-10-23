@@ -1326,8 +1326,11 @@
         }
       });
       var n = Object.keys(OP).filter(function (k) { return OP[k] && (!LIVE || ENT.opens[k]); }).length;
-      var nn = Object.keys(OPNA).filter(function (k) { return OPNA[k] && (!LIVE || ENT.opens[k]); }).length, off = nn ? nn + (nn === 1 ? " sensore offline" : " sensori offline") : "";
-      $("#open-sub").textContent = n === 0 ? (nn ? "Nessuna aperta · " + off : "Tutto chiuso") : n + (n === 1 ? " apertura attiva" : " aperture attive") + (nn ? " · " + off : "");
+      var nn = Object.keys(OPNA).filter(function (k) {
+        return OPNA[k] && (!LIVE || ENT.opens[k]);
+      }).length;
+
+      $("#open-sub").textContent = openingSummaryLabel(n, nn);
     }
     function onOpenTap(id) { if (LIVE) moreInfo(ENT.opens[id]); else setOpenUI(id, !OP[id], false); }
     function motionHistoryLabels() {
@@ -3265,6 +3268,96 @@
     }
 
     translateOpeningLabels();
+
+    // Security section headings and opening summary.
+    var SECURITY_SECTION_I18N = {
+      it: {
+        motionTitle: "Movimento",
+        openingsTitle: "Porte, finestre e cancello",
+        allClosed: "Tutto chiuso",
+        noneOpen: "Nessuna aperta",
+        activeOne: " apertura attiva",
+        activeMany: " aperture attive",
+        offlineOne: " sensore offline",
+        offlineMany: " sensori offline"
+      },
+      fr: {
+        motionTitle: "Mouvement",
+        openingsTitle: "Portes, fenêtres et serrure",
+        allClosed: "Tout est fermé",
+        noneOpen: "Aucune ouverture active",
+        activeOne: " ouverture active",
+        activeMany: " ouvertures actives",
+        offlineOne: " détecteur hors ligne",
+        offlineMany: " détecteurs hors ligne"
+      },
+      en: {
+        motionTitle: "Motion",
+        openingsTitle: "Doors, windows and lock",
+        allClosed: "Everything is closed",
+        noneOpen: "No active openings",
+        activeOne: " active opening",
+        activeMany: " active openings",
+        offlineOne: " detector offline",
+        offlineMany: " detectors offline"
+      }
+    };
+
+    function openingSummaryLabel(activeCount, offlineCount) {
+      var labels =
+        SECURITY_SECTION_I18N[LANG] || SECURITY_SECTION_I18N.it;
+
+      var text = activeCount > 0
+        ? activeCount +
+          (activeCount === 1 ? labels.activeOne : labels.activeMany)
+        : offlineCount > 0
+          ? labels.noneOpen
+          : labels.allClosed;
+
+      if (offlineCount > 0) {
+        text += " · " + offlineCount +
+          (offlineCount === 1 ? labels.offlineOne : labels.offlineMany);
+      }
+
+      return text;
+    }
+
+    function translateSecurityHeadings() {
+      var labels =
+        SECURITY_SECTION_I18N[LANG] || SECURITY_SECTION_I18N.it;
+
+      function setPanelHeading(contentSelector, text) {
+        var content = ROOT.querySelector(contentSelector);
+        var panel = content ? content.closest("article.panel") : null;
+        var heading = panel ? panel.querySelector("h3") : null;
+
+        if (!heading) {
+          return;
+        }
+
+        // Preserve the heading icon.
+        var textNodes = Array.prototype.slice.call(heading.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          heading.appendChild(document.createTextNode(text));
+        }
+      }
+
+      setPanelHeading("#motion-tiles", labels.motionTitle);
+      setPanelHeading("#open-tiles", labels.openingsTitle);
+    }
+
+    translateSecurityHeadings();
 
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
