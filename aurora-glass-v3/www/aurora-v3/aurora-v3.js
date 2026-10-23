@@ -4583,6 +4583,107 @@
     translatePriceDialog();
 
     hydrate(ROOT);
+
+    function translateEnergyStaticLabels() {
+      var translations = {
+        it: {
+          power: "Potenza adesso",
+          trend: "Andamento",
+          period: "Periodo",
+          threeHours: "3 ore",
+          twentyFourHours: "24 ore",
+          sevenDays: "7 giorni",
+          lastDays: "ultimi 14 giorni",
+          appliances: "Elettrodomestici",
+          appliancesSubtitle: "consumo adesso e oggi",
+          energyPage: "Energia",
+          changeRate: "Modifica la tariffa dell’energia"
+        },
+        fr: {
+          power: "Puissance actuelle",
+          trend: "Évolution",
+          period: "Période",
+          threeHours: "3 h",
+          twentyFourHours: "24 h",
+          sevenDays: "7 jours",
+          lastDays: "14 derniers jours",
+          appliances: "Appareils",
+          appliancesSubtitle: "puissance actuelle et énergie consommée aujourd’hui",
+          energyPage: "Énergie",
+          changeRate: "Modifier le tarif de l’énergie"
+        },
+        en: {
+          power: "Current power",
+          trend: "Trend",
+          period: "Period",
+          threeHours: "3 hours",
+          twentyFourHours: "24 hours",
+          sevenDays: "7 days",
+          lastDays: "last 14 days",
+          appliances: "Appliances",
+          appliancesSubtitle: "current power and energy used today",
+          energyPage: "Energy",
+          changeRate: "Change the energy rate"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(
+          node.childNodes
+        ).filter(function (child) {
+          return child.nodeType === 3;
+        });
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      var targets = [
+        ["#en-eyebrow", labels.power],
+        ["#view-en .en-chart .en-chart-head h3", labels.trend],
+        ["#en-range [data-r='3h']", labels.threeHours],
+        ["#en-range [data-r='24h']", labels.twentyFourHours],
+        ["#en-range [data-r='7g']", labels.sevenDays],
+        ["#view-en .en-days .en-chart-head h3 small", labels.lastDays],
+        ["#view-en .sec-title", labels.appliances],
+        ["#view-en .sec-title small", labels.appliancesSubtitle]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var attributes = [
+        ["#view-en", "aria-label", labels.energyPage],
+        ["#en-range", "aria-label", labels.period],
+        ["#en-price", "aria-label", labels.changeRate],
+        ["#en-kpis", "title", labels.changeRate]
+      ];
+
+      attributes.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.setAttribute(item[1], item[2]);
+        }
+      });
+    }
+
+    translateEnergyStaticLabels();
+        
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
     var EFFECT_I18N = {
