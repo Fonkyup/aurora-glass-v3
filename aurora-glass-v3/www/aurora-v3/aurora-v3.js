@@ -2445,9 +2445,91 @@
     }
 
     translateAppearanceSections();
-                
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
+        // Translate effect buttons after they have been created.
+    var EFFECT_I18N = {
+      it: {
+        none: "Nessuno",
+        pioggia: "Pioggia",
+        temporale: "Temporale",
+        neve: "Neve",
+        nebbia: "Nebbia",
+        foglie: "Foglie d'autunno",
+        petali: "Petali",
+        lucciole: "Lucciole",
+        stelle: "Stelle cadenti",
+        fuochi: "Fuochi d'artificio",
+        bolle: "Bolle",
+        coriandoli: "Coriandoli"
+      },
+      fr: {
+        none: "Aucun",
+        pioggia: "Pluie",
+        temporale: "Orage",
+        neve: "Neige",
+        nebbia: "Brouillard",
+        foglie: "Feuilles d’automne",
+        petali: "Pétales",
+        lucciole: "Lucioles",
+        stelle: "Étoiles filantes",
+        fuochi: "Feux d’artifice",
+        bolle: "Bulles",
+        coriandoli: "Confettis"
+      },
+      en: {
+        none: "None",
+        pioggia: "Rain",
+        temporale: "Thunderstorm",
+        neve: "Snow",
+        nebbia: "Fog",
+        foglie: "Autumn leaves",
+        petali: "Petals",
+        lucciole: "Fireflies",
+        stelle: "Shooting stars",
+        fuochi: "Fireworks",
+        bolle: "Bubbles",
+        coriandoli: "Confetti"
+      }
+    };
+
+    function translateEffectButtons() {
+      var labels = EFFECT_I18N[LANG] || EFFECT_I18N.it;
+      var buttons = ROOT.querySelectorAll("#fxgrid [data-fx]");
+
+      Array.prototype.forEach.call(buttons, function (button) {
+        var effectId = button.getAttribute("data-fx");
+        var label = labels[effectId];
+
+        if (label === undefined) {
+          return;
+        }
+
+        // Preserve the icon and replace only direct text nodes.
+        var textNodes = Array.prototype.slice.call(button.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = label;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          button.appendChild(document.createTextNode(label));
+        }
+
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
+      });
+    }
+
+    translateEffectButtons();
+    
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
     setBtn(S.btn === "compact" ? "compact" : "img");
     tickDate(); tickClock(); applyWorld();
