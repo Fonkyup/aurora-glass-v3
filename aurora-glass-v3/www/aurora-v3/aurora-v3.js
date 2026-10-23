@@ -3105,7 +3105,35 @@
     function destroy() { stop(); unbinds.forEach(function (u) { u(); }); unbinds = []; }
 
     /* ------------------------------------------------------------------ avvio */
-    if (LIVE) { HOST.setAttribute("data-live", "1"); var fnote = $("footer.note"); if (fnote) fnote.textContent = "Aurora Glass v3 · collegata a Home Assistant"; }
+        if (LIVE) {
+      HOST.setAttribute("data-live", "1");
+    }
+
+    var footerTranslations = {
+      it: {
+        live: "Aurora Glass v3 · collegata a Home Assistant",
+        preview: "Aurora Glass v3 · anteprima: non riflette dati reali di un impianto."
+      },
+      fr: {
+        live: "Aurora Glass v3 · connectée à Home Assistant",
+        preview: "Aurora Glass v3 · démonstration : les données affichées sont simulées."
+      },
+      en: {
+        live: "Aurora Glass v3 · connected to Home Assistant",
+        preview: "Aurora Glass v3 · preview: the displayed data is simulated."
+      }
+    };
+
+    var footerLabels =
+      footerTranslations[LANG] || footerTranslations.it;
+
+    var footerNote = $("footer.note");
+
+    if (footerNote) {
+      footerNote.textContent = LIVE
+        ? footerLabels.live
+        : footerLabels.preview;
+    }
     if (EMB) HOST.setAttribute("data-embedded", "1");
     // Navigation labels for the selected language.
     var NAV_I18N = {
