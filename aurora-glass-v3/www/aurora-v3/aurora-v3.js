@@ -4155,6 +4155,119 @@
 
     translateEnergyStaticLabels();
 
+    // Static labels in the energy rate dialog.
+    var PRICE_DIALOG_I18N = {
+      fr: {
+        title: "Coût de l’énergie",
+        subtitle: "Le prix d’un kWh sur ta facture",
+        cancel: "Annuler",
+        save: "Enregistrer le tarif",
+        calculate: "Calculer à partir de la facture",
+        bill: "Montant total à payer",
+        kwh: "Énergie consommée",
+        note: "Montant total ÷ kWh : un coût moyen incluant les frais fixes et les taxes présents dans le total. Ce n’est pas nécessairement le tarif variable de chaque kWh supplémentaire.",
+        close: "Fermer",
+        decrease: "Diminuer",
+        increase: "Augmenter",
+        input: "Prix en euros par kWh",
+        billExample: "Ex. : 84,50",
+        kwhExample: "Ex. : 210"
+      },
+      en: {
+        title: "Energy cost",
+        subtitle: "The price of one kWh on your bill",
+        cancel: "Cancel",
+        save: "Save rate",
+        calculate: "Calculate from the electricity bill",
+        bill: "Total amount due",
+        kwh: "Energy consumed",
+        note: "Total amount ÷ kWh gives an average cost including fixed charges and taxes included in the total. It is not necessarily the variable rate for each additional kWh.",
+        close: "Close",
+        decrease: "Decrease",
+        increase: "Increase",
+        input: "Price in euros per kWh",
+        billExample: "E.g. 84.50",
+        kwhExample: "E.g. 210"
+      }
+    };
+
+    function translatePriceDialog() {
+      var labels = PRICE_DIALOG_I18N[LANG];
+
+      // Italian retains the original labels.
+      if (!labels) {
+        return;
+      }
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      var targets = [
+        ["#pr-title", labels.title],
+        ["#pricebox .mhead h2 small", labels.subtitle],
+        ["#pr-cancel", labels.cancel],
+        ["#pr-ok", labels.save],
+        ["#pr-calc summary", labels.calculate],
+        ["#pr-calc > p.note-sm", labels.note]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var billInput = ROOT.querySelector("#pr-bill");
+
+      if (billInput) {
+        setDirectText(billInput.closest("label"), labels.bill);
+        billInput.setAttribute("placeholder", labels.billExample);
+        billInput.setAttribute("aria-label", labels.bill);
+      }
+
+      var kwhInput = ROOT.querySelector("#pr-kwh");
+
+      if (kwhInput) {
+        setDirectText(kwhInput.closest("label"), labels.kwh);
+        kwhInput.setAttribute("placeholder", labels.kwhExample);
+        kwhInput.setAttribute("aria-label", labels.kwh);
+      }
+
+      var accessibleLabels = [
+        ["#pr-close", labels.close],
+        ["#pr-minus", labels.decrease],
+        ["#pr-plus", labels.increase],
+        ["#pr-in", labels.input]
+      ];
+
+      accessibleLabels.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.setAttribute("aria-label", item[1]);
+        }
+      });
+    }
+
+    translatePriceDialog();
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
