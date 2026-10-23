@@ -1294,7 +1294,11 @@
     function setMotionUI(key, act, na) {
       $$('[data-sensor="' + key + '"]').forEach(function (n) {
         n.classList.toggle("active", !!act); n.classList.toggle("na", !!na); n.dataset.on = act ? "1" : "0"; refreshImg(n);
-        var st = $(".st-state", n); if (st) st.textContent = na ? "Non disponibile" : (act ? "Movimento!" : "Nessun movimento");
+        var st = $(".st-state", n);
+
+        if (st) {
+          st.textContent = motionStateLabel(na, act);
+        }
       });
     }
     function motion(key) {   // solo anteprima
@@ -3036,7 +3040,73 @@
     }
 
     translateCodeDialog();
-    
+    // Motion detector names and state labels.
+    var MOTION_I18N = {
+      fr: {
+        rooms: {
+          salotto: "Salon",
+          ingresso: "Entrée",
+          cucina: "Cuisine",
+          corridoio: "Couloir",
+          cameretta: "Chambre d’enfant",
+          lavanderia: "Salle de lavage",
+          sgabuzzino: "Rangement",
+          camera: "Chambre"
+        },
+        unavailable: "Indisponible",
+        detected: "Mouvement détecté",
+        clear: "Aucun mouvement"
+      },
+      en: {
+        rooms: {
+          salotto: "Living room",
+          ingresso: "Entrance",
+          cucina: "Kitchen",
+          corridoio: "Hallway",
+          cameretta: "Child’s bedroom",
+          lavanderia: "Laundry room",
+          sgabuzzino: "Storage",
+          camera: "Bedroom"
+        },
+        unavailable: "Unavailable",
+        detected: "Motion detected",
+        clear: "No motion"
+      },
+      it: {
+        unavailable: "Non disponibile",
+        detected: "Movimento!",
+        clear: "Nessun movimento"
+      }
+    };
+
+    function translateMotionNames() {
+      var labels = MOTION_I18N[LANG] || MOTION_I18N.it;
+
+      if (!labels.rooms) {
+        return;
+      }
+
+      MOTION.forEach(function (sensor) {
+        var key = sensor[0];
+
+        if (Object.prototype.hasOwnProperty.call(labels.rooms, key)) {
+          sensor[1] = labels.rooms[key];
+        }
+      });
+    }
+
+    function motionStateLabel(isUnavailable, isActive) {
+      var labels = MOTION_I18N[LANG] || MOTION_I18N.it;
+
+      return isUnavailable
+        ? labels.unavailable
+        : isActive
+          ? labels.detected
+          : labels.clear;
+    }
+
+    translateMotionNames();
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
