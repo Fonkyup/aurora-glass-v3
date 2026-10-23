@@ -1,3 +1,4 @@
+/* TEST SEBASTIEN LOCAL 1049 */
 /* Aurora Glass v3 — pacchetto per Home Assistant (generato da tools/build_ha.py) */
 
 /* ---- disegno.js ---- */
@@ -883,6 +884,7 @@
    ========================================================================== */
 (function (g) {
   "use strict";
+
   g.AuroraApp = function (ctx) {
     var ROOT = ctx.root, HOST = ctx.host, LAYER = ctx.layer || HOST, SCROLL = ctx.scroll || window;
     var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
