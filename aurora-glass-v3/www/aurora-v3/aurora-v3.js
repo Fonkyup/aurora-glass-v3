@@ -3447,6 +3447,140 @@
 
     translateClimateModes();
 
+    // Climate setting labels; actual option values stay unchanged.
+    var CLIMATE_SETTINGS_I18N = {
+      fr: {
+        modeTitle: "Mode",
+        fanTitle: "Ventilateur",
+        vertical: "Volets verticaux",
+        horizontal: "Volets horizontaux",
+        preset: "Préréglage",
+        values: {
+          Auto: "Auto",
+          Low: "Minimum",
+          LowMid: "Faible",
+          Mid: "Moyen",
+          HighMid: "Élevé",
+          High: "Maximum",
+          Up: "Haut",
+          UpMid: "Milieu-haut",
+          DownMid: "Milieu-bas",
+          Down: "Bas",
+          Left: "Gauche",
+          LeftMid: "Milieu-gauche",
+          RightMid: "Milieu-droite",
+          Right: "Droite",
+          none: "Normal",
+          quiet: "Silencieux",
+          powerful: "Puissant",
+          eco: "Éco",
+          boost: "Boost",
+          comfort: "Confort",
+          sleep: "Nuit",
+          away: "Absence"
+        }
+      },
+      en: {
+        modeTitle: "Mode",
+        fanTitle: "Fan",
+        vertical: "Vertical vanes",
+        horizontal: "Horizontal vanes",
+        preset: "Preset",
+        values: {
+          Auto: "Auto",
+          Low: "Minimum",
+          LowMid: "Low",
+          Mid: "Medium",
+          HighMid: "High",
+          High: "Maximum",
+          Up: "Up",
+          UpMid: "Upper-middle",
+          DownMid: "Lower-middle",
+          Down: "Down",
+          Left: "Left",
+          LeftMid: "Middle-left",
+          RightMid: "Middle-right",
+          Right: "Right",
+          none: "Normal",
+          quiet: "Quiet",
+          powerful: "Powerful",
+          eco: "Eco",
+          boost: "Boost",
+          comfort: "Comfort",
+          sleep: "Sleep",
+          away: "Away"
+        }
+      }
+    };
+
+    function translateClimateSettings() {
+      var labels = CLIMATE_SETTINGS_I18N[LANG];
+
+      // Italian keeps the original dictionary and headings.
+      if (!labels) {
+        return;
+      }
+
+      Object.keys(labels.values).forEach(function (key) {
+        CL_IT[key] = labels.values[key];
+      });
+
+      var modeButtons = ROOT.querySelector("#cl-modes");
+      var modeSection = modeButtons
+        ? modeButtons.closest(".cl-sec")
+        : null;
+      var modeHeading = modeSection
+        ? modeSection.querySelector("h5")
+        : null;
+
+      if (modeHeading) {
+        modeHeading.textContent = labels.modeTitle;
+      }
+
+      var fanHeading = ROOT.querySelector("#cl-fan-sec h5");
+
+      if (fanHeading) {
+        fanHeading.textContent = labels.fanTitle;
+      }
+
+      function setSelectLabel(selector, text) {
+        var select = ROOT.querySelector(selector);
+        var label = select ? select.closest("label") : null;
+
+        if (!label) {
+          return;
+        }
+
+        // Preserve the select element and its event listeners.
+        var textNodes = Array.prototype.slice.call(label.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          label.insertBefore(
+            document.createTextNode(text + " "),
+            select
+          );
+        }
+
+        select.setAttribute("aria-label", text);
+      }
+
+      setSelectLabel("#cl-swing", labels.vertical);
+      setSelectLabel("#cl-hswing", labels.horizontal);
+      setSelectLabel("#cl-preset", labels.preset);
+    }
+
+    translateClimateSettings();
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
