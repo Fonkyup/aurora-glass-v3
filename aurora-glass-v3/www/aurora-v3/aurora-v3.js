@@ -1304,9 +1304,13 @@
     function motion(key) {   // solo anteprima
       var label = motionLabel(key);
       setMotionUI(key, true, false);
-      $("#hero-motion").textContent = "Movimento: " + label;
+      $("#hero-motion").textContent = motionSummaryLabel(label, 0, 0);
       lastMotion = label; lastAt = Date.now();
-      later(function () { setMotionUI(key, false, false); $("#hero-motion").textContent = "Casa tranquilla"; }, 3200);
+      later(function () {
+        setMotionUI(key, false, false);
+
+        $("#hero-motion").textContent = motionSummaryLabel(null, 0, 0);
+      }, 3200);
     }
     function motionLoop() { if (!running) return; motion(MOTION[Math.floor(Math.random() * MOTION.length)][0]); later(motionLoop, 5200 + Math.random() * 3800); }
     function setOpenUI(id, open, na) {
@@ -1691,7 +1695,7 @@
         if (s && !na && s.last_changed && (!newest || new Date(s.last_changed) > newest.t)) newest = { t: new Date(s.last_changed), label: m[1] };
       });
       motNa = mNa;
-      $("#hero-motion").textContent = act ? "Movimento: " + act : (mTot && mNa === mTot ? "Sensori di movimento offline" : mNa ? "Nessun movimento · " + mNa + (mNa === 1 ? " sensore offline" : " sensori offline") : "Casa tranquilla");
+      $("#hero-motion").textContent = motionSummaryLabel(act, mTot, mNa);
       if (newest) {
         lastMotion = newest.label;
         lastAt = newest.t.getTime();
