@@ -1317,7 +1317,13 @@
       var o = OPENS[id]; OP[id] = open; OPNA[id] = !!na;
       $$('[data-op="' + id + '"]').forEach(function (n) {
         n.classList.toggle("open", open); n.classList.toggle("na", !!na); n.dataset.on = open ? "1" : "0"; refreshImg(n);
-        var st = $(".st-state", n); if (st) st.textContent = na ? "Non disponibile" : (open ? o[2] : o[3]);
+        var st = $(".st-state", n);
+
+        if (st) {
+          st.textContent = na
+            ? openingUnavailableLabel()
+            : (open ? o[2] : o[3]);
+        }
       });
       var n = Object.keys(OP).filter(function (k) { return OP[k] && (!LIVE || ENT.opens[k]); }).length;
       var nn = Object.keys(OPNA).filter(function (k) { return OPNA[k] && (!LIVE || ENT.opens[k]); }).length, off = nn ? nn + (nn === 1 ? " sensore offline" : " sensori offline") : "";
@@ -3186,6 +3192,79 @@
     }
 
     translateMotionNames();
+    // Opening and lock labels; technical keys and images are preserved.
+    var OPENING_I18N = {
+      fr: {
+        names: {
+          ingresso: "Porte d’entrée",
+          balcone_salotto: "Porte du balcon — salon",
+          balcone_cucina: "Porte du balcon — cuisine",
+          cameretta: "Fenêtre de la chambre d’enfant",
+          balcone_camera: "Porte du balcon — chambre",
+          bagno: "Fenêtre de la salle de bain",
+          lavanderia: "Fenêtre de la salle de lavage",
+          cancello: "Serrure"
+        },
+        open: "Ouverte",
+        closed: "Fermée",
+        unlocked: "Déverrouillée",
+        locked: "Verrouillée",
+        unavailable: "Indisponible"
+      },
+      en: {
+        names: {
+          ingresso: "Entrance door",
+          balcone_salotto: "Balcony door — living room",
+          balcone_cucina: "Balcony door — kitchen",
+          cameretta: "Child’s bedroom window",
+          balcone_camera: "Balcony door — bedroom",
+          bagno: "Bathroom window",
+          lavanderia: "Laundry room window",
+          cancello: "Lock"
+        },
+        open: "Open",
+        closed: "Closed",
+        unlocked: "Unlocked",
+        locked: "Locked",
+        unavailable: "Unavailable"
+      },
+      it: {
+        unavailable: "Non disponibile"
+      }
+    };
+
+    function translateOpeningLabels() {
+      var labels = OPENING_I18N[LANG] || OPENING_I18N.it;
+
+      // Preserve the original Italian names and states.
+      if (!labels.names) {
+        return;
+      }
+
+      Object.keys(labels.names).forEach(function (key) {
+        if (!OPENS[key]) {
+          return;
+        }
+
+        OPENS[key][0] = labels.names[key];
+
+        if (key === "cancello") {
+          OPENS[key][2] = labels.unlocked;
+          OPENS[key][3] = labels.locked;
+        } else {
+          OPENS[key][2] = labels.open;
+          OPENS[key][3] = labels.closed;
+        }
+      });
+    }
+
+    function openingUnavailableLabel() {
+      var labels = OPENING_I18N[LANG] || OPENING_I18N.it;
+
+      return labels.unavailable;
+    }
+
+    translateOpeningLabels();
 
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
