@@ -2412,9 +2412,53 @@
     function prNum(sel) { var v = parseFloat(String($(sel).value).replace(",", ".")); return isNaN(v) ? null : v; }
     function prSet(v) { $("#pr-in").value = (Math.round(v * 1000) / 1000).toFixed(3); prMark(); }
     function prMark() { var v = prNum("#pr-in"); $$("#pr-pre button").forEach(function (b) { b.setAttribute("aria-pressed", v !== null && Math.abs(+b.dataset.v - v) < 0.0005 ? "true" : "false"); }); }
+    function priceCalculationLabels() {
+      var translations = {
+        it: {
+          result: "Costo reale: ",
+          useValue: "Usa questo"
+        },
+        fr: {
+          result: "Coût moyen de la facture : ",
+          useValue: "Utiliser cette valeur"
+        },
+        en: {
+          result: "Average bill cost: ",
+          useValue: "Use this value"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function prCalcOut() {
-      var b = prNum("#pr-bill"), k = prNum("#pr-kwh"), o = $("#pr-calc-out");
-      if (b > 0 && k > 0) { var v = b / k; o.innerHTML = "Costo reale: <b>" + fmtP(v) + " €/kWh</b>"; var u = el("button", "linkb", "Usa questo", { type: "button" }); u.addEventListener("click", function () { prSet(v); }); o.appendChild(u); } else o.textContent = "";
+      var bill = prNum("#pr-bill");
+      var kwh = prNum("#pr-kwh");
+      var output = $("#pr-calc-out");
+      var labels = priceCalculationLabels();
+
+      if (bill > 0 && kwh > 0) {
+        var value = bill / kwh;
+
+        output.innerHTML =
+          labels.result +
+          "<b>" + fmtP(value) + " €/kWh</b>";
+
+        var useButton = el(
+          "button",
+          "linkb",
+          labels.useValue,
+          { type: "button" }
+        );
+
+        useButton.addEventListener("click", function () {
+          prSet(value);
+        });
+
+        output.appendChild(useButton);
+      } else {
+        output.textContent = "";
+      }
     }
     function openPrice() {
       var m = enModel(), cur = m.price.v > 0 ? m.price.v : m.pEff, box = $("#pricebox");
@@ -4267,7 +4311,7 @@
     }
 
     translatePriceDialog();
-        
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
