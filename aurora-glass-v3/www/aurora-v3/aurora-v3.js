@@ -2555,7 +2555,7 @@
     }
 
     translateScenes();
-    
+
     translateAppearanceSections();
 
     // World names and tooltip descriptions for this card instance.
@@ -2668,6 +2668,131 @@
       return AMB.W[id] ? AMB.W[id].desc : "";
     }    
 
+      // Static headings and hints on the home view.
+    var HOME_I18N = {
+      it: {
+        headings: ["Scene rapide", "Luci e stanze", "Clima"],
+        scenesHint: "un tocco, tutta la casa",
+        lightsHint: "tocca l'immagine per accendere",
+        tapHint: "Tocca scene e luci",
+        styleHint: "Cambia mondo, effetti e ora",
+        editHint: "Modifica le immagini",
+        simulate: "Simula intrusione",
+        outside: "Esterno",
+        power: "Consumo",
+        openEnergy: "Apri i consumi",
+        liveUpdate: "Aggiornamento in tempo reale"
+      },
+      fr: {
+        headings: [
+          "Scènes rapides",
+          "Éclairage et pièces",
+          "Chauffage et climatisation"
+        ],
+        scenesHint: "Toute la maison en un geste",
+        lightsHint: "Toucher l’image pour allumer",
+        tapHint: "Toucher les scènes et les lumières",
+        styleHint: "Changer d’univers, d’effets et d’heure",
+        editHint: "Modifier les images",
+        simulate: "Simuler une intrusion",
+        outside: "Extérieur",
+        power: "Puissance",
+        openEnergy: "Afficher la consommation",
+        liveUpdate: "Mise à jour en temps réel"
+      },
+      en: {
+        headings: ["Quick scenes", "Lights and rooms", "Heating and cooling"],
+        scenesHint: "Your whole home in one tap",
+        lightsHint: "Tap the image to turn on",
+        tapHint: "Tap scenes and lights",
+        styleHint: "Change world, effects and time",
+        editHint: "Edit images",
+        simulate: "Simulate an intrusion",
+        outside: "Outside",
+        power: "Power",
+        openEnergy: "View energy consumption",
+        liveUpdate: "Real-time updates"
+      }
+    };
+
+    function translateHomeLabels() {
+      var labels = HOME_I18N[LANG] || HOME_I18N.it;
+
+      // Preserve icons, live values and other child elements.
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.insertBefore(
+            document.createTextNode(text + " "),
+            node.firstChild
+          );
+        }
+      }
+
+      var headings = ROOT.querySelectorAll("#view-home h2.sec-title");
+
+      Array.prototype.forEach.call(headings, function (heading, index) {
+        if (labels.headings[index] === undefined) {
+          return;
+        }
+
+        setDirectText(heading, labels.headings[index]);
+
+        var small = heading.querySelector("small");
+
+        if (small && index === 0) {
+          small.textContent = labels.scenesHint;
+        }
+
+        if (small && index === 1) {
+          small.textContent = labels.lightsHint;
+        }
+      });
+
+      var targets = [
+        [".hints > span.hint", labels.tapHint],
+        ["#hint-style", labels.styleHint],
+        ["#hint-edit", labels.editHint],
+        ["#sim-alarm", labels.simulate],
+        ["#chip-temp", labels.outside],
+        ["#chip-power", labels.power]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var energyChip = ROOT.querySelector("#chip-power");
+
+      if (energyChip) {
+        energyChip.setAttribute("title", labels.openEnergy);
+        energyChip.setAttribute("aria-label", labels.openEnergy);
+
+        var liveDot = energyChip.querySelector(".livedot");
+
+        if (liveDot) {
+          liveDot.setAttribute("title", labels.liveUpdate);
+        }
+      }
+    }
+
+    translateHomeLabels();
+      
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
