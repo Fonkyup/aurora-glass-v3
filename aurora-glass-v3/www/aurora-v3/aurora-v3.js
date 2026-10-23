@@ -2866,7 +2866,130 @@
 
       return text;
     }
-        
+
+    // Alarm presentation text only: service names and states stay unchanged.
+    var ALARM_I18N = {
+      fr: {
+        states: {
+          disarmed: [
+            "Désactivée",
+            "Alarme désactivée. Choisissez un mode pour l’activer.",
+            "Alarme désactivée"
+          ],
+          armed_night: [
+            "Activée — Nuit",
+            "Portes et fenêtres surveillées. Les mouvements intérieurs sont ignorés.",
+            "Alarme de nuit"
+          ],
+          armed_away: [
+            "Activée — Absence",
+            "Toute la maison est surveillée, y compris les mouvements intérieurs.",
+            "Alarme en mode absence"
+          ],
+          arming: [
+            "Activation en cours",
+            "L’alarme sera activée dans quelques secondes.",
+            "Activation de l’alarme"
+          ],
+          triggered: [
+            "ALARME DÉCLENCHÉE",
+            "L’alarme s’est déclenchée. Vérifiez les caméras.",
+            "ALARME DÉCLENCHÉE"
+          ]
+        },
+        disarm: "Désactiver",
+        night: "Nuit",
+        away: "Absence",
+        modes: "Mode de l’alarme",
+        image: "Image de l’état de l’alarme"
+      },
+      en: {
+        states: {
+          disarmed: [
+            "Disarmed",
+            "Alarm disarmed. Choose a mode to arm it.",
+            "Alarm disarmed"
+          ],
+          armed_night: [
+            "Armed — Night",
+            "Doors and windows are monitored. Indoor motion is ignored.",
+            "Night alarm"
+          ],
+          armed_away: [
+            "Armed — Away",
+            "The whole home is monitored, including indoor motion.",
+            "Away alarm"
+          ],
+          arming: [
+            "Arming",
+            "The alarm will be armed in a few seconds.",
+            "Alarm arming"
+          ],
+          triggered: [
+            "ALARM TRIGGERED",
+            "The alarm has been triggered. Check the cameras.",
+            "ALARM TRIGGERED"
+          ]
+        },
+        disarm: "Disarm",
+        night: "Night",
+        away: "Away",
+        modes: "Alarm mode",
+        image: "Alarm state image"
+      }
+    };
+
+    function translateAlarmLabels() {
+      var labels = ALARM_I18N[LANG];
+
+      // Keep the original Italian labels when appropriate.
+      if (!labels) {
+        return;
+      }
+
+      Object.keys(labels.states).forEach(function (key) {
+        if (!ALARM[key]) {
+          return;
+        }
+
+        var translatedState = labels.states[key];
+
+        ALARM[key].t = translatedState[0];
+        ALARM[key].d = translatedState[1];
+        ALARM[key].short = translatedState[2];
+      });
+
+      var buttons = [
+        ['#seg [data-mode="disarmed"]', labels.disarm],
+        ['#seg [data-mode="armed_night"]', labels.night],
+        ['#seg [data-mode="armed_away"]', labels.away],
+        ["#alert-off", labels.disarm]
+      ];
+
+      buttons.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (button) {
+          button.textContent = item[1];
+          button.setAttribute("aria-label", item[1]);
+        }
+      });
+
+      var modeGroup = ROOT.querySelector("#seg");
+
+      if (modeGroup) {
+        modeGroup.setAttribute("aria-label", labels.modes);
+      }
+
+      var alarmImage = ROOT.querySelector("#shield");
+
+      if (alarmImage) {
+        alarmImage.setAttribute("data-label", labels.image);
+      }
+    }
+
+    translateAlarmLabels();    
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
