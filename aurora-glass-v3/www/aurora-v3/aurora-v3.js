@@ -3704,6 +3704,141 @@
 
     translateClimateSettings();
 
+    // Static labels in the energy view.
+    var ENERGY_STATIC_I18N = {
+      it: {
+        powerNow: "Potenza adesso",
+        history: "Andamento",
+        period: "Periodo",
+        hours3: "3 ore",
+        hours24: "24 ore",
+        days7: "7 giorni",
+        noHistory: "Storico non disponibile",
+        appliances: "Elettrodomestici",
+        appliancesHint: "consumo adesso e oggi",
+        last14Days: "ultimi 14 giorni",
+        units: "Unità"
+      },
+      fr: {
+        powerNow: "Puissance actuelle",
+        history: "Historique",
+        period: "Période",
+        hours3: "3 heures",
+        hours24: "24 heures",
+        days7: "7 jours",
+        noHistory: "Historique indisponible",
+        appliances: "Appareils électriques",
+        appliancesHint: "Puissance actuelle et énergie consommée aujourd’hui",
+        last14Days: "14 derniers jours",
+        units: "Unité"
+      },
+      en: {
+        powerNow: "Current power",
+        history: "History",
+        period: "Period",
+        hours3: "3 hours",
+        hours24: "24 hours",
+        days7: "7 days",
+        noHistory: "History unavailable",
+        appliances: "Electrical appliances",
+        appliancesHint: "Current power and energy used today",
+        last14Days: "last 14 days",
+        units: "Unit"
+      }
+    };
+
+    function translateEnergyStaticLabels() {
+      var labels =
+        ENERGY_STATIC_I18N[LANG] || ENERGY_STATIC_I18N.it;
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      setDirectText(
+        ROOT.querySelector("#en-eyebrow"),
+        labels.powerNow
+      );
+
+      var range = ROOT.querySelector("#en-range");
+
+      if (range) {
+        range.setAttribute("aria-label", labels.period);
+
+        var chartHeader = range.closest(".en-chart-head");
+        var chartTitle = chartHeader
+          ? chartHeader.querySelector("h3")
+          : null;
+
+        if (chartTitle) {
+          chartTitle.textContent = labels.history;
+        }
+      }
+
+      var targets = [
+        ['#en-range [data-r="3h"]', labels.hours3],
+        ['#en-range [data-r="24h"]', labels.hours24],
+        ['#en-range [data-r="7g"]', labels.days7],
+        ["#en-empty", labels.noHistory]
+      ];
+
+      targets.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.textContent = item[1];
+        }
+      });
+
+      var applianceTitle = ROOT.querySelector("#view-en h2.sec-title");
+
+      if (applianceTitle) {
+        setDirectText(applianceTitle, labels.appliances);
+
+        var applianceHint = applianceTitle.querySelector("small");
+
+        if (applianceHint) {
+          applianceHint.textContent = labels.appliancesHint;
+        }
+      }
+
+      var dailyTitle = ROOT.querySelector("#en-days-t");
+      var dailyHeading = dailyTitle ? dailyTitle.parentElement : null;
+      var dailyDescription = dailyHeading
+        ? dailyHeading.querySelector("small")
+        : null;
+
+      if (dailyDescription) {
+        dailyDescription.textContent = labels.last14Days;
+      }
+
+      var unitGroup = ROOT.querySelector("#en-dunit");
+
+      if (unitGroup) {
+        unitGroup.setAttribute("aria-label", labels.units);
+      }
+    }
+
+    translateEnergyStaticLabels();
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
