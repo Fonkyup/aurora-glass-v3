@@ -1,5 +1,3 @@
-Voici la traduction française à copier-coller dans ton fichier `README.fr.md`. Les liens, chemins et identifiants techniques sont conservés tels quels; les instructions pointent donc toujours vers le dépôt original de l’auteur. [raw.githubusercontent](https://raw.githubusercontent.com/Fonkyup/aurora-glass-v3/refs/heads/bilingual/README.it.md)
-
 ```markdown
 # Aurora Glass v3 — Tableau de bord animé pour Home Assistant
 
