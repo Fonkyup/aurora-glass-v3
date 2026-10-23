@@ -979,7 +979,31 @@
       scena_buongiorno: "Buongiorno", scena_cinema: "Cinema", scena_cena: "Cena", scena_notte: "Notte", scena_esco: "Esco", sensore_movimento: "Movimento", sensore_porta: "Porta", sensore_finestra: "Finestra", sensore_cancello: "Cancello", allarme_off: "Off", allarme_notte: "Notte", allarme_fuori: "Fuori", allarme_scattato: "Scattato", clima_off: "Spento", clima_cool: "Freddo", clima_heat: "Caldo", clima_dry: "Deumidifica", clima_fan: "Ventola", clima_auto: "Auto" };
     var OV = {};
     try { OV = JSON.parse(store("img") || "{}") || {}; } catch (e) { OV = {}; }
-    function saveOV() { try { localStorage.setItem("aurora-v3-img", JSON.stringify(OV)); return true; } catch (e) { toast("Immagine troppo grande: non riesco a salvarla", "mdi-alert-circle", "var(--warn)"); return false; } }
+    function imageSaveLabels() {
+      var translations = {
+        it: {
+          failed: "Immagine troppo grande: non riesco a salvarla",
+          appliedBefore: "Immagine « ",
+          appliedAfter: " » applicata",
+          restored: "Immagine originale ripristinata"
+        },
+        fr: {
+          failed: "Impossible d’enregistrer les images dans ce navigateur",
+          appliedBefore: "Image « ",
+          appliedAfter: " » appliquée",
+          restored: "Image originale rétablie"
+        },
+        en: {
+          failed: "Unable to save images in this browser",
+          appliedBefore: "Image “",
+          appliedAfter: "” applied",
+          restored: "Original image restored"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+    function saveOV() { try { localStorage.setItem("aurora-v3-img", JSON.stringify(OV)); return true; } catch (e) { toast(imageSaveLabels().failed, "mdi-alert-circle", "var(--warn)"); return false; } }
     function resolve(ov, base, onState) {
       var o = OV[ov] || null, b = IMG[base];
       if (!b) return "";
@@ -1727,9 +1751,9 @@
     function applyLib(k) {
       var it = IMG[k], b = IMG[edBase];
       if (b.kind === "pair") OV[edOv] = { off: it.off || it.src, on: it.on || it.src }; else OV[edOv] = { src: it.on || it.src };
-      saveOV(); refreshAll(); renderEditor(); toast("Immagine «" + LIBNAMES[k] + "» applicata", "mdi-image-check", "var(--ok)");
+      saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().appliedBefore + LIBNAMES[k] + imageSaveLabels().appliedAfter, "mdi-image-check", "var(--ok)");
     }
-    $("#ed-reset").addEventListener("click", function () { delete OV[edOv]; saveOV(); refreshAll(); renderEditor(); toast("Immagine originale ripristinata", "mdi-restore", "var(--acc-text)"); });
+    $("#ed-reset").addEventListener("click", function () { delete OV[edOv]; saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().restored,"mdi-restore","var(--acc-text)"); });
     $("#ed-done").addEventListener("click", closeEditor); $("#ed-close").addEventListener("click", closeEditor);
     $("#editor").addEventListener("click", function (e) { if (e.target === this) closeEditor(); });
     on(document, "keydown", function (e) { if (e.key === "Escape") { if ($("#codebox").classList.contains("open")) closeCode(); else if ($("#editor").classList.contains("open")) closeEditor(); else if (drawerOpen) closeDrawer(); else if (HOST.dataset.edit === "1") setEdit(false); } });
