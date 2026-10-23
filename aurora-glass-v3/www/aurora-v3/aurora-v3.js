@@ -1868,10 +1868,20 @@
       var m = clima.mode, col = CL_COL[m] || CL_COL.off;
       box.style.setProperty("--cl", col); box.dataset.mode = m; box.classList.toggle("na", !clima.avail);
       $("#cl-name").textContent = clima.name; $("#cl-sub").textContent = clima.name;
-      var st = !clima.avail ? "Non disponibile" : (CL_STATUS[m] || m);
-      if (clima.avail && m !== "off" && clima.action === "idle") st += " · in pausa";
+      var climateText = climateLabels();
+
+      var st = !clima.avail
+        ? climateText.unavailable
+        : (CL_STATUS[m] || m);
+
+      if (clima.avail && m !== "off" && clima.action === "idle") {
+        st += " · " + climateText.idle;
+      }
+
       $("#cl-status").textContent = st;
-      $("#cl-cur").textContent = "In casa " + fmt(clima.cur) + " °C";
+
+      $("#cl-cur").textContent =
+        climateText.indoors + " " + fmt(clima.cur) + " °C";
       var hint = "";
       if (!clima.avail) hint = "Il climatizzatore non risponde: controlla il cloud Panasonic.";
       else if (m === "cool" && clima.action !== "cooling" && clima.tgt >= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Abbassa la temperatura per far partire il raffrescamento.";
@@ -3358,6 +3368,84 @@
     }
 
     translateSecurityHeadings();
+
+    // Climate mode names and status labels.
+    var CLIMATE_I18N = {
+      it: {
+        unavailable: "Non disponibile",
+        idle: "in pausa",
+        indoors: "In casa"
+      },
+      fr: {
+        modes: {
+          off: "Arrêt",
+          heat_cool: "Auto",
+          cool: "Climatisation",
+          dry: "Déshumidification",
+          fan_only: "Ventilation",
+          heat: "Chauffage"
+        },
+        statuses: {
+          off: "À l’arrêt",
+          heat_cool: "Automatique",
+          cool: "Climatisation",
+          dry: "Déshumidification",
+          fan_only: "Ventilation seule",
+          heat: "Chauffage"
+        },
+        unavailable: "Indisponible",
+        idle: "en pause",
+        indoors: "À l’intérieur"
+      },
+      en: {
+        modes: {
+          off: "Off",
+          heat_cool: "Auto",
+          cool: "Cool",
+          dry: "Dry",
+          fan_only: "Fan",
+          heat: "Heat"
+        },
+        statuses: {
+          off: "Off",
+          heat_cool: "Automatic",
+          cool: "Cooling",
+          dry: "Dehumidifying",
+          fan_only: "Fan only",
+          heat: "Heating"
+        },
+        unavailable: "Unavailable",
+        idle: "idle",
+        indoors: "Indoors"
+      }
+    };
+
+    function climateLabels() {
+      return CLIMATE_I18N[LANG] || CLIMATE_I18N.it;
+    }
+
+    function translateClimateModes() {
+      var labels = climateLabels();
+
+      // Keep the original Italian mode and status labels.
+      if (!labels.modes) {
+        return;
+      }
+
+      CL_MODES.forEach(function (mode) {
+        var key = mode[0];
+
+        if (Object.prototype.hasOwnProperty.call(labels.modes, key)) {
+          mode[1] = labels.modes[key];
+        }
+      });
+
+      Object.keys(labels.statuses).forEach(function (key) {
+        CL_STATUS[key] = labels.statuses[key];
+      });
+    }
+
+    translateClimateModes();
 
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
