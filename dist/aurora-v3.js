@@ -1,8 +1,23 @@
-/* Aurora Glass v3 — pacchetto per Home Assistant (generato da tools/build_ha.py) */
+/*
+ * Luma Home
+ * Unofficial derivative of Luma Home.
+ *
+ * Modifications by Fonkyup:
+ * - French and English interface translations.
+ * - Adaptation of interface text and dynamic messages.
+ *
+ * Modification date: 2026-10-25
+ *
+ * Distributed under the GNU General Public License, version 3.
+ * See LICENSE for the complete terms.
+ *
+ * Original copyright notices and credits are preserved.
+ */
+/* Luma Home — pacchetto per Home Assistant (generato da tools/build_ha.py) */
 
 /* ---- disegno.js ---- */
 /* ============================================================================
-   AURORA GLASS v3 — motore di disegno delle immagini dei pulsanti
+   LUMA HOME — motore di disegno delle immagini dei pulsanti
    Ogni immagine è una funzione draw(on, t): t va da 0 a 1 e il ciclo si chiude
    da solo (così la GIF si ripete senza scatti). Lo usa tools/render_btn.py per
    produrre i file PNG (spento) e GIF (acceso) in assets/btn/.
@@ -102,7 +117,7 @@
 
 /* ---- mondi-base.js ---- */
 /* ============================================================================
-   AURORA GLASS v3 — MONDI: base comune
+   LUMA HOME — MONDI: base comune
    - palette continua per ogni ora del giorno (alba → giorno → tramonto → notte)
    - posizione di sole e luna lungo l'arco
    - cielo, stelle, nuvole, uccelli e piccoli helper SMIL riusati da tutti i mondi
@@ -236,7 +251,7 @@
 
 
 /* ---- mondi-a.js ---- */
-/* AURORA GLASS v3 — MONDI (1/2): Casetta · Città · Montagna · Mare e faro · Foresta magica */
+/* LUMA HOME — MONDI (1/2): Casetta · Città · Montagna · Mare e faro · Foresta magica */
 (function () {
   var A = AR, W = AMB.W, H = AMB.H, f = A.f, mix = H.mix;
   var poly = H.poly, path = H.path, rect = H.rect, circ = H.circ, ell = H.ell, line = H.line, grp = H.grp, an = H.an, at = H.at, circA = H.circA, ellA = H.ellA, sky = H.sky, bird = H.bird, smoke = H.smoke, snow = H.snow;
@@ -426,7 +441,7 @@
 
 
 /* ---- mondi-b.js ---- */
-/* AURORA GLASS v3 — MONDI (2/2): Spazio · Giappone · Cyberpunk · Natale · Oceano */
+/* LUMA HOME — MONDI (2/2): Spazio · Giappone · Cyberpunk · Natale · Oceano */
 (function () {
   var A = AR, W = AMB.W, H = AMB.H, f = A.f, mix = H.mix;
   var poly = H.poly, path = H.path, rect = H.rect, circ = H.circ, ell = H.ell, line = H.line, grp = H.grp, an = H.an, at = H.at, circA = H.circA, ellA = H.ellA,
@@ -622,7 +637,7 @@
 
 /* ---- effetti.js ---- */
 /* ============================================================================
-   AURORA GLASS v3 — EFFETTI (meteo e atmosfera) disegnati su canvas.
+   LUMA HOME — EFFETTI (meteo e atmosfera) disegnati su canvas.
    Si possono sovrapporre a qualsiasi mondo: pioggia, temporale, neve, nebbia,
    foglie, petali, lucciole, stelle cadenti, fuochi d'artificio, bolle, coriandoli.
    ========================================================================== */
@@ -875,7 +890,7 @@
 
 /* ---- aurora-app.js ---- */
 /* ============================================================================
-   AURORA GLASS v3 — logica dell'interfaccia
+   LUMA HOME — logica dell'interfaccia
    Una sola codebase per due usi:
    · anteprima (index.html): dati finti, tutto simulato
    · scheda di Home Assistant (ha/): dati veri delle entità, servizi veri
@@ -883,9 +898,58 @@
    ========================================================================== */
 (function (g) {
   "use strict";
+
   g.AuroraApp = function (ctx) {
     var ROOT = ctx.root, HOST = ctx.host, LAYER = ctx.layer || HOST, SCROLL = ctx.scroll || window;
     var LIVE = !!ctx.live, HA = !!ctx.haIcons, EMB = !!ctx.embedded, CFG = ctx.config || {};
+        // Language configuration: preserve Italian when no language is specified.
+    var LANG = String(CFG.language || "it").toLowerCase().split(/[-_]/)[0];
+
+    if (["it", "fr", "en"].indexOf(LANG) === -1) {
+      LANG = "it";
+    }
+
+    var LOCALE = {
+      it: "it-IT",
+      fr: "fr-CA",
+      en: "en-CA"
+    }[LANG];
+
+    var I18N = {
+      it: {
+        goodNight: "Buonanotte",
+        goodMorning: "Buongiorno",
+        goodAfternoon: "Buon pomeriggio",
+        goodEvening: "Buonasera",
+        realTimeRestored: "Ora reale ripristinata"
+      },
+      fr: {
+        goodNight: "Bonne nuit",
+        goodMorning: "Bonjour",
+        goodAfternoon: "Bon après-midi",
+        goodEvening: "Bonsoir",
+        realTimeRestored: "Heure réelle rétablie"
+      },
+      en: {
+        goodNight: "Good night",
+        goodMorning: "Good morning",
+        goodAfternoon: "Good afternoon",
+        goodEvening: "Good evening",
+        realTimeRestored: "Real time restored"
+      }
+    };
+
+    function tr(key) {
+      if (I18N[LANG][key] !== undefined) {
+        return I18N[LANG][key];
+      }
+
+      if (I18N.en[key] !== undefined) {
+        return I18N.en[key];
+      }
+
+      return key;
+    }
     var $ = function (s, r) { return (r || ROOT).querySelector(s); };
     var $$ = function (s, r) { return Array.prototype.slice.call((r || ROOT).querySelectorAll(s)); };
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -929,7 +993,31 @@
       scena_buongiorno: "Buongiorno", scena_cinema: "Cinema", scena_cena: "Cena", scena_notte: "Notte", scena_esco: "Esco", sensore_movimento: "Movimento", sensore_porta: "Porta", sensore_finestra: "Finestra", sensore_cancello: "Cancello", allarme_off: "Off", allarme_notte: "Notte", allarme_fuori: "Fuori", allarme_scattato: "Scattato", clima_off: "Spento", clima_cool: "Freddo", clima_heat: "Caldo", clima_dry: "Deumidifica", clima_fan: "Ventola", clima_auto: "Auto" };
     var OV = {};
     try { OV = JSON.parse(store("img") || "{}") || {}; } catch (e) { OV = {}; }
-    function saveOV() { try { localStorage.setItem("aurora-v3-img", JSON.stringify(OV)); return true; } catch (e) { toast("Immagine troppo grande: non riesco a salvarla", "mdi-alert-circle", "var(--warn)"); return false; } }
+    function imageSaveLabels() {
+      var translations = {
+        it: {
+          failed: "Immagine troppo grande: non riesco a salvarla",
+          appliedBefore: "Immagine « ",
+          appliedAfter: " » applicata",
+          restored: "Immagine originale ripristinata"
+        },
+        fr: {
+          failed: "Impossible d’enregistrer les images dans ce navigateur",
+          appliedBefore: "Image « ",
+          appliedAfter: " » appliquée",
+          restored: "Image originale rétablie"
+        },
+        en: {
+          failed: "Unable to save images in this browser",
+          appliedBefore: "Image “",
+          appliedAfter: "” applied",
+          restored: "Original image restored"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+    function saveOV() { try { localStorage.setItem("aurora-v3-img", JSON.stringify(OV)); return true; } catch (e) { toast(imageSaveLabels().failed, "mdi-alert-circle", "var(--warn)"); return false; } }
     function resolve(ov, base, onState) {
       var o = OV[ov] || null, b = IMG[base];
       if (!b) return "";
@@ -1015,10 +1103,55 @@
     function sv(id) { return HASS && id && HASS.states[id] ? HASS.states[id] : null; }
     function availId(ids) { ids = Array.isArray(ids) ? ids : [ids]; for (var i = 0; i < ids.length; i++) { var s = sv(ids[i]); if (s && s.state !== "unavailable" && s.state !== "unknown") return ids[i]; } return ids[0]; }
     function isUnavail(s) { return !s || s.state === "unavailable" || s.state === "unknown"; }
+    function homeAssistantErrorText(error) {
+      var translations = {
+        it: {
+          prefix: "Non riuscito: ",
+          fallback: "errore di Home Assistant"
+        },
+        fr: {
+          prefix: "Échec de la commande : ",
+          fallback: "erreur de Home Assistant"
+        },
+        en: {
+          prefix: "Command failed: ",
+          fallback: "Home Assistant error"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var detail = error && error.message
+        ? error.message
+        : labels.fallback;
+
+      return labels.prefix + detail;
+    }
+
     function call(domain, service, data) {
-      if (!ctx.call) return Promise.resolve();
-      try { return Promise.resolve(ctx.call(domain, service, data)).catch(function (e) { toast("Non riuscito: " + ((e && e.message) || "errore di Home Assistant"), "mdi-alert-circle", "var(--warn)"); }); }
-      catch (e) { toast("Non riuscito: " + e.message, "mdi-alert-circle", "var(--warn)"); return Promise.resolve(); }
+      if (!ctx.call) {
+        return Promise.resolve();
+      }
+
+      try {
+        return Promise.resolve(
+          ctx.call(domain, service, data)
+        ).catch(function (e) {
+          toast(
+            homeAssistantErrorText(e),
+            "mdi-alert-circle",
+            "var(--warn)"
+          );
+        });
+      } catch (e) {
+        toast(
+          homeAssistantErrorText(e),
+          "mdi-alert-circle",
+          "var(--warn)"
+        );
+
+        return Promise.resolve();
+      }
     }
     function moreInfo(id) { if (!id) return; if (ctx.moreInfo) ctx.moreInfo(id); }
 
@@ -1043,10 +1176,28 @@
     }
 
     /* ------------------------------------------------------------------ costruzione interfaccia */
+    function sceneCommandLabels() {
+      var translations = {
+        it: {
+          prefix: "Scena ",
+          sending: ": invio i comandi…"
+        },
+        fr: {
+          prefix: "Scène ",
+          sending: " : envoi des commandes…"
+        },
+        en: {
+          prefix: "Scene ",
+          sending: ": sending commands…"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function buildScenes() {
       var box = $("#scenes");
       SCENES.forEach(function (sc) {
-        var b = el("button", "scene", '<img class="s-img" alt="" draggable="false"><span class="s-ico"><i class="mdi ' + sc.ic + '"></i></span><span><b>' + sc.n + "</b><small>" + sc.sub + "</small></span>" + PEN, { type: "button", "data-scene": sc.id, "data-img": sc.img, "data-label": "Scena " + sc.n, "data-on": "0" });
+        var b = el("button", "scene", '<img class="s-img" alt="" draggable="false"><span class="s-ico"><i class="mdi ' + sc.ic + '"></i></span><span><b>' + sc.n + "</b><small>" + sc.sub + "</small></span>" + PEN, { type: "button", "data-scene": sc.id, "data-img": sc.img, "data-label": sceneCommandLabels().prefix + sc.n, "data-on": "0" });
         b.style.setProperty("--s1", sc.s1); b.style.setProperty("--s2", sc.s2);
         b.addEventListener("mouseenter", function () { b.dataset.on = "1"; refreshImg(b); });
         b.addEventListener("mouseleave", function () { b.dataset.on = state.scene === sc.id ? "1" : "0"; refreshImg(b); });
@@ -1056,9 +1207,31 @@
     }
     function motionLabel(k) { return MOTION.filter(function (m) { return m[0] === k; })[0][1]; }
     function hasMotion(k) { return !LIVE || (ENT.motion[k] && ENT.motion[k].length); }
+    function motionImageLabel(name) {
+      var prefixes = {
+        it: "Movimento ",
+        fr: "Détecteur de mouvement — ",
+        en: "Motion detector — "
+      };
+
+      return (prefixes[LANG] || prefixes.it) + name;
+    }
     function sensChip(k) {
       var label = motionLabel(k);
-      return '<span class="sens" data-sensor="' + k + '" data-img="sensore_movimento" data-ov="mov_' + k + '" data-label="Movimento ' + label + '" data-on="0"><span class="s-ph"><img class="s-img" alt="" draggable="false"></span><i class="mdi mdi-motion-sensor"></i>' + label + PEN + "</span>";
+
+      return (
+        '<span class="sens" data-sensor="' + k +
+        '" data-img="sensore_movimento" data-ov="mov_' + k +
+        '" data-label="' + motionImageLabel(label) +
+        '" data-on="0">' +
+          '<span class="s-ph">' +
+            '<img class="s-img" alt="" draggable="false">' +
+          "</span>" +
+          '<i class="mdi mdi-motion-sensor"></i>' +
+          label +
+          PEN +
+        "</span>"
+      );
     }
     function openChip(id) {
       if (LIVE && !ENT.opens[id]) return "";
@@ -1071,6 +1244,27 @@
       ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { node.addEventListener(ev, function () { clearTimeout(t); }); });
       node.addEventListener("click", function (e) { if (fired) { e.stopImmediatePropagation(); e.preventDefault(); fired = false; } }, true);
     }
+    function lightCommandLabels() {
+      var translations = {
+        it: {
+          unavailable: "dispositivo non disponibile",
+          noResponse: "non risponde, non so se il comando è arrivato",
+          unexpectedState: "il comando non ha avuto effetto"
+        },
+        fr: {
+          unavailable: "appareil indisponible",
+          noResponse: "aucune réponse; réception de la commande non confirmée",
+          unexpectedState: "l’état attendu n’a pas été observé après la commande"
+        },
+        en: {
+          unavailable: "device unavailable",
+          noResponse: "no response; command receipt not confirmed",
+          unexpectedState: "the expected state was not observed after the command"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function buildRooms() {
       var box = $("#rooms");
       ROOMS.forEach(function (r) {
@@ -1092,15 +1286,20 @@
       $$(".orb").forEach(function (o) {
         o.addEventListener("click", function () {
           var k = o.dataset.light;
+          var commandLabels = lightCommandLabels();
+          var nameNode = $(".o-name", o);
+          var lightName = nameNode
+          ? nameNode.textContent.trim()
+          : LIGHTS[k][0];          
           if (LIVE) {
             var s = sv(ENT.lights[k]);
-            if (isUnavail(s)) { toast(LIGHTS[k][0] + ": dispositivo non disponibile", "mdi-alert-circle", "var(--warn)"); return; }
+            if (isUnavail(s)) { toast(lightName + ": " + commandLabels.unavailable, "mdi-alert-circle", "var(--warn)"); return; }
             var want = !state.lights[k];
             call("homeassistant", "toggle", { entity_id: ENT.lights[k] });
             later(function () {
               var s2 = sv(ENT.lights[k]);
-              if (isUnavail(s2)) toast(LIGHTS[k][0] + ": non risponde, non so se il comando è arrivato", "mdi-alert-circle", "var(--warn)");
-              else if ((s2.state === "on") !== want) toast(LIGHTS[k][0] + ": il comando non ha avuto effetto", "mdi-alert-circle", "var(--warn)");
+              if (isUnavail(s2)) toast(lightName + ": " + commandLabels.noResponse, "mdi-alert-circle", "var(--warn)");
+              else if ((s2.state === "on") !== want) toast(lightName + ": " + commandLabels.unexpectedState, "mdi-alert-circle", "var(--warn)");
               syncLights(); render();
             }, 3000);
           }
@@ -1118,7 +1317,7 @@
     function buildSecurity() {
       var mt = $("#motion-tiles");
       MOTION.filter(function (m) { return hasMotion(m[0]); }).forEach(function (m) {
-        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">Nessun movimento</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": "Movimento " + m[1], "data-on": "0" });
+        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">' + motionStateLabel(false, false) + '</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
         b.addEventListener("click", function () { if (LIVE) moreInfo(availId(ENT.motion[m[0]])); else motion(m[0]); });
         mt.appendChild(b);
       });
@@ -1141,7 +1340,7 @@
         var na = LIVE && isUnavail(sv(ENT.lights[o.dataset.light]));
         if (na) nUn++;
         o.classList.toggle("na", na);
-        $(".o-state", o).textContent = na ? "Non disponibile" : (on ? "Accesa" : "Spenta");
+        $(".o-state", o).textContent = lightStateLabel(na, on);
         refreshImg(o);
       });
       $$(".room").forEach(function (r) {
@@ -1151,8 +1350,7 @@
       });
       $$(".wglow").forEach(function (w) { w.classList.toggle("on", !!state.lights[w.dataset.k]); });
       var a = ALARM[state.alarm] || ALARM.disarmed;
-      var lt = total ? total + (total === 1 ? " luce accesa" : " luci accese") : (LIVE ? "Nessuna luce accesa" : "Tutte le luci spente");
-      if (LIVE && nUn) lt += " · " + nUn + (nUn === 1 ? " non risponde" : " non rispondono");
+      var lt = lightSummary(total, nUn);
       $("#status-text").textContent = lt + " · " + a.short;
       $$(".scene").forEach(function (b) { var act = b.dataset.scene === state.scene; b.classList.toggle("active", act); b.dataset.on = act ? "1" : "0"; refreshImg(b); });
     }
@@ -1171,21 +1369,126 @@
       var r = $(".s-img", b).getBoundingClientRect();
       burst(r.left + r.width / 2, r.top + r.height / 2, sc.s1, sc.s2);
       if (!LIVE) toast(sc.msg, sc.ic, sc.s1);
-      else { toast("Scena " + sc.n + ": invio i comandi…", sc.ic, sc.s1); later(function () { sceneReport(sc, onIds, offIds, skipped); }, 3200); }
+      else { toast(sceneCommandLabels().prefix + sc.n + sceneCommandLabels().sending, sc.ic, sc.s1); later(function () { sceneReport(sc, onIds, offIds, skipped); }, 3200); }
       render();
     }
     /* il messaggio finale descrive lo stato letto da Home Assistant, non quello che speravamo */
+    function sceneReportLabels() {
+      var translations = {
+        it: {
+          prefix: "Scena ",
+          separator: ": ",
+          unexpectedOne: " luce non ha risposto",
+          unexpectedMany: " luci non hanno risposto",
+          expected: "luci come previsto",
+          unavailableOne: " non raggiungibile",
+          unavailableMany: " non raggiungibili",
+          codeRequired: "allarme: serve il codice",
+          alarmMissing: "allarme non trovato"
+        },
+        fr: {
+          prefix: "Scène ",
+          separator: " : ",
+          unexpectedOne: " lumière dans un état différent de celui attendu",
+          unexpectedMany: " lumières dans un état différent de celui attendu",
+          expected: "états des lumières vérifiées conformes",
+          unavailableOne: " appareil injoignable",
+          unavailableMany: " appareils injoignables",
+          codeRequired: "alarme : code requis",
+          alarmMissing: "alarme introuvable"
+        },
+        en: {
+          prefix: "Scene ",
+          separator: ": ",
+          unexpectedOne: " light in a different state than expected",
+          unexpectedMany: " lights in a different state than expected",
+          expected: "checked light states match expectations",
+          unavailableOne: " device unreachable",
+          unavailableMany: " devices unreachable",
+          codeRequired: "alarm: code required",
+          alarmMissing: "alarm not found"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function sceneReport(sc, onIds, offIds, skipped) {
-      var bad = 0, na = skipped, parts = [];
+      var labels = sceneReportLabels();
+      var bad = 0;
+      var na = skipped;
+      var parts = [];
+
       syncLights();
-      onIds.forEach(function (id) { var s = sv(id); if (isUnavail(s)) na++; else if (s.state !== "on") bad++; });
-      offIds.forEach(function (id) { var s = sv(id); if (isUnavail(s)) na++; else if (s.state === "on") bad++; });
-      parts.push(bad ? bad + (bad === 1 ? " luce non ha risposto" : " luci non hanno risposto") : "luci come previsto");
-      if (na) parts.push(na + (na === 1 ? " non raggiungibile" : " non raggiungibili"));
-      if (sc.alarm) { var al = sv(ENT.alarm); parts.push($("#codebox").classList.contains("open") ? "allarme: serve il codice" : (al ? ALARM[mapAlarm(al.state)].short.toLowerCase() : "allarme non trovato")); }
-      if (bad && state.scene === sc.id) state.scene = null;
+
+      onIds.forEach(function (id) {
+        var s = sv(id);
+
+        if (isUnavail(s)) {
+          na++;
+        } else if (s.state !== "on") {
+          bad++;
+        }
+      });
+
+      offIds.forEach(function (id) {
+        var s = sv(id);
+
+        if (isUnavail(s)) {
+          na++;
+        } else if (s.state === "on") {
+          bad++;
+        }
+      });
+
+      parts.push(
+        bad
+          ? bad + (
+              bad === 1
+                ? labels.unexpectedOne
+                : labels.unexpectedMany
+            )
+          : labels.expected
+      );
+
+      if (na) {
+        parts.push(
+          na + (
+            na === 1
+              ? labels.unavailableOne
+              : labels.unavailableMany
+          )
+        );
+      }
+
+      if (sc.alarm) {
+        var al = sv(ENT.alarm);
+
+        parts.push(
+          $("#codebox").classList.contains("open")
+            ? labels.codeRequired
+            : (
+                al
+                  ? ALARM[mapAlarm(al.state)].short.toLowerCase()
+                  : labels.alarmMissing
+              )
+        );
+      }
+
+      if (bad && state.scene === sc.id) {
+        state.scene = null;
+      }
+
       render();
-      toast("Scena " + sc.n + ": " + parts.join(" · "), sc.ic, (bad || na) ? "var(--warn)" : sc.s1);
+
+      toast(
+        labels.prefix +
+        sc.n +
+        labels.separator +
+        parts.join(" · "),
+        sc.ic,
+        (bad || na) ? "var(--warn)" : sc.s1
+      );
     }
 
     /* ------------------------------------------------------------------ allarme */
@@ -1214,9 +1517,37 @@
       later(function () { $("#code-in").focus(); }, 200);
     }
     function closeCode() { $("#codebox").classList.remove("open"); $("#codebox").setAttribute("aria-hidden", "true"); codeCb = null; }
+    function alarmCommandLabels() {
+      var translations = {
+        it: {
+          missing: "Centrale allarme non trovata",
+          unconfirmed: "Allarme: la centrale non ha eseguito il comando (codice errato o non disponibile)",
+          alarm: "Allarme",
+          codeRequired: "Serve il codice per: ",
+          sending: "Invio: "
+        },
+        fr: {
+          missing: "Centrale d’alarme introuvable",
+          unconfirmed: "Alarme : le résultat attendu de la commande n’a pas été confirmé",
+          alarm: "Alarme",
+          codeRequired: "Code requis pour : ",
+          sending: "Envoi de la commande : "
+        },
+        en: {
+          missing: "Alarm control panel not found",
+          unconfirmed: "Alarm: the expected command result was not confirmed",
+          alarm: "Alarm",
+          codeRequired: "Code required for: ",
+          sending: "Sending command: "
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function armAlarm(mode, fromScene) {
+      var commandLabels = alarmCommandLabels()      
       var s = sv(ENT.alarm);
-      if (!s) { toast("Centrale allarme non trovata", "mdi-alert-circle", "var(--warn)"); return; }
+      if (!s) { toast(commandLabels.missing, "mdi-alert-circle", "var(--warn)"); return; }
       var feat = s.attributes.supported_features || 0, svc, needCode;
       if (mode === "disarmed") { svc = "alarm_disarm"; needCode = !!s.attributes.code_format; }
       else if (mode === "armed_away") { svc = "alarm_arm_away"; needCode = !!s.attributes.code_format && s.attributes.code_arm_required !== false; }
@@ -1226,11 +1557,28 @@
         if (!fromScene) later(function () {
           var a2 = sv(ENT.alarm), k2 = a2 ? mapAlarm(a2.state) : null;
           if (k2 === mode || (mode !== "disarmed" && (k2 === "arming" || k2 === "triggered"))) toast(ALARM[k2].t, k2 === "disarmed" ? "mdi-shield-off" : "mdi-shield-check", k2 === "disarmed" ? "var(--ok)" : "var(--warn)");
-          else toast("Allarme: la centrale non ha eseguito il comando (codice errato o non disponibile)", "mdi-alert-circle", "var(--warn)");
+          else toast(commandLabels.unconfirmed, "mdi-alert-circle", "var(--warn)");
         }, 3500);
       };
-      if (needCode) askCode((s.attributes.friendly_name || "Allarme") + " · " + ALARM[mode].t, run); else run();
-      if (!fromScene) toast(needCode ? "Serve il codice per: " + ALARM[mode].t : "Invio: " + ALARM[mode].t + "…", "mdi-shield-sync", "var(--warn)");
+      if (needCode) {
+        askCode(
+          (s.attributes.friendly_name || commandLabels.alarm) +
+          " · " +
+          ALARM[mode].t,
+          run
+        );
+      } else {
+        run();
+      }
+      if (!fromScene) {
+        toast(
+          needCode
+            ? commandLabels.codeRequired + ALARM[mode].t
+            : commandLabels.sending + ALARM[mode].t + "…",
+          "mdi-shield-sync",
+          "var(--warn)"
+        );
+      }
     }
     function mapAlarm(st) {
       if (st === "triggered") return "triggered";
@@ -1245,32 +1593,168 @@
     function setMotionUI(key, act, na) {
       $$('[data-sensor="' + key + '"]').forEach(function (n) {
         n.classList.toggle("active", !!act); n.classList.toggle("na", !!na); n.dataset.on = act ? "1" : "0"; refreshImg(n);
-        var st = $(".st-state", n); if (st) st.textContent = na ? "Non disponibile" : (act ? "Movimento!" : "Nessun movimento");
+        var st = $(".st-state", n);
+
+        if (st) {
+          st.textContent = motionStateLabel(na, act);
+        }
       });
     }
     function motion(key) {   // solo anteprima
       var label = motionLabel(key);
       setMotionUI(key, true, false);
-      $("#hero-motion").textContent = "Movimento: " + label;
+      $("#hero-motion").textContent = motionSummaryLabel(label, 0, 0);
       lastMotion = label; lastAt = Date.now();
-      later(function () { setMotionUI(key, false, false); $("#hero-motion").textContent = "Casa tranquilla"; }, 3200);
+      later(function () {
+        setMotionUI(key, false, false);
+
+        $("#hero-motion").textContent = motionSummaryLabel(null, 0, 0);
+      }, 3200);
     }
     function motionLoop() { if (!running) return; motion(MOTION[Math.floor(Math.random() * MOTION.length)][0]); later(motionLoop, 5200 + Math.random() * 3800); }
     function setOpenUI(id, open, na) {
       var o = OPENS[id]; OP[id] = open; OPNA[id] = !!na;
       $$('[data-op="' + id + '"]').forEach(function (n) {
         n.classList.toggle("open", open); n.classList.toggle("na", !!na); n.dataset.on = open ? "1" : "0"; refreshImg(n);
-        var st = $(".st-state", n); if (st) st.textContent = na ? "Non disponibile" : (open ? o[2] : o[3]);
+        var st = $(".st-state", n);
+
+        if (st) {
+          st.textContent = na
+            ? openingUnavailableLabel()
+            : (open ? o[2] : o[3]);
+        }
       });
       var n = Object.keys(OP).filter(function (k) { return OP[k] && (!LIVE || ENT.opens[k]); }).length;
-      var nn = Object.keys(OPNA).filter(function (k) { return OPNA[k] && (!LIVE || ENT.opens[k]); }).length, off = nn ? nn + (nn === 1 ? " sensore offline" : " sensori offline") : "";
-      $("#open-sub").textContent = n === 0 ? (nn ? "Nessuna aperta · " + off : "Tutto chiuso") : n + (n === 1 ? " apertura attiva" : " aperture attive") + (nn ? " · " + off : "");
+      var nn = Object.keys(OPNA).filter(function (k) {
+        return OPNA[k] && (!LIVE || ENT.opens[k]);
+      }).length;
+
+      $("#open-sub").textContent = openingSummaryLabel(n, nn);
     }
     function onOpenTap(id) { if (LIVE) moreInfo(ENT.opens[id]); else setOpenUI(id, !OP[id], false); }
+    function motionSummaryLabel(activeName, total, unavailable) {
+      var translations = {
+        it: {
+          active: "Movimento: ",
+          quiet: "Casa tranquilla",
+          noSensors: "Nessun sensore di movimento configurato",
+          allUnavailable: "Sensori di movimento non disponibili",
+          offlineOne: " sensore non disponibile",
+          offlineMany: " sensori non disponibili"
+        },
+        fr: {
+          active: "Mouvement : ",
+          quiet: "Aucun mouvement détecté",
+          noSensors: "Aucun détecteur de mouvement configuré",
+          allUnavailable: "Détecteurs de mouvement indisponibles",
+          offlineOne: " détecteur indisponible",
+          offlineMany: " détecteurs indisponibles"
+        },
+        en: {
+          active: "Motion: ",
+          quiet: "No motion detected",
+          noSensors: "No motion detectors configured",
+          allUnavailable: "Motion detectors unavailable",
+          offlineOne: " detector unavailable",
+          offlineMany: " detectors unavailable"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var text;
+
+      if (activeName) {
+        text = labels.active + activeName;
+      } else if (LIVE && total === 0) {
+        return labels.noSensors;
+      } else if (total > 0 && unavailable >= total) {
+        return labels.allUnavailable;
+      } else {
+        text = labels.quiet;
+      }
+
+      if (unavailable > 0) {
+        text +=
+          " · " +
+          unavailable +
+          (
+            unavailable === 1
+              ? labels.offlineOne
+              : labels.offlineMany
+          );
+      }
+
+      return text;
+    }
+    function motionHistoryLabels() {
+      var translations = {
+        it: {
+          last: "Ultimo movimento: ",
+          now: "adesso",
+          before: "",
+          after: " fa",
+          offlineOne: " sensore offline",
+          offlineMany: " sensori offline",
+          noRecent: "Nessun movimento recente",
+          noneResponding: "Nessun sensore di movimento risponde"
+        },
+        fr: {
+          last: "Dernier mouvement : ",
+          now: "à l’instant",
+          before: "il y a ",
+          after: "",
+          offlineOne: " détecteur hors ligne",
+          offlineMany: " détecteurs hors ligne",
+          noRecent: "Aucun mouvement récent",
+          noneResponding: "Aucun détecteur de mouvement ne répond"
+        },
+        en: {
+          last: "Last motion: ",
+          now: "just now",
+          before: "",
+          after: " ago",
+          offlineOne: " detector offline",
+          offlineMany: " detectors offline",
+          noRecent: "No recent motion",
+          noneResponding: "No motion detector is responding"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function lastMotionText() {
-      if (!lastMotion) return;
-      var s = Math.round((Date.now() - lastAt) / 1000), t = s < 4 ? "adesso" : s < 60 ? s + " s fa" : s < 3600 ? Math.round(s / 60) + " min fa" : Math.round(s / 3600) + " h fa";
-      $("#last-motion").textContent = "Ultimo movimento: " + lastMotion + " · " + t + (motNa ? " · " + motNa + (motNa === 1 ? " sensore offline" : " sensori offline") : "");
+      if (!lastMotion) {
+        return;
+      }
+
+      var labels = motionHistoryLabels();
+      var seconds = Math.max(
+        0,
+        Math.round((Date.now() - lastAt) / 1000)
+      );
+
+      var elapsed;
+
+      if (seconds < 4) {
+        elapsed = labels.now;
+      } else {
+        var duration = seconds < 60
+          ? seconds + " s"
+          : seconds < 3600
+            ? Math.round(seconds / 60) + " min"
+            : Math.round(seconds / 3600) + " h";
+
+        elapsed = labels.before + duration + labels.after;
+      }
+
+      var offline = motNa
+        ? " · " + motNa +
+          (motNa === 1 ? labels.offlineOne : labels.offlineMany)
+        : "";
+
+      $("#last-motion").textContent =
+        labels.last + lastMotion + " · " + elapsed + offline;
     }
 
     /* ------------------------------------------------------------------ viste + dock */
@@ -1286,31 +1770,169 @@
     }
     $$(".dock [data-view]").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.view); }); });
     $("#dock-scenes").addEventListener("click", function () { show("home"); later(function () { $("#scenes").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); }, 60); });
+    function allLightsOffLabels() {
+      var translations = {
+        it: {
+          complete: "Tutte le luci spente",
+          noneFound: "Nessuna luce trovata: controlla le entità nella configurazione",
+          sendingBefore: "Invio del comando di spegnimento per ",
+          sendingOne: " luce…",
+          sendingMany: " luci…"
+        },
+        fr: {
+          complete: "Toutes les lumières vérifiées sont éteintes",
+          noneFound: "Aucune lumière trouvée : vérifie les entités dans la configuration",
+          sendingBefore: "Envoi de la commande d’extinction pour ",
+          sendingOne: " lumière…",
+          sendingMany: " lumières…"
+        },
+        en: {
+          complete: "All checked lights are off",
+          noneFound: "No lights found: check the entities in the configuration",
+          sendingBefore: "Sending the turn-off command for ",
+          sendingOne: " light…",
+          sendingMany: " lights…"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+    function allLightsOffWarningLabels() {
+      var translations = {
+        it: {
+          stillOnOne: " luce è ancora accesa",
+          stillOnMany: " luci sono ancora accese",
+          unreachableOne: " non raggiungibile",
+          unreachableMany: " non raggiungibili",
+          unknownOne: " luce non risponde: non so se sia spenta",
+          unknownMany: " luci non rispondono: non so se siano spente"
+        },
+        fr: {
+          stillOnOne: " lumière est encore allumée",
+          stillOnMany: " lumières sont encore allumées",
+          unreachableOne: " lumière injoignable",
+          unreachableMany: " lumières injoignables",
+          unknownOne: " lumière injoignable : extinction non confirmée",
+          unknownMany: " lumières injoignables : extinction non confirmée"
+        },
+        en: {
+          stillOnOne: " light is still on",
+          stillOnMany: " lights are still on",
+          unreachableOne: " light unreachable",
+          unreachableMany: " lights unreachable",
+          unknownOne: " light unreachable: turn-off not confirmed",
+          unknownMany: " lights unreachable: turn-off not confirmed"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     $("#dock-off").addEventListener("click", function (e) {
+      var offLabels = allLightsOffLabels();
+      var offWarningLabels = allLightsOffWarningLabels();      
       var r = e.currentTarget.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + 10, "#A5B4FC", "#67E8F9");
       Object.keys(state.lights).forEach(function (k) { state.lights[k] = false; }); state.scene = null;
-      if (!LIVE) { toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--acc-text)"); render(); return; }
+      if (!LIVE) { toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--acc-text)"); render(); return; }
       /* il comando va a TUTTE le luci configurate, senza fidarsi dello stato letto: ogni tanto un dispositivo risulta "non disponibile" o con lo stato in ritardo */
       var ids = Object.keys(ENT.lights).map(function (k) { return ENT.lights[k]; }).filter(function (id) { return !!sv(id); });
-      if (!ids.length) { toast("Nessuna luce trovata: controlla le entità nella configurazione", "mdi-alert-circle", "var(--warn)"); render(); return; }
+      if (!ids.length) { toast(offLabels.noneFound, "mdi-alert-circle", "var(--warn)"); render(); return; }
       call("homeassistant", "turn_off", { entity_id: ids });
-      toast("Spengo " + ids.length + " luci…", "mdi-lightbulb-off-outline", "var(--acc-text)");
+      toast(
+        offLabels.sendingBefore +
+        ids.length +
+        (
+          ids.length === 1
+            ? offLabels.sendingOne
+            : offLabels.sendingMany
+        ),
+        "mdi-lightbulb-off-outline",
+        "var(--acc-text)"
+      );
       later(function () {
         var rest = ids.filter(function (id) { var s = sv(id); return s && (s.state === "on" || isUnavail(s)); });
-        if (!rest.length) { syncLights(); render(); toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--ok)"); return; }
+        if (!rest.length) { syncLights(); render(); toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--ok)"); return; }
         call("homeassistant", "turn_off", { entity_id: rest });   /* secondo tentativo per chi non ha risposto */
         later(function () {
           syncLights(); render();
           var on = ids.filter(function (id) { var s = sv(id); return s && s.state === "on"; }).length, na = ids.filter(function (id) { return isUnavail(sv(id)); }).length;
-          if (on) toast(on + (on === 1 ? " luce è ancora accesa" : " luci sono ancora accese") + (na ? " · " + na + (na === 1 ? " non raggiungibile" : " non raggiungibili") : ""), "mdi-alert-circle", "var(--warn)");
-          else if (na) toast(na + (na === 1 ? " luce non risponde: non so se sia spenta" : " luci non rispondono: non so se siano spente"), "mdi-alert-circle", "var(--warn)");
-          else toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--ok)");
+          if (on) {
+            var warningText =
+              on +
+              (
+                on === 1
+                  ? offWarningLabels.stillOnOne
+                  : offWarningLabels.stillOnMany
+              );
+
+            if (na) {
+              warningText +=
+                " · " +
+                na +
+                (
+                  na === 1
+                    ? offWarningLabels.unreachableOne
+                    : offWarningLabels.unreachableMany
+                );
+            }
+
+            toast(
+              warningText,
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+          } else if (na) {
+            toast(
+              na +
+              (
+                na === 1
+                  ? offWarningLabels.unknownOne
+                  : offWarningLabels.unknownMany
+              ),
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+          }
+          else toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--ok)");
         }, 3500);
       }, 3000);
       render();
     });
     $$("#seg button").forEach(function (b) { b.addEventListener("click", function () { if (LIVE) armAlarm(b.dataset.mode); else setAlarm(b.dataset.mode); }); });
-    $("#sim-alarm").addEventListener("click", function () { show("sic"); setAlarm("triggered", true); render(); toast("Allarme attivo!", "mdi-alarm-light", "var(--danger)"); });
+    function alarmAlertLabels() {
+      var translations = {
+        it: {
+          banner: "ALLARME ATTIVO — controlla i sensori e le telecamere",
+          simulation: "Simulazione: allarme attivo"
+        },
+        fr: {
+          banner: "ALARME DÉCLENCHÉE — vérifier les capteurs et les caméras",
+          simulation: "Simulation : alarme déclenchée"
+        },
+        en: {
+          banner: "ALARM TRIGGERED — check the sensors and cameras",
+          simulation: "Simulation: alarm triggered"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
+    var alarmAlertText = ROOT.querySelector("#alert > span");
+
+    if (alarmAlertText) {
+      alarmAlertText.textContent = alarmAlertLabels().banner;
+    }
+    $("#sim-alarm").addEventListener("click", function () {
+      show("sic");
+      setAlarm("triggered", true);
+      render();
+
+      toast(
+        alarmAlertLabels().simulation,
+        "mdi-alarm-light",
+        "var(--danger)"
+      );
+    });
     $("#alert-off").addEventListener("click", function () { if (LIVE) armAlarm("disarmed"); else setAlarm("disarmed"); });
     $("#code-cancel").addEventListener("click", closeCode);
     $("#code-ok").addEventListener("click", function () { var c = $("#code-in").value, cb = codeCb; closeCode(); if (cb && c) cb(c); });
@@ -1343,11 +1965,28 @@
       });
     }
     function applyWorld() {
-      $("#hero-tag-text").textContent = AMB.W[S.world].name;
+      $("#hero-tag-text").textContent = worldName(S.world);
       buildWindows(); setArt(true); store("world", S.world);
       $$(".wcard").forEach(function (c) { c.classList.toggle("sel", c.dataset.world === S.world); });
     }
-    function setWorld(id, quiet) { S.world = id; applyWorld(); if (!quiet) toast("Mondo: " + AMB.W[id].name, AMB.W[id].icon, "var(--acc-text)"); }
+    function setWorld(id, quiet) {
+      S.world = id;
+      applyWorld();
+
+      if (!quiet) {
+        var prefix = {
+          it: "Mondo: ",
+          fr: "Univers : ",
+          en: "World: "
+        }[LANG] || "Mondo: ";
+
+        toast(
+          prefix + worldName(id),
+          AMB.W[id].icon,
+          "var(--acc-text)"
+        );
+      }
+    }
     function applyHour(h) {
       hour = h;
       var K = AMB.palette(h);
@@ -1359,16 +1998,37 @@
       $("#phase-out").textContent = pad(hh) + ":" + pad(mm);
       $("#phase-range").value = h;
       setIco($("#phase-icon"), K.dy < .12 ? "mdi-weather-night" : K.dy > .8 ? "mdi-weather-sunny" : (h < 12 ? "mdi-weather-sunset-up" : "mdi-weather-sunset-down"));
-      var gr = (h >= 22 || h < 5) ? "Buonanotte" : h < 12 ? "Buongiorno" : h < 18 ? "Buon pomeriggio" : "Buonasera";
+            var gr = (h >= 22 || h < 5)
+        ? tr("goodNight")
+        : h < 12
+          ? tr("goodMorning")
+          : h < 18
+            ? tr("goodAfternoon")
+            : tr("goodEvening");
       $("#greet").textContent = gr + ", " + userName;
       setArt();
     }
     function tickClock() { if (!clockLive) return; var d = new Date(); applyHour(d.getHours() + d.getMinutes() / 60); }
-    var months = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"];
-    var days = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
-    function tickDate() { var n = new Date(); $("#date-text").textContent = days[n.getDay()] + " " + n.getDate() + " " + months[n.getMonth()]; }
+        function tickDate() {
+      var n = new Date();
+
+      $("#date-text").textContent = n.toLocaleDateString(LOCALE, {
+        weekday: "long",
+        day: "numeric",
+        month: "long"
+      });
+    }
     $("#phase-range").addEventListener("input", function (e) { clockLive = false; applyHour(parseFloat(e.target.value)); });
-    $("#phase-real").addEventListener("click", function () { clockLive = true; tickClock(); toast("Ora reale ripristinata", "mdi-clock-outline", "var(--acc-text)"); });
+        $("#phase-real").addEventListener("click", function () {
+      clockLive = true;
+      tickClock();
+
+      toast(
+        tr("realTimeRestored"),
+        "mdi-clock-outline",
+        "var(--acc-text)"
+      );
+    });
 
     /* ------------------------------------------------------------------ effetti */
     var fxHero = new FX.Fx($("#fx-hero"), { k: 1, alpha: 1, onFlash: flash });
@@ -1382,7 +2042,46 @@
     }
 
     /* ------------------------------------------------------------------ tema + stile pulsanti */
-    function setTheme(t) { HOST.dataset.theme = t; setIco($("#theme-ico"), t === "dark" ? "mdi-weather-night" : "mdi-white-balance-sunny"); store("theme", t); }
+    function setTheme(t) {
+      HOST.dataset.theme = t;
+
+      setIco(
+        $("#theme-ico"),
+        t === "dark"
+          ? "mdi-weather-night"
+          : "mdi-white-balance-sunny"
+      );
+
+      store("theme", t);
+
+      var translations = {
+        it: {
+          switchToLight: "Passa al tema chiaro",
+          switchToDark: "Passa al tema scuro"
+        },
+        fr: {
+          switchToLight: "Passer au thème clair",
+          switchToDark: "Passer au thème sombre"
+        },
+        en: {
+          switchToLight: "Switch to light theme",
+          switchToDark: "Switch to dark theme"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var button = $("#theme-btn");
+
+      if (button) {
+        var actionLabel = t === "dark"
+          ? labels.switchToLight
+          : labels.switchToDark;
+
+        button.setAttribute("aria-label", actionLabel);
+        button.setAttribute("title", actionLabel);
+      }
+    }
     $("#theme-btn").addEventListener("click", function () { setTheme(HOST.dataset.theme === "dark" ? "light" : "dark"); });
     function setBtn(v) { S.btn = v; HOST.dataset.btn = v; store("btn", v); $$("#btn-style button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.v === v ? "true" : "false"); }); }
 
@@ -1390,7 +2089,22 @@
     function buildDrawer() {
       var w = $("#worlds");
       Object.keys(AMB.W).forEach(function (id) {
-        var d = AMB.W[id], b = el("button", "wcard", '<img alt="" draggable="false"><span><i class="mdi ' + d.icon + '"></i>' + d.name + "</span>", { type: "button", "data-world": id, title: d.desc });
+        var d = AMB.W[id];
+
+        var b = el(
+          "button",
+          "wcard",
+          '<img alt="" draggable="false"><span><i class="mdi ' +
+            d.icon +
+            '"></i>' +
+            worldName(id) +
+            "</span>",
+          {
+            type: "button",
+            "data-world": id,
+            title: worldDescription(id)
+          }
+        );
         b.addEventListener("click", function () { setWorld(id); });
         w.appendChild(b);
       });
@@ -1412,8 +2126,49 @@
     $("#fx-page-toggle").addEventListener("click", function () { S.fxPage = !S.fxPage; applyFx(); });
     var cycleT = 0;
     $("#cycle-toggle").addEventListener("click", function () {
-      S.cycle = !S.cycle; this.setAttribute("aria-pressed", S.cycle ? "true" : "false"); clearInterval(cycleT);
-      if (S.cycle) { cycleT = setInterval(function () { var ids = Object.keys(AMB.W), i = ids.indexOf(S.world); setWorld(ids[(i + 1) % ids.length], true); }, 30000); timers.push(cycleT); toast("Il mondo cambierà ogni 30 secondi", "mdi-shuffle-variant", "var(--acc-text)"); }
+      S.cycle = !S.cycle;
+
+      this.setAttribute(
+        "aria-pressed",
+        S.cycle ? "true" : "false"
+      );
+
+      clearInterval(cycleT);
+
+      if (S.cycle) {
+        cycleT = setInterval(function () {
+          var ids = Object.keys(AMB.W);
+          var i = ids.indexOf(S.world);
+
+          setWorld(ids[(i + 1) % ids.length], true);
+        }, 30000);
+
+        timers.push(cycleT);
+      }
+
+      var cycleMessages = {
+        it: {
+          enabled: "Il mondo cambierà ogni 30 secondi",
+          disabled: "Cambio automatico del mondo disattivato"
+        },
+        fr: {
+          enabled: "L’univers changera toutes les 30 secondes",
+          disabled: "Changement automatique d’univers désactivé"
+        },
+        en: {
+          enabled: "The world will change every 30 seconds",
+          disabled: "Automatic world switching disabled"
+        }
+      };
+
+      var cycleLabels =
+        cycleMessages[LANG] || cycleMessages.it;
+
+      toast(
+        S.cycle ? cycleLabels.enabled : cycleLabels.disabled,
+        "mdi-shuffle-variant",
+        "var(--acc-text)"
+      );
     });
     $$("#btn-style button").forEach(function (b) { b.addEventListener("click", function () { setBtn(b.dataset.v); }); });
     $("#reset-all").addEventListener("click", function () { try { Object.keys(localStorage).filter(function (k) { return k.indexOf("aurora-v3-") === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); });
@@ -1431,23 +2186,165 @@
     }, true);
 
     var edBase = "", edOv = "", edTab = 0;
+    function imageEditorHeaderLabels() {
+      var translations = {
+        it: {
+          title: "Modifica immagine",
+          pair: "Un’immagine da spento (PNG) e una da acceso (meglio una GIF animata)",
+          single: "L’immagine mostrata per questo stato"
+        },
+        fr: {
+          title: "Modifier l’image",
+          pair: "Une image pour l’état éteint (PNG) et une pour l’état allumé (de préférence un GIF animé)",
+          single: "L’image affichée pour cet état"
+        },
+        en: {
+          title: "Edit image",
+          pair: "One image for the off state (PNG) and one for the on state (preferably an animated GIF)",
+          single: "The image displayed for this state"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function openEditor(node) {
       edBase = node.dataset.img; edOv = node.dataset.ov || edBase;
       var b = IMG[edBase]; edTab = 0;
       LIBGROUPS.forEach(function (g2, i) { if (edBase.indexOf(g2[1]) === 0) edTab = i; });
-      $("#ed-title").textContent = node.dataset.label || "Modifica immagine";
-      $("#ed-sub").textContent = b.kind === "pair" ? "Un'immagine da spento (PNG) e una da acceso (meglio una GIF animata)" : "L'immagine mostrata per questo stato";
+      var headerLabels = imageEditorHeaderLabels();
+
+      $("#ed-title").textContent =
+        node.dataset.label || headerLabels.title;
+
+      $("#ed-sub").textContent = b.kind === "pair"
+        ? headerLabels.pair
+        : headerLabels.single;
       renderEditor();
       $("#editor").classList.add("open"); $("#editor").setAttribute("aria-hidden", "false");
     }
     function closeEditor() { $("#editor").classList.remove("open"); $("#editor").setAttribute("aria-hidden", "true"); }
+    function imageSlotLabels() {
+      var translations = {
+        it: {
+          off: "Spento",
+          on: "Acceso",
+          image: "Immagine",
+          chooseFile: "Clic o trascina un file"
+        },
+        fr: {
+          off: "Éteint",
+          on: "Allumé",
+          image: "Image",
+          chooseFile: "Cliquer ou déposer un fichier"
+        },
+        en: {
+          off: "Off",
+          on: "On",
+          image: "Image",
+          chooseFile: "Click or drop a file"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function slotHTML(label, slot) {
-      return '<div class="slot"><h4>' + label + '</h4><label class="drop" data-slot="' + slot + '"><img alt="" src="' + resolve(edOv, edBase, slot === "on") + '"><span class="hintt">Clic o trascina un file</span><input type="file" accept="image/*"></label></div>';
+      var labels = imageSlotLabels();
+
+      return (
+        '<div class="slot">' +
+          "<h4>" + label + "</h4>" +
+          '<label class="drop" data-slot="' + slot + '">' +
+            '<img alt="" src="' +
+              resolve(edOv, edBase, slot === "on") +
+            '">' +
+            '<span class="hintt">' +
+              labels.chooseFile +
+            "</span>" +
+            '<input type="file" accept="image/*">' +
+          "</label>" +
+        "</div>"
+      );
     }
+    function imageLibraryGroupLabel(group) {
+      var translations = {
+        it: {
+          luce: "Luci",
+          scena: "Scene",
+          sensore: "Sensori",
+          allarme: "Allarme",
+          clima: "Clima"
+        },
+        fr: {
+          luce: "Éclairage",
+          scena: "Scènes",
+          sensore: "Capteurs",
+          allarme: "Alarme",
+          clima: "Climat"
+        },
+        en: {
+          luce: "Lights",
+          scena: "Scenes",
+          sensore: "Sensors",
+          allarme: "Alarm",
+          clima: "Climate"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      return labels[group[1]] || group[0];
+    }
+    function imageLibraryName(key) {
+      var names = {
+        lucesalotto: ["Salon", "Living room"],
+        luceingresso: ["Entrée", "Entrance"],
+        lucecorridoio: ["Couloir", "Hallway"],
+        lucecucina: ["Cuisine", "Kitchen"],
+        lucebalcone: ["Balcon", "Balcony"],
+        lucecamera: ["Chambre", "Bedroom"],
+        lucecameretta: ["Chambre d’enfant", "Child’s bedroom"],
+        lucebagnopiccolo: ["Petite salle de bain", "Small bathroom"],
+        lucebagnodoccia: ["Douche", "Shower"],
+        lucelavanderia: ["Salle de lavage", "Laundry room"],
+        lucesgabuzzino: ["Rangement", "Storage"],
+
+        scenabuongiorno: ["Bonjour", "Good morning"],
+        scenacinema: ["Cinéma", "Cinema"],
+        scenacena: ["Repas", "Dinner"],
+        scenanotte: ["Bonne nuit", "Good night"],
+        scenaesco: ["Départ", "Leaving"],
+
+        sensoremovimento: ["Mouvement", "Motion"],
+        sensoreporta: ["Porte", "Door"],
+        sensorefinestra: ["Fenêtre", "Window"],
+        sensorecancello: ["Serrure", "Lock"],
+
+        allarmeoff: ["Désactivée", "Disarmed"],
+        allarmenotte: ["Nuit", "Night"],
+        allarmefuori: ["Absence", "Away"],
+        allarmescattato: ["Déclenchée", "Triggered"],
+
+        climaoff: ["Arrêt", "Off"],
+        climacool: ["Climatisation", "Cooling"],
+        climaheat: ["Chauffage", "Heating"],
+        climadry: ["Déshumidification", "Dehumidification"],
+        climafan: ["Ventilation", "Fan"],
+        climaauto: ["Automatique", "Automatic"]
+      };
+
+      var index = LANG === "fr" ? 0 : LANG === "en" ? 1 : -1;
+
+      if (index !== -1 && names[key]) {
+        return names[key][index];
+      }
+
+      return LIBNAMES[key] || key;
+    }        
     function renderEditor() {
+      var slotLabels = imageSlotLabels();
       var b = IMG[edBase], slots = $("#ed-slots");
-      if (b.kind === "pair") { slots.className = "slots"; slots.innerHTML = slotHTML("Spento", "off") + slotHTML("Acceso", "on"); }
-      else { slots.className = "slots one"; slots.innerHTML = '<div class="slot"><h4>Immagine</h4><label class="drop" data-slot="src"><img alt="" src="' + resolve(edOv, edBase, true) + '"><span class="hintt">Clic o trascina un file</span><input type="file" accept="image/*"></label></div>'; }
+      if (b.kind === "pair") { slots.className = "slots"; slots.innerHTML = slotHTML(slotLabels.off, "off") + slotHTML(slotLabels.on, "on"); }
+      else { slots.className = "slots one"; slots.innerHTML = slotHTML(slotLabels.image, "src"); }
       $$(".drop", slots).forEach(function (d) {
         var slot = d.dataset.slot;
         $("input", d).addEventListener("change", function (e) { if (e.target.files[0]) readFile(e.target.files[0], slot); });
@@ -1456,33 +2353,55 @@
         d.addEventListener("drop", function (e) { e.preventDefault(); d.classList.remove("over"); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0], slot); });
       });
       var tabs = $("#lib-tabs"); tabs.innerHTML = "";
-      LIBGROUPS.forEach(function (g2, i) { var t = el("button", "", g2[0], { type: "button", "aria-pressed": i === edTab ? "true" : "false" }); t.addEventListener("click", function () { edTab = i; renderEditor(); }); tabs.appendChild(t); });
+      LIBGROUPS.forEach(function (g2, i) { var t = el("button", "", imageLibraryGroupLabel(g2), { type: "button", "aria-pressed": i === edTab ? "true" : "false" }); t.addEventListener("click", function () { edTab = i; renderEditor(); }); tabs.appendChild(t); });
       var lib = $("#lib"); lib.innerHTML = "";
       Object.keys(IMG).filter(function (k) { return k.indexOf(LIBGROUPS[edTab][1]) === 0; }).forEach(function (k) {
-        var it = IMG[k], c = el("button", "", '<img alt="" src="' + (it.kind === "pair" ? it.off : it.src) + '"><span>' + LIBNAMES[k] + "</span>", { type: "button", title: LIBNAMES[k] });
+        var it = IMG[k], c = el("button", "", '<img alt="" src="' + (it.kind === "pair" ? it.off : it.src) + '"><span>' + imageLibraryName(k) + "</span>", { type: "button", title: imageLibraryName(k) });
         if (it.kind === "pair") { c.addEventListener("mouseenter", function () { $("img", c).src = it.on; }); c.addEventListener("mouseleave", function () { $("img", c).src = it.off; }); }
         c.addEventListener("click", function () { applyLib(k); });
         lib.appendChild(c);
       });
     }
+    function imageImportLabels() {
+      var translations = {
+        it: {
+          invalidType: "Scegli un file immagine: PNG, JPG, GIF, WebP",
+          tooLarge: "File troppo pesante: massimo 3 MB",
+          updated: "Immagine aggiornata"
+        },
+        fr: {
+          invalidType: "Choisis un fichier image : PNG, JPG, GIF ou WebP",
+          tooLarge: "Fichier trop volumineux : maximum 3 Mo",
+          updated: "Image mise à jour"
+        },
+        en: {
+          invalidType: "Choose an image file: PNG, JPG, GIF or WebP",
+          tooLarge: "File too large: maximum 3 MB",
+          updated: "Image updated"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function readFile(file, slot) {
-      if (!/^image\//.test(file.type)) { toast("Scegli un file immagine (PNG, JPG, GIF, WebP)", "mdi-alert-circle", "var(--warn)"); return; }
-      if (file.size > 3 * 1024 * 1024) { toast("File troppo pesante (massimo 3 MB)", "mdi-alert-circle", "var(--warn)"); return; }
+      var labels = imageImportLabels();
+      if (!/^image\//.test(file.type)) { toast(labels.invalidType, "mdi-alert-circle", "var(--warn)"); return; }
+      if (file.size > 3 * 1024 * 1024) { toast(labels.tooLarge, "mdi-alert-circle", "var(--warn)"); return; }
       var fr = new FileReader();
       fr.onload = function () {
         var prev = OV[edOv] ? JSON.parse(JSON.stringify(OV[edOv])) : null;
         OV[edOv] = OV[edOv] || {}; OV[edOv][slot] = fr.result;
         if (!saveOV()) { if (prev) OV[edOv] = prev; else delete OV[edOv]; return; }
-        refreshAll(); renderEditor(); toast("Immagine aggiornata", "mdi-image-check", "var(--ok)");
+        refreshAll(); renderEditor(); toast(labels.updated, "mdi-image-check", "var(--ok)");
       };
       fr.readAsDataURL(file);
     }
     function applyLib(k) {
       var it = IMG[k], b = IMG[edBase];
       if (b.kind === "pair") OV[edOv] = { off: it.off || it.src, on: it.on || it.src }; else OV[edOv] = { src: it.on || it.src };
-      saveOV(); refreshAll(); renderEditor(); toast("Immagine «" + LIBNAMES[k] + "» applicata", "mdi-image-check", "var(--ok)");
+      saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().appliedBefore + imageLibraryName(k) + imageSaveLabels().appliedAfter, "mdi-image-check", "var(--ok)");
     }
-    $("#ed-reset").addEventListener("click", function () { delete OV[edOv]; saveOV(); refreshAll(); renderEditor(); toast("Immagine originale ripristinata", "mdi-restore", "var(--acc-text)"); });
+    $("#ed-reset").addEventListener("click", function () { delete OV[edOv]; saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().restored,"mdi-restore","var(--acc-text)"); });
     $("#ed-done").addEventListener("click", closeEditor); $("#ed-close").addEventListener("click", closeEditor);
     $("#editor").addEventListener("click", function (e) { if (e.target === this) closeEditor(); });
     on(document, "keydown", function (e) { if (e.key === "Escape") { if ($("#codebox").classList.contains("open")) closeCode(); else if ($("#editor").classList.contains("open")) closeEditor(); else if (drawerOpen) closeDrawer(); else if (HOST.dataset.edit === "1") setEdit(false); } });
@@ -1500,7 +2419,7 @@
       return ids.filter(Boolean);
     }
     function condIcon(c) { return { sunny: "mdi-weather-sunny", "clear-night": "mdi-weather-night", cloudy: "mdi-weather-cloudy", partlycloudy: "mdi-weather-partly-cloudy", rainy: "mdi-weather-rainy", pouring: "mdi-weather-pouring", snowy: "mdi-weather-snowy", "snowy-rainy": "mdi-weather-snowy-rainy", fog: "mdi-weather-fog", lightning: "mdi-weather-lightning", "lightning-rainy": "mdi-weather-lightning-rainy", windy: "mdi-weather-windy", hail: "mdi-weather-hail" }[c] || "mdi-weather-partly-cloudy"; }
-    function fmt(n, d) { return Number(n).toLocaleString("it-IT", { maximumFractionDigits: d === undefined ? 1 : d }); }
+    function fmt(n, d) { return Number(n).toLocaleString(LOCALE, { maximumFractionDigits: d === undefined ? 1 : d }); }
     function syncLights() { Object.keys(ENT.lights).forEach(function (k) { var s = sv(ENT.lights[k]); state.lights[k] = !!s && s.state === "on"; }); }
     function syncLive(first) {
       // luci
@@ -1520,8 +2439,19 @@
         if (s && !na && s.last_changed && (!newest || new Date(s.last_changed) > newest.t)) newest = { t: new Date(s.last_changed), label: m[1] };
       });
       motNa = mNa;
-      $("#hero-motion").textContent = act ? "Movimento: " + act : (mTot && mNa === mTot ? "Sensori di movimento offline" : mNa ? "Nessun movimento · " + mNa + (mNa === 1 ? " sensore offline" : " sensori offline") : "Casa tranquilla");
-      if (newest) { lastMotion = newest.label; lastAt = newest.t.getTime(); lastMotionText(); } else $("#last-motion").textContent = mTot && mNa === mTot ? "Nessun sensore di movimento risponde" : "Nessun movimento recente";
+      $("#hero-motion").textContent = motionSummaryLabel(act, mTot, mNa);
+      if (newest) {
+        lastMotion = newest.label;
+        lastAt = newest.t.getTime();
+        lastMotionText();
+      } else {
+        var historyLabels = motionHistoryLabels();
+
+        $("#last-motion").textContent =
+          mTot && mNa === mTot
+            ? historyLabels.noneResponding
+            : historyLabels.noRecent;
+      }
       // aperture
       Object.keys(OPENS).forEach(function (id) {
         if (!ENT.opens[id]) return;
@@ -1551,36 +2481,185 @@
       t.im.onerror = function () { t.im.hidden = true; t.na.hidden = false; camMeta(t); };
       t.im.src = ep + (ep.indexOf("?") > -1 ? "&" : "?") + "_t=" + Date.now();
     }
+    function cameraMetaLabels() {
+      var translations = {
+        it: {
+          today: "oggi ",
+          lastMotion: "Ultimo movimento ",
+          loadedAt: "Immagine caricata alle ",
+          offline: "Telecamera offline",
+          unreachable: "HA non la raggiunge in questo momento",
+          noPreview: "Anteprima non disponibile",
+          openHint: "tocca per aprire la telecamera"
+        },
+        fr: {
+          today: "aujourd’hui ",
+          lastMotion: "Dernier mouvement : ",
+          loadedAt: "Image chargée à ",
+          offline: "Caméra hors ligne",
+          unreachable: "Home Assistant ne peut pas la joindre actuellement",
+          noPreview: "Aperçu indisponible",
+          openHint: "Toucher pour ouvrir la caméra"
+        },
+        en: {
+          today: "today ",
+          lastMotion: "Last motion: ",
+          loadedAt: "Image loaded at ",
+          offline: "Camera offline",
+          unreachable: "Home Assistant cannot reach it right now",
+          noPreview: "Preview unavailable",
+          openHint: "Tap to open the camera"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function camWhen(iso) {
       var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso || "");
       if (!m) return "";
       var now = new Date(), same = now.getFullYear() == m[1] && (now.getMonth() + 1) == +m[2] && now.getDate() == +m[3];
-      return (same ? "oggi " : m[3] + "/" + m[2] + " ") + m[4] + ":" + m[5];
+      return (
+        same
+          ? cameraMetaLabels().today
+          : m[3] + "/" + m[2] + " "
+      ) + m[4] + ":" + m[5];
     }
     function camOffline(t) { return !!t.c.cam && isUnavail(sv(t.c.cam)); }
     function camMeta(t) {
-      var off = camOffline(t), ok = !t.im.hidden, d = new Date(), parts = [];
-      if (t.c.kind === "motion") { var s = sv(t.c.img), w = s && camWhen(s.state); if (w) parts.push("Ultimo movimento " + w); }
-      else if (ok) parts.push("Immagine caricata alle " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()));
+      var labels = cameraMetaLabels();
+      var off = camOffline(t);
+      var ok = !t.im.hidden;
+      var d = new Date();
+      var parts = [];
+
+      if (t.c.kind === "motion") {
+        var s = sv(t.c.img);
+        var w = s && camWhen(s.state);
+
+        if (w) {
+          parts.push(labels.lastMotion + w);
+        }
+      } else if (ok) {
+        parts.push(
+          labels.loadedAt +
+          pad(d.getHours()) + ":" +
+          pad(d.getMinutes()) + ":" +
+          pad(d.getSeconds())
+        );
+      }
+
       t.meta.textContent = parts.join(" · ");
-      if (t.off) t.off.hidden = !off;
+
+      if (t.off) {
+        t.off.hidden = !off;
+      }
+
       var msg = t.na.querySelector("span");
-      if (msg) msg.innerHTML = off ? "Telecamera offline<br>HA non la raggiunge in questo momento" : "Anteprima non disponibile<br>tocca per aprire la telecamera";
+
+      if (msg) {
+        msg.innerHTML = off
+          ? labels.offline + "<br>" + labels.unreachable
+          : labels.noPreview + "<br>" + labels.openHint;
+      }
     }
     function camsStatus() { camTiles.forEach(camMeta); }
     function camLive(t, onOff) {
-      if (!t.c.live || !window.loadCardHelpers) return;
+      if (!t.c.live || !window.loadCardHelpers) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          live: "Diretta",
+          start: "Avvia la diretta",
+          stop: "Stop",
+          stopAction: "Interrompi la diretta",
+          unavailable: "Diretta non disponibile"
+        },
+        fr: {
+          live: "Direct",
+          start: "Ouvrir le direct",
+          stop: "Arrêter",
+          stopAction: "Arrêter le direct",
+          unavailable: "Direct indisponible"
+        },
+        en: {
+          live: "Live",
+          start: "Open live view",
+          stop: "Stop",
+          stopAction: "Stop live view",
+          unavailable: "Live view unavailable"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      function updateLiveButton(active) {
+        var text = t.bLive.querySelector("span");
+        var actionLabel = active
+          ? labels.stopAction
+          : labels.start;
+
+        if (text) {
+          text.textContent = active
+            ? labels.stop
+            : labels.live;
+        }
+
+        t.bLive.setAttribute("title", actionLabel);
+        t.bLive.setAttribute("aria-label", actionLabel);
+      }
+
       clearTimeout(t.timer);
+
       if (onOff) {
         window.loadCardHelpers().then(function (h) {
-          try { var e = h.createCardElement({ type: "picture-entity", entity: t.c.live, camera_view: "live", show_name: false, show_state: false }); e.hass = HASS; t.liveBox.innerHTML = ""; t.liveBox.appendChild(e); t.liveEl = e; }
-          catch (err) { toast("Diretta non disponibile", "mdi-alert-circle", "var(--warn)"); return; }
-          t.liveBox.hidden = false; t.im.hidden = true; t.na.hidden = true; t.bLive.classList.add("on"); t.bLive.querySelector("span").textContent = "Stop";
-          t.timer = setTimeout(function () { camLive(t, false); }, 120000);
+          try {
+            var e = h.createCardElement({
+              type: "picture-entity",
+              entity: t.c.live,
+              camera_view: "live",
+              show_name: false,
+              show_state: false
+            });
+
+            e.hass = HASS;
+            t.liveBox.innerHTML = "";
+            t.liveBox.appendChild(e);
+            t.liveEl = e;
+          } catch (err) {
+            toast(
+              labels.unavailable,
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+            return;
+          }
+
+          t.liveBox.hidden = false;
+          t.im.hidden = true;
+          t.na.hidden = true;
+          t.bLive.classList.add("on");
+
+          updateLiveButton(true);
+
+          t.timer = setTimeout(function () {
+            camLive(t, false);
+          }, 120000);
         });
       } else {
-        if (t.liveEl) { t.liveBox.innerHTML = ""; t.liveEl = null; }
-        t.liveBox.hidden = true; t.bLive.classList.remove("on"); t.bLive.querySelector("span").textContent = "Diretta"; t.im.hidden = false; camRefresh(t);
+        if (t.liveEl) {
+          t.liveBox.innerHTML = "";
+          t.liveEl = null;
+        }
+
+        t.liveBox.hidden = true;
+        t.bLive.classList.remove("on");
+
+        updateLiveButton(false);
+
+        t.im.hidden = false;
+        camRefresh(t);
       }
     }
     function camsStopAll() { camTiles.forEach(function (t) { if (t.liveEl) camLive(t, false); }); }
@@ -1589,12 +2668,78 @@
       if (!LIVE || !camTiles.length || $("#view-sic").hidden || document.hidden) return;
       camTiles.forEach(function (t) { if (!t.liveEl && t.c.poll && Date.now() - t.last > t.c.poll * 1000) camRefresh(t); });
     }
+    function translateCameraControls(card) {
+      var translations = {
+        it: {
+          refresh: "Aggiorna anteprima",
+          open: "Apri",
+          live: "Diretta",
+          offline: "Offline"
+        },
+        fr: {
+          refresh: "Actualiser l’aperçu",
+          open: "Ouvrir la caméra",
+          live: "Direct",
+          offline: "Hors ligne"
+        },
+        en: {
+          refresh: "Refresh preview",
+          open: "Open camera",
+          live: "Live",
+          offline: "Offline"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var refreshButton = card.querySelector('[data-a="refresh"]');
+
+      if (refreshButton) {
+        refreshButton.setAttribute("title", labels.refresh);
+        refreshButton.setAttribute("aria-label", labels.refresh);
+      }
+
+      var openButton = card.querySelector('[data-a="open"]');
+
+      if (openButton) {
+        openButton.setAttribute("title", labels.open);
+        openButton.setAttribute("aria-label", labels.open);
+      }
+
+      var liveButton = card.querySelector('[data-a="live"]');
+
+      if (liveButton) {
+        var liveText = liveButton.querySelector("span");
+
+        if (liveText) {
+          liveText.textContent = labels.live;
+        }
+
+        var startLabels = {
+          it: "Avvia la diretta",
+          fr: "Ouvrir le direct",
+          en: "Open live view"
+        };
+
+        var startLabel = startLabels[LANG] || startLabels.it;
+
+        liveButton.setAttribute("title", startLabel);
+        liveButton.setAttribute("aria-label", startLabel);
+      }
+
+      var offlineLabel = card.querySelector(".cam-off");
+
+      if (offlineLabel) {
+        offlineLabel.textContent = labels.offline;
+      }
+    }
     function buildCams() {
       var box = $("#cams");
       if (!box) return;
       box.innerHTML = ""; camTiles = [];
       var list = (ENT.cameras || []).filter(function (c) { return sv(c.img) || sv(c.live) || sv(c.cam); });
       if (!list.length) { box.hidden = true; return; }
+      box.hidden = false;
       list.forEach(function (c) {
         var card = el("article", "card cam",
           '<div class="cam-head"><h4>' + c.n + '</h4><span class="cam-off" hidden>Offline</span><span class="cam-meta"></span>' +
@@ -1605,6 +2750,7 @@
           '<div class="cam-na" hidden><i class="mdi mdi-video-off-outline"></i><span>Anteprima non disponibile<br>tocca per aprire la telecamera</span></div></div>');
         box.appendChild(card);
         hydrate(card);
+        translateCameraControls(card);        
         var t = { c: c, last: 0, im: $(".cam-img", card), na: $(".cam-na", card), liveBox: $(".live-box", card), meta: $(".cam-meta", card), off: $(".cam-off", card), bLive: $('[data-a="live"]', card), liveEl: null, timer: 0 };
         camTiles.push(t);
         $('[data-a="refresh"]', card).addEventListener("click", function () { camRefresh(t); });
@@ -1633,7 +2779,16 @@
     var CL_STATUS = { off: "Spento", cool: "Raffrescamento", heat: "Riscaldamento", dry: "Deumidificazione", fan_only: "Solo ventola", heat_cool: "Automatico" };
     var CL_IT = { Auto: "Auto", Low: "Minima", LowMid: "Bassa", Mid: "Media", HighMid: "Alta", High: "Massima", Up: "Alto", UpMid: "Medio-alto", DownMid: "Medio-basso", Down: "Basso", Left: "Sinistra", LeftMid: "Centro-sx", RightMid: "Centro-dx", Right: "Destra", none: "Normale", quiet: "Silenzioso", powerful: "Potente", eco: "Eco", boost: "Boost", comfort: "Comfort", sleep: "Notte", away: "Assente" };
     function it(k) { return CL_IT[k] || k; }
-    var clima = { avail: true, name: "Aria salone", mode: "off", action: "off", cur: 23, tgt: 25, min: 16, max: 30, step: .5, modes: ["off", "heat_cool", "cool", "dry", "fan_only", "heat"],
+    function defaultClimateName() {
+      var names = {
+        it: "Aria salone",
+        fr: "Climat du salon",
+        en: "Living room climate"
+      };
+
+      return names[LANG] || names.it;
+    }
+    var clima = { avail: true, name: defaultClimateName(), mode: "off", action: "off", cur: 23, tgt: 25, min: 16, max: 30, step: .5, modes: ["off", "heat_cool", "cool", "dry", "fan_only", "heat"],
       fan: "Auto", fans: ["Auto", "Low", "LowMid", "Mid", "HighMid", "High"], swing: "Up", swings: ["Auto", "Up", "UpMid", "Mid", "DownMid", "Down"], hswing: "Auto", hswings: ["Auto", "Left", "LeftMid", "Mid", "RightMid", "Right"], preset: "none", presets: ["none", "quiet", "powerful"] };
     var clTimer = 0;
     function climaFromHass() {
@@ -1673,16 +2828,76 @@
       var m = clima.mode, col = CL_COL[m] || CL_COL.off;
       box.style.setProperty("--cl", col); box.dataset.mode = m; box.classList.toggle("na", !clima.avail);
       $("#cl-name").textContent = clima.name; $("#cl-sub").textContent = clima.name;
-      var st = !clima.avail ? "Non disponibile" : (CL_STATUS[m] || m);
-      if (clima.avail && m !== "off" && clima.action === "idle") st += " · in pausa";
+      var climateText = climateLabels();
+
+      var st = !clima.avail
+        ? climateText.unavailable
+        : (CL_STATUS[m] || m);
+
+      if (clima.avail && m !== "off" && clima.action === "idle") {
+        st += " · " + climateText.idle;
+      }
+
       $("#cl-status").textContent = st;
-      $("#cl-cur").textContent = "In casa " + fmt(clima.cur) + " °C";
+
+      $("#cl-cur").textContent =
+        climateText.indoors + " " + fmt(clima.cur) + " °C";
+      var hintTranslations = {
+        it: {
+          unavailable: "Il climatizzatore non risponde: controlla il cloud Panasonic.",
+          current: "Acceso ma in pausa: in casa ci sono ",
+          target: "° e hai impostato ",
+          lower: "°. Abbassa la temperatura per far partire il raffrescamento.",
+          raise: "°. Alza la temperatura per far partire il riscaldamento."
+        },
+        fr: {
+          unavailable: "L’appareil est indisponible dans Home Assistant. Vérifiez sa connexion et son intégration.",
+          current: "Appareil activé, mais en pause : température intérieure de ",
+          target: "°, température cible de ",
+          lower: "°. Une consigne plus basse peut permettre de demander de la climatisation.",
+          raise: "°. Une consigne plus élevée peut permettre de demander du chauffage."
+        },
+        en: {
+          unavailable: "The device is unavailable in Home Assistant. Check its connection and integration.",
+          current: "Device on but idle: indoor temperature is ",
+          target: "° and the target is ",
+          lower: "°. A lower setpoint may allow cooling to be requested.",
+          raise: "°. A higher setpoint may allow heating to be requested."
+        }
+      };
+
+      var hintText = hintTranslations[LANG] || hintTranslations.it;
       var hint = "";
-      if (!clima.avail) hint = "Il climatizzatore non risponde: controlla il cloud Panasonic.";
-      else if (m === "cool" && clima.action !== "cooling" && clima.tgt >= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Abbassa la temperatura per far partire il raffrescamento.";
-      else if (m === "heat" && clima.action !== "heating" && clima.tgt <= clima.cur) hint = "Acceso ma in pausa: in casa ci sono " + fmt(clima.cur) + "° e hai impostato " + fmt(clima.tgt) + "°. Alza la temperatura per far partire il riscaldamento.";
+
+      if (!clima.avail) {
+        hint = hintText.unavailable;
+      } else if (
+        m === "cool" &&
+        clima.action !== "cooling" &&
+        clima.tgt >= clima.cur
+      ) {
+        hint =
+          hintText.current +
+          fmt(clima.cur) +
+          hintText.target +
+          fmt(clima.tgt) +
+          hintText.lower;
+      } else if (
+        m === "heat" &&
+        clima.action !== "heating" &&
+        clima.tgt <= clima.cur
+      ) {
+        hint =
+          hintText.current +
+          fmt(clima.cur) +
+          hintText.target +
+          fmt(clima.tgt) +
+          hintText.raise;
+      }
+
+
       var hn = $("#cl-hint"); hn.textContent = hint; hn.hidden = !hint;
-      $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString("it-IT", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      $("#cl-tgt").textContent = Number(clima.tgt).toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       var art = $("#cl-art"); art.dataset.img = climaArt(); refreshImg(art);
       var mw = $("#cl-modes"), msig = clima.modes.join("|") + "#" + m;
       if (mw.dataset.sig !== msig) {
@@ -1705,16 +2920,89 @@
       if (local) local();
       renderClima();
     }
-    function climaToast(m, nt) {
-      var lab = (CL_MODES.filter(function (x) { return x[0] === m; })[0] || [0, m])[1];
-      if (!LIVE) { toast("Clima: " + CL_STATUS[m] + (nt !== null ? " a " + fmt(nt) + "° (in casa " + fmt(clima.cur) + "°)" : ""), "mdi-air-conditioner", CL_COL[m]); return; }
-      toast("Clima: comando «" + lab + "»" + (nt !== null ? " a " + fmt(nt) + "°" : "") + " inviato", "mdi-air-conditioner", CL_COL[m]);
+    function climateCommandLabels() {
+      var translations = {
+        it: {
+          prefix: "Clima: ",
+          command: "comando «",
+          endQuote: "»",
+          target: " a ",
+          indoors: " (in casa ",
+          sent: " inviato",
+          unavailable: "Climatizzatore non raggiungibile: nessun comando inviato"
+        },
+        fr: {
+          prefix: "Climat : ",
+          command: "commande « ",
+          endQuote: " »",
+          target: " à ",
+          indoors: " (à l’intérieur ",
+          sent: " envoyée",
+          unavailable: "Appareil indisponible : aucune commande envoyée"
+        },
+        en: {
+          prefix: "Climate: ",
+          command: "command “",
+          endQuote: "”",
+          target: " at ",
+          indoors: " (indoors ",
+          sent: " sent",
+          unavailable: "Device unavailable: no command sent"
+        }
+      };
+
+      return translations[LANG] || translations.it;
     }
+
+    function climaToast(m, nt) {
+      var labels = climateCommandLabels();
+
+      var mode = CL_MODES.filter(function (item) {
+        return item[0] === m;
+      })[0];
+
+      var modeName = mode ? mode[1] : m;
+
+      var targetText = nt !== null && nt !== undefined
+        ? labels.target + fmt(nt) + "°"
+        : "";
+
+      if (!LIVE) {
+        var indoorsText = nt !== null && nt !== undefined
+          ? labels.indoors + fmt(clima.cur) + "°)"
+          : "";
+
+        toast(
+          labels.prefix + (CL_STATUS[m] || modeName) +
+            targetText + indoorsText,
+          "mdi-air-conditioner",
+          CL_COL[m]
+        );
+
+        return;
+      }
+
+      toast(
+        labels.prefix + labels.command + modeName +
+          labels.endQuote + targetText + labels.sent,
+        "mdi-air-conditioner",
+        CL_COL[m]
+      );
+    }
+
     function buildClima() {
       if (!$("#clima")) return;
       $("#cl-modes").addEventListener("click", function (e) {
         var b = e.target.closest("[data-mode]"); if (!b) return; var m = b.dataset.mode, wasOff = clima.mode === "off";
-        if (LIVE && !clima.avail) { toast("Climatizzatore non raggiungibile: nessun comando inviato", "mdi-alert-circle", "var(--warn)"); return; }
+        if (LIVE && !clima.avail) {
+          toast(
+            climateCommandLabels().unavailable,
+            "mdi-alert-circle",
+            "var(--warn)"
+          );
+
+          return;
+        }
         climaCall(m === "off" ? "turn_off" : "set_hvac_mode", m === "off" ? {} : { hvac_mode: m }, function () { clima.mode = m; clima.action = m === "off" ? "off" : ""; });
         // accendendo in freddo/caldo, se la temperatura impostata non farebbe partire nulla, la porto 2° oltre quella di casa
         var nt = null, st = clima.step || .5;
@@ -1764,12 +3052,57 @@
     }
     function chipPower(v) { showDelta(v); tweenW($("#power-val"), null, v); }
     function enAge() {
-      var n = $("#en-age"); if (!n) return;
-      if (!LIVE) { n.textContent = "· in tempo reale"; return; }
+      var n = $("#en-age");
+
+      if (!n) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          preview: "in tempo reale",
+          updatedNow: "aggiornata ora",
+          updatedBefore: "aggiornata ",
+          updatedAfter: " s fa"
+        },
+        fr: {
+          preview: "simulation en cours",
+          updatedNow: "mise à jour à l’instant",
+          updatedBefore: "mise à jour il y a ",
+          updatedAfter: " s"
+        },
+        en: {
+          preview: "simulation running",
+          updatedNow: "updated just now",
+          updatedBefore: "updated ",
+          updatedAfter: " s ago"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      if (!LIVE) {
+        n.textContent = labels.preview;
+        return;
+      }
+
       var s = sv(ENT.energy.power) || sv(ENT.power);
-      if (!s || !s.last_updated) { n.textContent = ""; return; }
-      var sec = Math.max(0, Math.round((Date.now() - new Date(s.last_updated).getTime()) / 1000));
-      n.textContent = "· aggiornata " + (sec < 2 ? "ora" : sec + " s fa");
+
+      if (!s || !s.last_updated) {
+        n.textContent = "";
+        return;
+      }
+
+      var sec = Math.max(
+        0,
+        Math.round(
+          (Date.now() - new Date(s.last_updated).getTime()) / 1000
+        )
+      );
+
+      n.textContent = sec < 2
+        ? labels.updatedNow
+        : labels.updatedBefore + sec + labels.updatedAfter;
     }
     /* chiede a Home Assistant di rileggere il contatore ogni pochi secondi, finché guardi la dashboard */
     var lastPoll = 0;
@@ -1784,9 +3117,9 @@
     /* ------------------------------------------------------------------ energia / consumi (Shelly EM) */
     var EN = { range: "24h", series: [], busy: false, last: 0, rangeKey: "", days: [], daysAt: 0, tipIdx: -1, dayUnit: "kwh", pEff: 0.3, pDrawn: 0 };
     function enNum(id) { var s = sv(id); if (!s || isUnavail(s)) return null; var v = parseFloat(s.state); return isNaN(v) ? null : v; }
-    function fmtKwh(v) { return v === null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: v >= 100 ? 0 : 1, maximumFractionDigits: v >= 100 ? 0 : 2 }); }
-    function fmtEur(v) { return v === null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
-    function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString("it-IT"), u: "W" }; }
+    function fmtKwh(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: v >= 100 ? 0 : 1, maximumFractionDigits: v >= 100 ? 0 : 2 }); }
+    function fmtEur(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+    function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString(LOCALE), u: "W" }; }
     var demoE = { p: 180, t0: Date.now() };
     function demoPower() { var m = (Date.now() - demoE.t0) / 1000; return Math.max(60, 190 + 90 * Math.sin(m / 9) + 60 * Math.sin(m / 3.1) + (Math.sin(m / 47) > .8 ? 1400 : 0)); }
     /* tariffa €/kWh: helper di Home Assistant (vale su tutti i dispositivi) → copia locale → valore di esempio */
@@ -1800,11 +3133,42 @@
       if (l > 0) return { v: l, src: "local" };
       return { v: 0, src: LIVE ? "none" : "demo" };
     }
+    function demoApplianceName(name) {
+      var translations = {
+        fr: {
+          Lavatrice: "Laveuse",
+          Asciugatrice: "Sécheuse",
+          Lavastoviglie: "Lave-vaisselle",
+          Forno: "Four",
+          Multipresa: "Multiprise",
+          Frigorifero: "Réfrigérateur"
+        },
+        en: {
+          Lavatrice: "Washer",
+          Asciugatrice: "Dryer",
+          Lavastoviglie: "Dishwasher",
+          Forno: "Oven",
+          Multipresa: "Power strip",
+          Frigorifero: "Refrigerator"
+        }
+      };
+
+      var names = translations[LANG];
+
+      if (
+        names &&
+        Object.prototype.hasOwnProperty.call(names, name)
+      ) {
+        return names[name];
+      }
+
+      return name;
+    }
     function enModel() {
       var E = ENT.energy, m, sc = {};
       if (!LIVE) {
         m = { power: demoPower(), volt: 229.8, base: 98, avg3: 204, limit: 3400, today: 3.4, yest: 10.3, month: 71.4, lmonth: 211.3, year: 2043.9, na: false,
-          apps: [{ n: "Lavatrice", w: 460, e: .42, ic: "mdi-washing-machine", c: "#38BDF8" }, { n: "Asciugatrice", w: 0, e: .01, ic: "mdi-tumble-dryer", c: "#F472B6" }, { n: "Lavastoviglie", w: 1080, e: .55, ic: "mdi-dishwasher", c: "#22D3EE" }, { n: "Forno", w: 0, e: 0, ic: "mdi-stove", c: "#FB923C" }, { n: "Multipresa", w: 12, e: .14, ic: "mdi-power-socket-eu", c: "#A78BFA" }, { n: "Frigorifero", w: 74, e: .62, ic: "mdi-fridge", c: "#34D399" }] };
+          apps: [{ n: demoApplianceName("Lavatrice"), w: 460, e: .42, ic: "mdi-washing-machine", c: "#38BDF8" }, { n: demoApplianceName("Asciugatrice"), w: 0, e: .01, ic: "mdi-tumble-dryer", c: "#F472B6" }, { n: demoApplianceName("Lavastoviglie"), w: 1080, e: .55, ic: "mdi-dishwasher", c: "#22D3EE" }, { 	n: demoApplianceName("Forno"), w: 0, e: 0, ic: "mdi-stove", c: "#FB923C" }, { n: demoApplianceName("Multipresa"), w: 12, e: .14, ic: "mdi-power-socket-eu", c: "#A78BFA" }, { n: demoApplianceName("Frigorifero"), w: 74, e: .62, ic: "mdi-fridge", c: "#34D399" }] };
       } else {
         var lim = enNum(E.limit) || E.limitDefault;
         m = { power: enNum(E.power) !== null ? enNum(E.power) : enNum(ENT.power), volt: enNum(E.voltage), base: enNum(E.base), avg3: enNum(E.avg3), limit: lim,
@@ -1827,14 +3191,65 @@
       m.cToday = cost(m.today, sc.today); m.cYest = cost(m.yest, sc.yest); m.cMonth = cost(m.month, sc.month); m.cLmonth = cost(m.lmonth, sc.lmonth); m.cYear = cost(m.year, sc.year);
       return m;
     }
+    function energyLevelLabels() {
+      var translations = {
+        it: {
+          unavailable: "Dato non disponibile",
+          background: "Solo consumo di fondo",
+          low: "Consumo basso",
+          normal: "Consumo nella norma",
+          high: "Consumo alto",
+          critical: "Attenzione: vicino al limite",
+          summary: "Misura generale della casa · limite di avviso "
+        },
+        fr: {
+          unavailable: "Donnée indisponible",
+          background: "Puissance de fond seulement",
+          low: "Puissance faible",
+          normal: "Puissance modérée",
+          high: "Puissance élevée",
+          critical: "Attention : seuil approché",
+          summary: "Mesure globale de la maison · seuil d’avertissement "
+        },
+        en: {
+          unavailable: "Data unavailable",
+          background: "Background load only",
+          low: "Low power usage",
+          normal: "Moderate power usage",
+          high: "High power usage",
+          critical: "Warning: approaching threshold",
+          summary: "Whole-home measurement · warning threshold "
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function enLevel(m) {
+      var labels = energyLevelLabels();
       var pct = m.power / m.limit;
-      if (m.na) return ["low", "Dato non disponibile", 0];
-      if (m.base && m.power <= m.base * 1.25) return ["low", "Solo consumo di fondo", pct];
-      if (pct < .25) return ["low", "Consumo basso", pct];
-      if (pct < .55) return ["mid", "Consumo nella norma", pct];
-      if (pct < .8) return ["high", "Consumo alto", pct];
-      return ["crit", "Attenzione: vicino al limite", pct];
+
+      if (m.na) {
+        return ["low", labels.unavailable, 0];
+      }
+
+      if (m.base && m.power <= m.base * 1.25) {
+        return ["low", labels.background, pct];
+      }
+
+      if (pct < .25) {
+        return ["low", labels.low, pct];
+      }
+
+      if (pct < .55) {
+        return ["mid", labels.normal, pct];
+      }
+
+      if (pct < .8) {
+        return ["high", labels.high, pct];
+      }
+
+      return ["crit", labels.critical, pct];
     }
     function renderEnergy() {
       if (!$("#en-hero")) return;
@@ -1844,89 +3259,499 @@
       var dash = Math.max(0, Math.min(100, (m.power || 0) / m.limit * 100)).toFixed(1);
       $("#en-arc").setAttribute("stroke-dasharray", dash + " 100"); $("#en-glow").setAttribute("stroke-dasharray", dash + " 100");
       $("#en-title").textContent = lv[1];
-      $("#en-sub").textContent = "Misura generale della casa · limite di avviso " + fmtW(m.limit).n + " " + fmtW(m.limit).u;
+      $("#en-sub").textContent = energyLevelLabels().summary + fmtW(m.limit).n + " " + fmtW(m.limit).u;
+
+      // Instantaneous energy chips.
+      var powerChipTranslations = {
+        it: {
+          changeRate: "Tocca per cambiare la tariffa",
+          currentCost: "Costa adesso",
+          baseline: "Fondo",
+          average: "Media 3 h",
+          voltage: "Tensione"
+        },
+        fr: {
+          changeRate: "Modifier le tarif",
+          currentCost: "Coût actuel",
+          baseline: "Consommation de fond",
+          average: "Moyenne sur 3 h",
+          voltage: "Tension"
+        },
+        en: {
+          changeRate: "Change the rate",
+          currentCost: "Current cost",
+          baseline: "Baseline",
+          average: "3-hour average",
+          voltage: "Voltage"
+        }
+      };
+
+      var powerChipLabels =
+        powerChipTranslations[LANG] || powerChipTranslations.it;
+
       var chips = "";
       EN.pEff = m.pEff;
-      if (m.power !== null && !m.na) chips += '<span class="echip cost" title="Tocca per cambiare la tariffa"><i class="mdi mdi-currency-eur"></i>Costa adesso <b>' + fmtEur(m.power / 1000 * m.pEff) + "/h</b></span>";
-      if (m.base !== null) chips += '<span class="echip"><i class="mdi mdi-sleep"></i>Fondo <b>' + Math.round(m.base) + " W</b></span>";
-      if (m.avg3 !== null) chips += '<span class="echip"><i class="mdi mdi-chart-bell-curve"></i>Media 3 h <b>' + Math.round(m.avg3) + " W</b></span>";
-      if (m.volt !== null) chips += '<span class="echip"><i class="mdi mdi-sine-wave"></i>Tensione <b>' + fmtKwh(m.volt).replace(",0", "") + " V</b></span>";
-      var ch = $("#en-chips"); if (ch.dataset.sig !== chips) { ch.dataset.sig = chips; ch.innerHTML = chips; hydrate(ch); }
-      // tariffa
+
+      if (m.power !== null && !m.na) {
+        chips +=
+          '<span class="echip cost" title="' +
+          powerChipLabels.changeRate +
+          '"><i class="mdi mdi-currency-eur"></i>' +
+          powerChipLabels.currentCost +
+          ' <b>' +
+          fmtEur(m.power / 1000 * m.pEff) +
+          "/h</b></span>";
+      }
+
+      if (m.base !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-sleep"></i>' +
+          powerChipLabels.baseline +
+          ' <b>' +
+          Math.round(m.base) +
+          " W</b></span>";
+      }
+
+      if (m.avg3 !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-chart-bell-curve"></i>' +
+          powerChipLabels.average +
+          ' <b>' +
+          Math.round(m.avg3) +
+          " W</b></span>";
+      }
+
+      if (m.volt !== null) {
+        chips +=
+          '<span class="echip"><i class="mdi mdi-sine-wave"></i>' +
+          powerChipLabels.voltage +
+          ' <b>' +
+          fmtKwh(m.volt).replace(",0", "") +
+          " V</b></span>";
+      }
+
+      var ch = $("#en-chips");
+
+      if (ch.dataset.sig !== chips) {
+        ch.dataset.sig = chips;
+        ch.innerHTML = chips;
+        hydrate(ch);
+      }
+      // Energy rate bar.
       var pb = $("#en-price"), P = m.price;
+
       if (pb) {
+        var rateTranslations = {
+          it: {
+            rate: "Tariffa ",
+            unset: "Tariffa non impostata",
+            example: "Tariffa di esempio ",
+            savedHA: "Salvata in Home Assistant · ogni costo è kWh × tariffa",
+            savedLocal: "Salvata su questo dispositivo · ogni costo è kWh × tariffa",
+            sensorsBefore: "I costi arrivano dai tuoi sensori (≈ ",
+            sensorsAfter: " €/kWh). Imposta la tariffa della bolletta per i costi reali",
+            prompt: "Imposta il prezzo della tua bolletta per vedere i costi reali",
+            edit: "Modifica",
+            set: "Imposta"
+          },
+          fr: {
+            rate: "Tarif ",
+            unset: "Tarif non défini",
+            example: "Tarif de démonstration ",
+            savedHA: "Enregistré dans Home Assistant · coût = kWh × tarif",
+            savedLocal: "Enregistré dans ce navigateur · coût = kWh × tarif",
+            sensorsBefore: "Les coûts proviennent de tes capteurs (≈ ",
+            sensorsAfter: " €/kWh). Définis le tarif de ta facture pour calculer les coûts avec ce tarif",
+            prompt: "Définis le tarif de ta facture pour estimer les coûts",
+            edit: "Modifier",
+            set: "Définir"
+          },
+          en: {
+            rate: "Rate ",
+            unset: "Rate not set",
+            example: "Demo rate ",
+            savedHA: "Saved in Home Assistant · cost = kWh × rate",
+            savedLocal: "Saved in this browser · cost = kWh × rate",
+            sensorsBefore: "Costs come from your sensors (≈ ",
+            sensorsAfter: " €/kWh). Set your bill rate to calculate costs using that rate",
+            prompt: "Set your bill rate to estimate costs",
+            edit: "Edit",
+            set: "Set"
+          }
+        };
+
+        var rateLabels = rateTranslations[LANG] || rateTranslations.it;
+
         pb.classList.toggle("unset", P.v <= 0);
-        $("#pb-main").textContent = P.v > 0 ? "Tariffa " + fmtP(P.v) + " €/kWh" : (m.src === "sensori" ? "Tariffa non impostata" : "Tariffa di esempio " + fmtP(m.pEff) + " €/kWh");
-        $("#pb-sub").textContent = P.src === "ha" ? "Salvata in Home Assistant · ogni costo è kWh × tariffa" : P.src === "local" ? "Salvata su questo dispositivo · ogni costo è kWh × tariffa"
-          : m.src === "sensori" ? "I costi arrivano dai tuoi sensori (≈ " + fmtP(m.pEff) + " €/kWh). Imposta la tariffa della bolletta per i costi reali" : "Imposta il prezzo della tua bolletta per vedere i costi reali";
-        $("#pb-cta").textContent = P.v > 0 ? "Modifica" : "Imposta";
+
+        $("#pb-main").textContent = P.v > 0
+          ? rateLabels.rate + fmtP(P.v) + " €/kWh"
+          : m.src === "sensori"
+            ? rateLabels.unset
+            : rateLabels.example + fmtP(m.pEff) + " €/kWh";
+
+        $("#pb-sub").textContent = P.src === "ha"
+          ? rateLabels.savedHA
+          : P.src === "local"
+            ? rateLabels.savedLocal
+            : m.src === "sensori"
+              ? rateLabels.sensorsBefore +
+                fmtP(m.pEff) +
+                rateLabels.sensorsAfter
+              : rateLabels.prompt;
+
+        $("#pb-cta").textContent = P.v > 0
+          ? rateLabels.edit
+          : rateLabels.set;
       }
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
-      // KPI
-      var dom = new Date(), dim = new Date(dom.getFullYear(), dom.getMonth() + 1, 0).getDate(), est = (m.month !== null && dom.getDate() > 0) ? m.month / dom.getDate() * dim : null;
+      // Energy KPI labels.
+      var kpiTranslations = {
+        it: {
+          today: "Oggi",
+          yesterday: "Ieri",
+          thisMonth: "Questo mese",
+          lastMonth: "Mese scorso",
+          thisYear: "Quest'anno",
+          monthEstimate: "Stima fine mese ≈ "
+        },
+        fr: {
+          today: "Aujourd’hui",
+          yesterday: "Hier",
+          thisMonth: "Ce mois-ci",
+          lastMonth: "Mois dernier",
+          thisYear: "Cette année",
+          monthEstimate: "Estimation de fin de mois ≈ "
+        },
+        en: {
+          today: "Today",
+          yesterday: "Yesterday",
+          thisMonth: "This month",
+          lastMonth: "Last month",
+          thisYear: "This year",
+          monthEstimate: "Month-end estimate ≈ "
+        }
+      };
+
+      var kpiLabels = kpiTranslations[LANG] || kpiTranslations.it;
+
+      var dom = new Date();
+      var dim = new Date(
+        dom.getFullYear(),
+        dom.getMonth() + 1,
+        0
+      ).getDate();
+
+      var est = (m.month !== null && dom.getDate() > 0)
+        ? m.month / dom.getDate() * dim
+        : null;
+
       var kp = [
-        ["mdi-calendar-today", "Oggi", m.today, m.cToday, ""], ["mdi-calendar-arrow-left", "Ieri", m.yest, m.cYest, ""],
-        ["mdi-calendar-month", "Questo mese", m.month, m.cMonth, est !== null ? "Stima fine mese ≈ " + Math.round(est) + " kWh" + (m.cMonth !== null ? " · " + fmtEur(m.cMonth / dom.getDate() * dim) : "") : ""],
-        ["mdi-calendar-month-outline", "Mese scorso", m.lmonth, m.cLmonth, ""], ["mdi-calendar-star", "Quest'anno", m.year, m.cYear, ""]];
+        [
+          "mdi-calendar-today",
+          kpiLabels.today,
+          m.today,
+          m.cToday,
+          ""
+        ],
+        [
+          "mdi-calendar-arrow-left",
+          kpiLabels.yesterday,
+          m.yest,
+          m.cYest,
+          ""
+        ],
+        [
+          "mdi-calendar-month",
+          kpiLabels.thisMonth,
+          m.month,
+          m.cMonth,
+          est !== null
+            ? kpiLabels.monthEstimate +
+              Math.round(est) +
+              " kWh" +
+              (
+                m.cMonth !== null
+                  ? " · " + fmtEur(
+                      m.cMonth / dom.getDate() * dim
+                    )
+                  : ""
+              )
+            : ""
+        ],
+        [
+          "mdi-calendar-month-outline",
+          kpiLabels.lastMonth,
+          m.lmonth,
+          m.cLmonth,
+          ""
+        ],
+        [
+          "mdi-calendar-star",
+          kpiLabels.thisYear,
+          m.year,
+          m.cYear,
+          ""
+        ]
+      ];
+
       var kh = kp.map(function (k) { return '<article class="card kpi' + (k[2] === null ? " na" : "") + '"><span class="k-l"><i class="mdi ' + k[0] + '"></i>' + k[1] + '</span><span class="k-v">' + fmtKwh(k[2]) + "<small>kWh</small></span><span class=\"k-c\">" + fmtEur(k[3]) + '</span><span class="k-s">' + (k[4] || "&nbsp;") + "</span></article>"; }).join("");
       var kb = $("#en-kpis"); if (kb.dataset.sig !== kh) { kb.dataset.sig = kh; kb.innerHTML = kh; hydrate(kb); }
       // elettrodomestici
+      var applianceTranslations = {
+        it: {
+          other: "Altro (luci, standby…)",
+          noneOn: "Nessun elettrodomestico acceso",
+          todaySuffix: " kWh oggi",
+          unavailable: "Non disponibile"
+        },
+        fr: {
+          other: "Autres (éclairage, veille…)",
+          noneOn: "Aucun appareil au-dessus du seuil d’affichage",
+          todaySuffix: " kWh aujourd’hui",
+          unavailable: "Indisponible"
+        },
+        en: {
+          other: "Other (lights, standby…)",
+          noneOn: "No appliance above the display threshold",
+          todaySuffix: " kWh today",
+          unavailable: "Unavailable"
+        }
+      };
+
+      var applianceLabels =
+        applianceTranslations[LANG] || applianceTranslations.it;      
       var apps = m.apps, sum = 0; apps.forEach(function (x) { if (x.w) sum += x.w; });
       var other = Math.max(0, (m.power || 0) - sum), tot = Math.max(m.power || 0, sum, 1);
       var segs = apps.filter(function (x) { return x.w > 3; }).map(function (x) { return [x.n, x.c, x.w]; });
-      if (other > 3) segs.push(["Altro (luci, standby…)", "#64748B", other]);
+      if (other > 3) {
+        segs.push([applianceLabels.other, "#64748B", other]);
+      }
       var sh = $("#en-share"), shHtml = segs.map(function (g2) { return '<i style="width:' + (g2[2] / tot * 100).toFixed(1) + "%;background:" + g2[1] + '"></i>'; }).join("");
       if (sh.dataset.sig !== shHtml) { sh.dataset.sig = shHtml; sh.innerHTML = shHtml; }
       var lg = $("#en-share-legend");
       if (!lg) { lg = el("div", "share-legend"); lg.id = "en-share-legend"; sh.insertAdjacentElement("afterend", lg); }
-      lg.innerHTML = segs.map(function (g2) { return '<span style="--c:' + g2[1] + '">' + g2[0] + " <b>" + Math.round(g2[2]) + " W</b></span>"; }).join("") || '<span style="--c:#34D399">Nessun elettrodomestico acceso</span>';
+      lg.innerHTML = segs.map(function (g2) { return '<span style="--c:' + g2[1] + '">' + g2[0] + " <b>" + Math.round(g2[2]) + " W</b></span>"; }).join("") || '<span style="--c:#34D399">' + applianceLabels.noneOn + '</span>';
       var ap = $("#en-apps"), ah = apps.map(function (x, i) {
         var run = x.w !== null && x.w >= 5;
-        return '<button class="app' + (run ? " run" : "") + (x.na ? " na" : "") + '" type="button" data-app="' + i + '" style="--c:' + x.c + '"><span class="a-ico"><i class="mdi ' + x.ic + '"></i></span><span class="a-name">' + x.n + '</span><span class="a-w">' + (x.na || x.w === null ? "—" : (x.w >= 1000 ? fmtW(x.w).n + " kW" : Math.round(x.w) + " W")) + '</span><span class="a-e">' + (x.e !== null ? fmtKwh(x.e) + " kWh oggi" : (x.na ? "Non disponibile" : "&nbsp;")) + "</span></button>";
+        return '<button class="app' + (run ? " run" : "") + (x.na ? " na" : "") + '" type="button" data-app="' + i + '" style="--c:' + x.c + '"><span class="a-ico"><i class="mdi ' + x.ic + '"></i></span><span class="a-name">' + x.n + '</span><span class="a-w">' + (x.na || x.w === null ? "—" : (x.w >= 1000 ? fmtW(x.w).n + " kW" : Math.round(x.w) + " W")) + '</span><span class="a-e">' + (x.e !== null ? fmtKwh(x.e) + applianceLabels.todaySuffix : (x.na ? applianceLabels.unavailable : "&nbsp;")) + "</span></button>";
       }).join("");
       if (ap.dataset.sig !== ah) { ap.dataset.sig = ah; ap.innerHTML = ah; hydrate(ap); $$(".app", ap).forEach(function (b) { b.addEventListener("click", function () { if (LIVE) moreInfo(ENT.energy.appliances[+b.dataset.app].p); }); }); }
     }
     /* ---- tariffa: finestra per impostare il costo del kWh ---- */
-    function fmtP(v) { return Number(v).toLocaleString("it-IT", { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
+    function fmtP(v) { return Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function prNum(sel) { var v = parseFloat(String($(sel).value).replace(",", ".")); return isNaN(v) ? null : v; }
     function prSet(v) { $("#pr-in").value = (Math.round(v * 1000) / 1000).toFixed(3); prMark(); }
     function prMark() { var v = prNum("#pr-in"); $$("#pr-pre button").forEach(function (b) { b.setAttribute("aria-pressed", v !== null && Math.abs(+b.dataset.v - v) < 0.0005 ? "true" : "false"); }); }
+    function priceCalculationLabels() {
+      var translations = {
+        it: {
+          result: "Costo reale: ",
+          useValue: "Usa questo"
+        },
+        fr: {
+          result: "Coût moyen de la facture : ",
+          useValue: "Utiliser cette valeur"
+        },
+        en: {
+          result: "Average bill cost: ",
+          useValue: "Use this value"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function prCalcOut() {
-      var b = prNum("#pr-bill"), k = prNum("#pr-kwh"), o = $("#pr-calc-out");
-      if (b > 0 && k > 0) { var v = b / k; o.innerHTML = "Costo reale: <b>" + fmtP(v) + " €/kWh</b>"; var u = el("button", "linkb", "Usa questo", { type: "button" }); u.addEventListener("click", function () { prSet(v); }); o.appendChild(u); } else o.textContent = "";
+      var bill = prNum("#pr-bill");
+      var kwh = prNum("#pr-kwh");
+      var output = $("#pr-calc-out");
+      var labels = priceCalculationLabels();
+
+      if (bill > 0 && kwh > 0) {
+        var value = bill / kwh;
+
+        output.innerHTML =
+          labels.result +
+          "<b>" + fmtP(value) + " €/kWh</b>";
+
+        var useButton = el(
+          "button",
+          "linkb",
+          labels.useValue,
+          { type: "button" }
+        );
+
+        useButton.addEventListener("click", function () {
+          prSet(value);
+        });
+
+        output.appendChild(useButton);
+      } else {
+        output.textContent = "";
+      }
     }
     function openPrice() {
-      var m = enModel(), cur = m.price.v > 0 ? m.price.v : m.pEff, box = $("#pricebox");
+      var translations = {
+        it: {
+          sensorsBefore: "I sensori che avevi già calcolano i costi a circa ",
+          sensorsAfter: ".",
+          useValue: "Usa questo",
+          preview: "Anteprima: la tariffa resta salvata solo in questo browser.",
+          savedBefore: "Viene salvata in Home Assistant (",
+          savedAfter: "): vale su tutti i tuoi dispositivi.",
+          createBefore: "Al primo salvataggio creo in Home Assistant l'helper ",
+          createAfter: " (serve un utente amministratore); altrimenti resta su questo dispositivo."
+        },
+        fr: {
+          sensorsBefore: "Les coûts de tes capteurs correspondent à environ ",
+          sensorsAfter: ".",
+          useValue: "Utiliser cette valeur",
+          preview: "Démonstration : le tarif reste enregistré uniquement dans ce navigateur.",
+          savedBefore: "Le tarif sera enregistré dans Home Assistant (",
+          savedAfter: ") et pourra être utilisé par cette carte sur tes autres appareils.",
+          createBefore: "Au premier enregistrement, la carte tentera de créer dans Home Assistant le helper ",
+          createAfter: " (compte administrateur requis). En cas d’échec, le tarif sera conservé uniquement dans ce navigateur."
+        },
+        en: {
+          sensorsBefore: "Your sensor costs correspond to approximately ",
+          sensorsAfter: ".",
+          useValue: "Use this value",
+          preview: "Preview: the rate is saved only in this browser.",
+          savedBefore: "The rate will be saved in Home Assistant (",
+          savedAfter: ") and can be used by this card on your other devices.",
+          createBefore: "On first save, the card will attempt to create the Home Assistant helper ",
+          createAfter: " (administrator account required). If this fails, the rate will be saved only in this browser."
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var m = enModel();
+      var cur = m.price.v > 0 ? m.price.v : m.pEff;
+      var box = $("#pricebox");
+
       prSet(cur);
-      var pre = $("#pr-pre"); pre.innerHTML = "";
-      [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50].forEach(function (v) { var b = el("button", "", fmtP(v).slice(0, 4), { type: "button", "data-v": v }); b.addEventListener("click", function () { prSet(v); }); pre.appendChild(b); });
+
+      var pre = $("#pr-pre");
+      pre.innerHTML = "";
+
+      [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50].forEach(
+        function (value) {
+          var button = el(
+            "button",
+            "",
+            fmtP(value).slice(0, 4),
+            {
+              type: "button",
+              "data-v": value
+            }
+          );
+
+          button.addEventListener("click", function () {
+            prSet(value);
+          });
+
+          pre.appendChild(button);
+        }
+      );
+
       prMark();
-      var h = $("#pr-hint");
+
+      var hint = $("#pr-hint");
+
       if (m.implied > 0 && m.price.v <= 0) {
-        h.hidden = false; h.innerHTML = "I sensori che avevi già calcolano i costi a circa <b>" + fmtP(m.implied) + " €/kWh</b>.";
-        var u = el("button", "linkb", "Usa questo", { type: "button" }); u.addEventListener("click", function () { prSet(m.implied); }); h.appendChild(u);
-      } else h.hidden = true;
-      $("#pr-bill").value = ""; $("#pr-kwh").value = ""; $("#pr-calc-out").textContent = ""; $("#pr-calc").open = false;
-      $("#pr-where").textContent = !LIVE ? "Anteprima: la tariffa resta salvata solo in questo browser."
-        : sv(ENT.energy.price) ? "Viene salvata in Home Assistant (" + ENT.energy.price + "): vale su tutti i tuoi dispositivi."
-        : "Al primo salvataggio creo in Home Assistant l'helper " + ENT.energy.price + " (serve un utente amministratore); altrimenti resta su questo dispositivo.";
-      box.classList.add("open"); box.setAttribute("aria-hidden", "false");
-      later(function () { var i = $("#pr-in"); i.focus(); i.select(); }, 220);
+        hint.hidden = false;
+
+        hint.innerHTML =
+          labels.sensorsBefore +
+          "<b>" + fmtP(m.implied) + " €/kWh</b>" +
+          labels.sensorsAfter;
+
+        var useButton = el(
+          "button",
+          "linkb",
+          labels.useValue,
+          { type: "button" }
+        );
+
+        useButton.addEventListener("click", function () {
+          prSet(m.implied);
+        });
+
+        hint.appendChild(useButton);
+      } else {
+        hint.hidden = true;
+      }
+
+      $("#pr-bill").value = "";
+      $("#pr-kwh").value = "";
+      $("#pr-calc-out").textContent = "";
+      $("#pr-calc").open = false;
+
+      $("#pr-where").textContent = !LIVE
+        ? labels.preview
+        : sv(ENT.energy.price)
+          ? labels.savedBefore +
+            ENT.energy.price +
+            labels.savedAfter
+          : labels.createBefore +
+            ENT.energy.price +
+            labels.createAfter;
+
+      box.classList.add("open");
+      box.setAttribute("aria-hidden", "false");
+
+      later(function () {
+        var input = $("#pr-in");
+        input.focus();
+        input.select();
+      }, 220);
     }
     function closePrice() { var box = $("#pricebox"); box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); }
     function prDone(msg) { $("#pr-ok").disabled = false; closePrice(); toast(msg, "mdi-cash-check", "var(--ok)"); renderEnergy(); drawDays(); }
+    function priceSaveLabels() {
+      var translations = {
+        it: {
+          invalid: "Inserisci un prezzo tra 0,001 e 5 €/kWh",
+          saved: "Tariffa salvata: ",
+          local: "Tariffa salvata su questo dispositivo",
+          homeAssistant: "Tariffa salvata in Home Assistant: ",
+          admin: "serve un utente amministratore per salvarla in HA",
+          failed: "non sono riuscito a scriverla in HA"
+        },
+        fr: {
+          invalid: "Saisis un prix entre 0,001 et 5 €/kWh",
+          saved: "Tarif enregistré : ",
+          local: "Tarif enregistré uniquement dans ce navigateur",
+          homeAssistant: "Tarif enregistré dans Home Assistant : ",
+          admin: "un compte administrateur est requis pour l’enregistrer dans Home Assistant",
+          failed: "l’écriture dans Home Assistant a échoué"
+        },
+        en: {
+          invalid: "Enter a price between 0.001 and 5 €/kWh",
+          saved: "Rate saved: ",
+          local: "Rate saved only in this browser",
+          homeAssistant: "Rate saved in Home Assistant: ",
+          admin: "an administrator account is required to save it in Home Assistant",
+          failed: "saving to Home Assistant failed"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function savePrice() {
-      var v = prNum("#pr-in");
-      if (v === null || v < 0.001 || v > 5) { toast("Inserisci un prezzo tra 0,001 e 5 €/kWh", "mdi-alert-circle", "var(--warn)"); return; }
+      var labels = priceSaveLabels();
+      var v = prNum("#pr-in");      
+      if (v === null || v < 0.001 || v > 5) { toast(labels.invalid, "mdi-alert-circle", "var(--warn)"); return; }
       v = Math.round(v * 10000) / 10000;
-      if (!LIVE) { store("price", String(v)); prDone("Tariffa salvata: " + fmtP(v) + " €/kWh"); return; }
+      if (!LIVE) { store("price", String(v)); prDone(labels.saved + fmtP(v) + " €/kWh"); return; }
       var id = ENT.energy.price, btn = $("#pr-ok"); btn.disabled = true;
-      var local = function (why) { store("price", String(v)); prDone("Tariffa salvata su questo dispositivo" + (why ? " (" + why + ")" : "")); };
+      var local = function (why) { store("price", String(v)); prDone(labels.local + (why ? " (" + why + ")" : "")); };
       var name = id.split(".")[1].replace(/_/g, " ").replace(/\bkwh\b/i, "kWh"); name = name.charAt(0).toUpperCase() + name.slice(1);
       var req = sv(id) ? Promise.resolve(ctx.call("input_number", "set_value", { entity_id: id, value: v }))
         : HASS.callWS({ type: "input_number/create", name: name, icon: "mdi:cash-multiple", min: 0, max: 5, step: 0.001, mode: "box", unit_of_measurement: "€/kWh", initial: v });
-      req.then(function () { PEND = { v: v, src: "ha", until: Date.now() + 8000 }; prDone("Tariffa salvata in Home Assistant: " + fmtP(v) + " €/kWh"); })
-        .catch(function (e) { local(/unauthor|admin|permission/i.test((e && e.message) || (e && e.code) || "") ? "serve un utente amministratore per salvarla in HA" : "non sono riuscito a scriverla in HA"); });
+      req.then(function () { PEND = { v: v, src: "ha", until: Date.now() + 8000 }; prDone(labels.homeAssistant + fmtP(v) + " €/kWh"); })
+        .catch(function (e) { local(/unauthor|admin|permission/i.test((e && e.message) || (e && e.code) || "") ? labels.admin : labels.failed); });
     }
     function buildPrice() {
       var open = function () { openPrice(); };
@@ -1990,10 +3815,88 @@
       var grid = [.25, .5, .75].map(function (g3) { return '<line class="grid" x1="0" x2="' + W + '" y1="' + ys(top * g3).toFixed(1) + '" y2="' + ys(top * g3).toFixed(1) + '"/>'; }).join("");
       var bl = base !== null && base < top ? '<line class="base" x1="0" x2="' + W + '" y1="' + ys(base).toFixed(1) + '" y2="' + ys(base).toFixed(1) + '"/>' : "";
       svg.innerHTML = '<defs><linearGradient id="enarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc-text)" stop-opacity=".45"/><stop offset="1" stop-color="var(--acc-text)" stop-opacity="0"/></linearGradient></defs>' + grid + bl + '<path class="area" d="' + area + '"/><path class="line" d="' + line + '"/><line class="cursor" id="en-cur" x1="0" x2="0" y1="0" y2="' + H + '" style="display:none"/>';
-      var ax = $("#en-axis"), lab = []; for (var k = 0; k < 5; k++) { var tt = t0 + dt * k / 4, d2 = new Date(tt); lab.push("<span>" + (EN.range === "7g" ? ["dom", "lun", "mar", "mer", "gio", "ven", "sab"][d2.getDay()] + " " + pad(d2.getHours()) + "h" : fmtHM(tt)) + "</span>"); }
+      var chartAxisTranslations = {
+        it: {
+          weekdays: ["dom", "lun", "mar", "mer", "gio", "ven", "sab"]
+        },
+        fr: {
+          weekdays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."]
+        },
+        en: {
+          weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        }
+      };
+
+      var chartAxisLabels =
+        chartAxisTranslations[LANG] || chartAxisTranslations.it;
+
+      var ax = $("#en-axis");
+      var lab = [];
+
+      for (var k = 0; k < 5; k++) {
+        var tt = t0 + dt * k / 4;
+        var d2 = new Date(tt);
+
+        var axisLabel = EN.range === "7g"
+          ? chartAxisLabels.weekdays[d2.getDay()] +
+            " " +
+            pad(d2.getHours()) +
+            " h"
+          : fmtHM(tt);
+
+        lab.push("<span>" + axisLabel + "</span>");
+      }
+
       ax.innerHTML = lab.join("");
-      var pk = fmtW(peak.v), av = Math.round(sum / data.length);
-      $("#en-stats").innerHTML = '<span class="echip"><i class="mdi mdi-arrow-up-bold"></i>Picco <b>' + pk.n + " " + pk.u + '</b> alle <b>' + fmtHM(peak.t) + '</b></span><span class="echip"><i class="mdi mdi-chart-line"></i>Media <b>' + av + ' W</b></span>' + (base !== null ? '<span class="echip"><i class="mdi mdi-minus"></i>Linea tratteggiata = consumo di fondo</span>' : "");
+      var chartStatTranslations = {
+        it: {
+          peak: "Picco",
+          at: "alle",
+          average: "Media",
+          baseline: "Linea tratteggiata = consumo di fondo"
+        },
+        fr: {
+          peak: "Pic",
+          at: "à",
+          average: "Moyenne",
+          baseline: "Ligne pointillée = consommation de fond"
+        },
+        en: {
+          peak: "Peak",
+          at: "at",
+          average: "Average",
+          baseline: "Dashed line = baseline consumption"
+        }
+      };
+
+      var chartStatLabels =
+        chartStatTranslations[LANG] || chartStatTranslations.it;
+
+      var pk = fmtW(peak.v);
+      var av = Math.round(sum / data.length);
+
+      $("#en-stats").innerHTML =
+        '<span class="echip">' +
+          '<i class="mdi mdi-arrow-up-bold"></i>' +
+          chartStatLabels.peak +
+          ' <b>' + pk.n + " " + pk.u + "</b> " +
+          chartStatLabels.at +
+          ' <b>' + fmtHM(peak.t) + "</b>" +
+        "</span>" +
+        '<span class="echip">' +
+          '<i class="mdi mdi-chart-line"></i>' +
+          chartStatLabels.average +
+          ' <b>' + av + " W</b>" +
+        "</span>" +
+        (
+          base !== null
+            ? '<span class="echip">' +
+                '<i class="mdi mdi-minus"></i>' +
+                chartStatLabels.baseline +
+              "</span>"
+            : ""
+        );
+
       hydrate($("#en-stats"));
       EN.geo = { xs: xs, ys: ys, t0: t0, dt: dt, W: W, data: data };
     }
@@ -2013,18 +3916,141 @@
       }).catch(function () { EN.days = []; drawDays(); });
     }
     function drawDays() {
-      var box = $("#en-days"), a = EN.days, sum = $("#en-days-sum"); if (!box) return;
+      var box = $("#en-days");
+      var a = EN.days;
+      var sum = $("#en-days-sum");
+
+      if (!box) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          dailyCost: "Costo giornaliero",
+          dailyEnergy: "Consumo giornaliero",
+          noHistory: "Storico non disponibile",
+          total: "Totale",
+          average: "Media al giorno",
+          calculatedWith: "Calcolato con ",
+          weekdays: ["D", "L", "M", "M", "G", "V", "S"]
+        },
+        fr: {
+          dailyCost: "Coût quotidien",
+          dailyEnergy: "Consommation quotidienne",
+          noHistory: "Historique indisponible",
+          total: "Total",
+          average: "Moyenne par jour",
+          calculatedWith: "Calculé avec ",
+          weekdays: ["D", "L", "M", "M", "J", "V", "S"]
+        },
+        en: {
+          dailyCost: "Daily cost",
+          dailyEnergy: "Daily energy consumption",
+          noHistory: "History unavailable",
+          total: "Total",
+          average: "Daily average",
+          calculatedWith: "Calculated using ",
+          weekdays: ["S", "M", "T", "W", "T", "F", "S"]
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
       EN.pDrawn = EN.pEff;
+
       var eur = EN.dayUnit === "eur";
-      $("#en-days-t").textContent = eur ? "Costo giornaliero" : "Consumo giornaliero";
-      if (!a.length) { box.innerHTML = '<div class="en-empty" style="position:static;height:120px;display:grid">Storico non disponibile</div>'; if (sum) sum.innerHTML = ""; return; }
-      var vals = a.map(function (x) { return eur ? x.v * EN.pEff : x.v; });
-      var mx = Math.max.apply(null, vals) || 1, today = new Date().toDateString(), wd = ["D", "L", "M", "M", "G", "V", "S"], tk = 0;
-      a.forEach(function (x) { tk += x.v; });
+
+      $("#en-days-t").textContent = eur
+        ? labels.dailyCost
+        : labels.dailyEnergy;
+
+      if (!a.length) {
+        box.innerHTML =
+          '<div class="en-empty" ' +
+          'style="position:static;height:120px;display:grid">' +
+          labels.noHistory +
+          "</div>";
+
+        if (sum) {
+          sum.innerHTML = "";
+        }
+
+        return;
+      }
+
+      var vals = a.map(function (x) {
+        return eur ? x.v * EN.pEff : x.v;
+      });
+
+      var mx = Math.max.apply(null, vals) || 1;
+      var today = new Date().toDateString();
+      var tk = 0;
+
+      a.forEach(function (x) {
+        tk += x.v;
+      });
+
       box.innerHTML = a.map(function (x, i) {
-        return '<div class="day' + (x.d.toDateString() === today ? " today" : "") + '" title="' + x.d.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" }) + " · " + fmtKwh(x.v) + " kWh · " + fmtEur(x.v * EN.pEff) + '"><span class="d-v">' + (eur ? Number(vals[i]).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtKwh(vals[i])) + '</span><span class="bar2" style="height:' + Math.max(3, vals[i] / mx * 100) + '%"></span><span class="d-l">' + wd[x.d.getDay()] + x.d.getDate() + "</span></div>";
+        var isToday = x.d.toDateString() === today;
+
+        var dateLabel = x.d.toLocaleDateString(LOCALE, {
+          weekday: "long",
+          day: "numeric",
+          month: "long"
+        });
+
+        var valueLabel = eur
+          ? Number(vals[i]).toLocaleString(LOCALE, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+          : fmtKwh(vals[i]);
+
+        var tooltip =
+          dateLabel +
+          " · " + fmtKwh(x.v) + " kWh" +
+          " · " + fmtEur(x.v * EN.pEff);
+
+        var height = Math.max(3, vals[i] / mx * 100);
+
+        var dayLabel =
+          labels.weekdays[x.d.getDay()] + x.d.getDate();
+
+        return (
+          '<div class="day' + (isToday ? " today" : "") +
+          '" title="' + tooltip + '">' +
+            '<span class="d-v">' + valueLabel + "</span>" +
+            '<span class="bar2" style="height:' +
+              height + '%"></span>' +
+            '<span class="d-l">' + dayLabel + "</span>" +
+          "</div>"
+        );
       }).join("");
-      if (sum) { sum.innerHTML = '<span class="echip"><i class="mdi mdi-sigma"></i>Totale <b>' + fmtKwh(tk) + ' kWh</b> · <b>' + fmtEur(tk * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-chart-line"></i>Media al giorno <b>' + fmtKwh(tk / a.length) + ' kWh</b> · <b>' + fmtEur(tk / a.length * EN.pEff) + '</b></span><span class="echip"><i class="mdi mdi-information-outline"></i>Calcolato con ' + fmtP(EN.pEff) + ' €/kWh</span>'; hydrate(sum); }
+
+      if (sum) {
+        sum.innerHTML =
+          '<span class="echip">' +
+            '<i class="mdi mdi-sigma"></i>' +
+            labels.total + " " +
+            "<b>" + fmtKwh(tk) + " kWh</b>" +
+            " · <b>" + fmtEur(tk * EN.pEff) + "</b>" +
+          "</span>" +
+          '<span class="echip">' +
+            '<i class="mdi mdi-chart-line"></i>' +
+            labels.average + " " +
+            "<b>" + fmtKwh(tk / a.length) + " kWh</b>" +
+            " · <b>" +
+              fmtEur(tk / a.length * EN.pEff) +
+            "</b>" +
+          "</span>" +
+          '<span class="echip">' +
+            '<i class="mdi mdi-information-outline"></i>' +
+            labels.calculatedWith +
+            fmtP(EN.pEff) + " €/kWh" +
+          "</span>";
+
+        hydrate(sum);
+      }
     }
     function enEnter() { renderEnergy(); enLoad(true); daysLoad(); }
     function buildEnergy() {
@@ -2069,10 +4095,2200 @@
     function destroy() { stop(); unbinds.forEach(function (u) { u(); }); unbinds = []; }
 
     /* ------------------------------------------------------------------ avvio */
-    if (LIVE) { HOST.setAttribute("data-live", "1"); var fnote = $("footer.note"); if (fnote) fnote.textContent = "Aurora Glass v3 · collegata a Home Assistant"; }
+        if (LIVE) {
+      HOST.setAttribute("data-live", "1");
+    }
+
+    var footerTranslations = {
+      it: {
+        live: "Luma Home · collegata a Home Assistant",
+        preview: "Luma Home · anteprima: non riflette dati reali di un impianto."
+      },
+      fr: {
+        live: "Luma Home · connectée à Home Assistant",
+        preview: "Luma Home · démonstration : les données affichées sont simulées."
+      },
+      en: {
+        live: "Luma Home · connected to Home Assistant",
+        preview: "Luma Home · preview: the displayed data is simulated."
+      }
+    };
+
+    var footerLabels =
+      footerTranslations[LANG] || footerTranslations.it;
+
+    var footerNote = $("footer.note");
+
+    if (footerNote) {
+      footerNote.textContent = LIVE
+        ? footerLabels.live
+        : footerLabels.preview;
+    }
     if (EMB) HOST.setAttribute("data-embedded", "1");
+    // Navigation labels for the selected language.
+    var NAV_I18N = {
+      it: {
+        home: "Casa",
+        security: "Sicurezza",
+        energy: "Energia",
+        scenes: "Scene",
+        allOff: "Spegni tutto",
+        appearance: "Stile",
+        navigation: "Navigazione"
+      },
+      fr: {
+        home: "Maison",
+        security: "Sécurité",
+        energy: "Énergie",
+        scenes: "Scènes",
+        allOff: "Tout éteindre",
+        appearance: "Apparence",
+        navigation: "Navigation"
+      },
+      en: {
+        home: "Home",
+        security: "Security",
+        energy: "Energy",
+        scenes: "Scenes",
+        allOff: "Turn all off",
+        appearance: "Appearance",
+        navigation: "Navigation"
+      }
+    };
+
+    function translateNavigation() {
+      var labels = NAV_I18N[LANG] || NAV_I18N.it;
+
+      var targets = [
+        ['.dock [data-view="home"]', labels.home],
+        ['.dock [data-view="sic"]', labels.security],
+        ['.dock [data-view="en"]', labels.energy],
+        ['#dock-scenes', labels.scenes],
+        ['#dock-off', labels.allOff],
+        ['#dock-style', labels.appearance],
+        ['#style-btn', labels.appearance]
+      ];
+
+      targets.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (!button) {
+          return;
+        }
+
+        var label = button.querySelector("span");
+
+        if (label) {
+          label.textContent = item[1];
+        }
+
+        button.setAttribute("aria-label", item[1]);
+      });
+
+      var navigation = ROOT.querySelector(".dock");
+
+      if (navigation) {
+        navigation.setAttribute("aria-label", labels.navigation);
+      }
+    }
+
+    translateNavigation();
+    // Static labels in the appearance panel.
+    var APPEARANCE_I18N = {
+      it: {
+        title: "Personalizza lo stile",
+        realTime: "Usa l'ora reale",
+        images: "Immagini e GIF",
+        compact: "Compatti",
+        editImages: "Modifica le immagini dei pulsanti",
+        reset: "Ripristina tutto",
+        close: "Chiudi"
+      },
+      fr: {
+        title: "Personnaliser l’apparence",
+        realTime: "Utiliser l’heure réelle",
+        images: "Images et GIF",
+        compact: "Compacts",
+        editImages: "Modifier les images des boutons",
+        reset: "Tout réinitialiser",
+        close: "Fermer"
+      },
+      en: {
+        title: "Customize appearance",
+        realTime: "Use real time",
+        images: "Images and GIFs",
+        compact: "Compact",
+        editImages: "Edit button images",
+        reset: "Reset all",
+        close: "Close"
+      }
+    };
+
+    function translateAppearance() {
+      var labels = APPEARANCE_I18N[LANG] || APPEARANCE_I18N.it;
+
+      // Replace direct text only, preserving icons and child elements.
+      function setLabel(selector, text) {
+        var node = ROOT.querySelector(selector);
+
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text));
+        }
+      }
+
+      setLabel("#dr-title", labels.title);
+      setLabel("#phase-real", labels.realTime);
+      setLabel('#btn-style [data-v="img"]', labels.images);
+      setLabel('#btn-style [data-v="compact"]', labels.compact);
+      setLabel("#edit-start", labels.editImages);
+      setLabel("#reset-all", labels.reset);
+
+      var closeButton = ROOT.querySelector("#dr-close");
+
+      if (closeButton) {
+        closeButton.setAttribute("aria-label", labels.close);
+        closeButton.setAttribute("title", labels.close);
+      }
+    }
+
+    translateAppearance();
+    // Section headings and descriptions in the appearance panel.
+    var SECTION_I18N = {
+      it: {
+        headings: [
+          "Mondo",
+          "Ora del giorno",
+          "Meteo ed effetti",
+          "Sorpresa",
+          "Pulsanti"
+        ],
+        descriptions: [
+          "10 paesaggi animati, tutti con alba, giorno, tramonto e notte",
+          "simula cielo e colori",
+          "si sovrappongono a qualsiasi mondo",
+          "",
+          ""
+        ],
+        pageEffect: "Anche sullo sfondo della pagina",
+        pageEffectDescription: "Particelle dietro a tutte le card",
+        cycle: "Cambia mondo ogni 30 secondi",
+        cycleDescription: "Una playlist di paesaggi",
+        timeSlider: "Simula l'ora del giorno",
+        pageToggle: "Effetto su tutta la pagina",
+        cycleToggle: "Cambia mondo automaticamente"
+      },
+      fr: {
+        headings: [
+          "Univers",
+          "Heure de la journée",
+          "Météo et effets",
+          "Surprise",
+          "Boutons"
+        ],
+        descriptions: [
+          "10 paysages animés : aube, jour, crépuscule et nuit",
+          "Simuler le ciel et les couleurs",
+          "Des effets qui se superposent à tous les univers",
+          "",
+          ""
+        ],
+        pageEffect: "Également à l’arrière-plan de la page",
+        pageEffectDescription: "Des particules derrière toutes les cartes",
+        cycle: "Changer d’univers toutes les 30 secondes",
+        cycleDescription: "Un défilement de paysages",
+        timeSlider: "Simuler l’heure de la journée",
+        pageToggle: "Afficher l’effet sur toute la page",
+        cycleToggle: "Changer automatiquement d’univers"
+      },
+      en: {
+        headings: [
+          "World",
+          "Time of day",
+          "Weather and effects",
+          "Surprise",
+          "Buttons"
+        ],
+        descriptions: [
+          "10 animated landscapes: dawn, day, sunset and night",
+          "Simulate the sky and colors",
+          "Effects that overlay any world",
+          "",
+          ""
+        ],
+        pageEffect: "Also on the page background",
+        pageEffectDescription: "Particles behind all cards",
+        cycle: "Change world every 30 seconds",
+        cycleDescription: "A slideshow of landscapes",
+        timeSlider: "Simulate the time of day",
+        pageToggle: "Show the effect across the page",
+        cycleToggle: "Change world automatically"
+      }
+    };
+
+    function translateAppearanceSections() {
+      var labels = SECTION_I18N[LANG] || SECTION_I18N.it;
+
+      // Change direct text without removing icons or descriptions.
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text));
+        }
+      }
+
+      var headings = ROOT.querySelectorAll("#drawer .dr-sec h3");
+
+      Array.prototype.forEach.call(headings, function (heading, index) {
+        if (labels.headings[index] === undefined) {
+          return;
+        }
+
+        setDirectText(heading, labels.headings[index]);
+
+        var description = heading.querySelector("small");
+
+        if (description) {
+          description.textContent = labels.descriptions[index] || "";
+        }
+      });
+
+      function translateToggleRow(selector, text, description, accessibleName) {
+        var toggle = ROOT.querySelector(selector);
+
+        if (!toggle) {
+          return;
+        }
+
+        toggle.setAttribute("aria-label", accessibleName);
+
+        var row = toggle.closest(".row");
+        var label = row ? row.querySelector(".grow") : null;
+
+        if (label) {
+          setDirectText(label, text);
+
+          var small = label.querySelector("small");
+
+          if (small) {
+            small.textContent = description;
+          }
+        }
+      }
+
+      translateToggleRow(
+        "#fx-page-toggle",
+        labels.pageEffect,
+        labels.pageEffectDescription,
+        labels.pageToggle
+      );
+
+      translateToggleRow(
+        "#cycle-toggle",
+        labels.cycle,
+        labels.cycleDescription,
+        labels.cycleToggle
+      );
+
+      var timeSlider = ROOT.querySelector("#phase-range");
+
+      if (timeSlider) {
+        timeSlider.setAttribute("aria-label", labels.timeSlider);
+      }
+    }
+    // Scene labels: only presentation text is changed.
+    var SCENE_I18N = {
+      fr: {
+        morning: {
+          name: "Bonjour",
+          description: "Cuisine, couloir et salle de bain",
+          message: "Bonjour ! Cuisine, couloir et salle de bain allumés."
+        },
+        cinema: {
+          name: "Cinéma",
+          description: "Salon seulement",
+          message: "Scène Cinéma : seul le salon reste allumé."
+        },
+        dinner: {
+          name: "Repas",
+          description: "Cuisine et salon",
+          message: "Scène Repas : cuisine et salon allumés."
+        },
+        night: {
+          name: "Bonne nuit",
+          description: "Tout éteindre · alarme de nuit",
+          message: "Bonne nuit ! Lumières éteintes, alarme en mode nuit."
+        },
+        away: {
+          name: "Départ",
+          description: "Tout éteindre · alarme en mode absence",
+          message: "Maison fermée : lumières éteintes, alarme activée."
+        }
+      },
+      en: {
+        morning: {
+          name: "Good morning",
+          description: "Kitchen, hallway and bathroom",
+          message: "Good morning! Kitchen, hallway and bathroom lights are on."
+        },
+        cinema: {
+          name: "Cinema",
+          description: "Living room only",
+          message: "Cinema scene: only the living room light remains on."
+        },
+        dinner: {
+          name: "Dinner",
+          description: "Kitchen and living room",
+          message: "Dinner scene: kitchen and living room lights are on."
+        },
+        night: {
+          name: "Good night",
+          description: "Turn all off · night alarm",
+          message: "Good night! Lights off, alarm in night mode."
+        },
+        away: {
+          name: "Leaving",
+          description: "Turn all off · away alarm",
+          message: "House secured: lights off, alarm armed."
+        }
+      }
+    };
+
+    function translateScenes() {
+      var labels = SCENE_I18N[LANG];
+
+      // Keep the original Italian text when no translation applies.
+      if (!labels) {
+        return;
+      }
+
+      SCENES.forEach(function (scene) {
+        var translatedScene = labels[scene.id];
+
+        if (!translatedScene) {
+          return;
+        }
+
+        scene.n = translatedScene.name;
+        scene.sub = translatedScene.description;
+        scene.msg = translatedScene.message;
+      });
+    }
+
+    translateScenes();
+
+    translateAppearanceSections();
+
+    // World names and tooltip descriptions for this card instance.
+    var WORLD_I18N = {
+      fr: {
+        casetta: [
+          "Maison",
+          "Soleil, lune, nuages et maison aux fenêtres qui s’illuminent"
+        ],
+        citta: [
+          "Ville",
+          "Gratte-ciel, fenêtres éclairées, voitures, avion et enseignes au néon"
+        ],
+        montagna: [
+          "Montagne",
+          "Sommets enneigés, téléphérique, chalet et aurore boréale"
+        ],
+        mare: [
+          "Mer et phare",
+          "Vagues, voilier, mouettes, dauphin et phare au faisceau tournant"
+        ],
+        foresta: [
+          "Forêt magique",
+          "Rayons de soleil, lucioles, champignons lumineux et hibou"
+        ],
+        spazio: [
+          "Espace",
+          "Nébuleuses, planète à anneaux, astronaute, satellite et OVNI"
+        ],
+        giappone: [
+          "Japon",
+          "Mont Fuji, torii, pagode, cerisier et lanternes"
+        ],
+        cyberpunk: [
+          "Cyberpunk",
+          "Métropole au néon sous la pluie, voitures volantes et hologramme"
+        ],
+        natale: [
+          "Noël",
+          "Maison enneigée, lumières colorées, sapin et traîneau du père Noël"
+        ],
+        oceano: [
+          "Océan",
+          "Poissons, méduses lumineuses, baleine, sous-marin et bulles"
+        ]
+      },
+      en: {
+        casetta: [
+          "House",
+          "Sun, moon, clouds and a house with windows that light up"
+        ],
+        citta: [
+          "City",
+          "Skyscrapers, illuminated windows, cars, a plane and neon signs"
+        ],
+        montagna: [
+          "Mountain",
+          "Snowy peaks, cable car, chalet and northern lights"
+        ],
+        mare: [
+          "Sea and lighthouse",
+          "Waves, sailboat, seagulls, dolphin and a rotating lighthouse beam"
+        ],
+        foresta: [
+          "Magic forest",
+          "Sunbeams, fireflies, glowing mushrooms and an owl"
+        ],
+        spazio: [
+          "Space",
+          "Nebulae, ringed planet, astronaut, satellite and UFO"
+        ],
+        giappone: [
+          "Japan",
+          "Mount Fuji, torii gate, pagoda, cherry tree and lanterns"
+        ],
+        cyberpunk: [
+          "Cyberpunk",
+          "Rainy neon metropolis, flying cars and a hologram"
+        ],
+        natale: [
+          "Christmas",
+          "Snow-covered house, colorful lights, Christmas tree and Santa’s sleigh"
+        ],
+        oceano: [
+          "Ocean",
+          "Fish, glowing jellyfish, whale, submarine and bubbles"
+        ]
+      }
+    };
+
+    function worldName(id) {
+      var translations = WORLD_I18N[LANG];
+      var translatedWorld = translations && translations[id];
+
+      if (translatedWorld) {
+        return translatedWorld[0];
+      }
+
+      return AMB.W[id] ? AMB.W[id].name : id;
+    }
+
+    function worldDescription(id) {
+      var translations = WORLD_I18N[LANG];
+      var translatedWorld = translations && translations[id];
+
+      if (translatedWorld) {
+        return translatedWorld[1];
+      }
+
+      return AMB.W[id] ? AMB.W[id].desc : "";
+    }    
+
+      // Static headings and hints on the home view.
+    var HOME_I18N = {
+      it: {
+        headings: ["Scene rapide", "Luci e stanze", "Clima"],
+        scenesHint: "un tocco, tutta la casa",
+        lightsHint: "tocca l'immagine per accendere",
+        tapHint: "Tocca scene e luci",
+        styleHint: "Cambia mondo, effetti e ora",
+        editHint: "Modifica le immagini",
+        simulate: "Simula intrusione",
+        outside: "Esterno",
+        power: "Consumo",
+        openEnergy: "Apri i consumi",
+        liveUpdate: "Aggiornamento in tempo reale"
+      },
+      fr: {
+        headings: [
+          "Scènes rapides",
+          "Éclairage et pièces",
+          "Chauffage et climatisation"
+        ],
+        scenesHint: "Toute la maison en un geste",
+        lightsHint: "Toucher l’image pour allumer",
+        tapHint: "Toucher les scènes et les lumières",
+        styleHint: "Changer d’univers, d’effets et d’heure",
+        editHint: "Modifier les images",
+        simulate: "Simuler une intrusion",
+        outside: "Extérieur",
+        power: "Puissance",
+        openEnergy: "Afficher la consommation",
+        liveUpdate: "Mise à jour en temps réel"
+      },
+      en: {
+        headings: ["Quick scenes", "Lights and rooms", "Heating and cooling"],
+        scenesHint: "Your whole home in one tap",
+        lightsHint: "Tap the image to turn on",
+        tapHint: "Tap scenes and lights",
+        styleHint: "Change world, effects and time",
+        editHint: "Edit images",
+        simulate: "Simulate an intrusion",
+        outside: "Outside",
+        power: "Power",
+        openEnergy: "View energy consumption",
+        liveUpdate: "Real-time updates"
+      }
+    };
+
+    function translateHomeLabels() {
+      var labels = HOME_I18N[LANG] || HOME_I18N.it;
+
+      // Preserve icons, live values and other child elements.
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.insertBefore(
+            document.createTextNode(text + " "),
+            node.firstChild
+          );
+        }
+      }
+
+      var headings = ROOT.querySelectorAll("#view-home h2.sec-title");
+
+      Array.prototype.forEach.call(headings, function (heading, index) {
+        if (labels.headings[index] === undefined) {
+          return;
+        }
+
+        setDirectText(heading, labels.headings[index]);
+
+        var small = heading.querySelector("small");
+
+        if (small && index === 0) {
+          small.textContent = labels.scenesHint;
+        }
+
+        if (small && index === 1) {
+          small.textContent = labels.lightsHint;
+        }
+      });
+
+      var targets = [
+        [".hints > span.hint", labels.tapHint],
+        ["#hint-style", labels.styleHint],
+        ["#hint-edit", labels.editHint],
+        ["#sim-alarm", labels.simulate],
+        ["#chip-temp", labels.outside],
+        ["#chip-power", labels.power]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var energyChip = ROOT.querySelector("#chip-power");
+
+      if (energyChip) {
+        energyChip.setAttribute("title", labels.openEnergy);
+        energyChip.setAttribute("aria-label", labels.openEnergy);
+
+        var liveDot = energyChip.querySelector(".livedot");
+
+        if (liveDot) {
+          liveDot.setAttribute("title", labels.liveUpdate);
+        }
+      }
+    }
+
+    translateHomeLabels();
+
+    // Light state labels, evaluated whenever the interface updates.
+    function lightStateLabel(isUnavailable, isOn) {
+      var labels = {
+        it: {
+          unavailable: "Non disponibile",
+          on: "Accesa",
+          off: "Spenta"
+        },
+        fr: {
+          unavailable: "Indisponible",
+          on: "Allumée",
+          off: "Éteinte"
+        },
+        en: {
+          unavailable: "Unavailable",
+          on: "On",
+          off: "Off"
+        }
+      };
+
+      var selected = labels[LANG] || labels.it;
+
+      return isUnavailable
+        ? selected.unavailable
+        : isOn
+          ? selected.on
+          : selected.off;
+    }
+
+    // Summary of lights currently on and devices not responding.
+    function lightSummary(total, unavailableCount) {
+      var text;
+
+      if (LANG === "fr") {
+        text = total
+          ? total + (total === 1 ? " lumière allumée" : " lumières allumées")
+          : (LIVE ? "Aucune lumière allumée" : "Toutes les lumières éteintes");
+
+        if (LIVE && unavailableCount) {
+          text += " · " + unavailableCount +
+            (unavailableCount === 1
+              ? " appareil ne répond pas"
+              : " appareils ne répondent pas");
+        }
+
+        return text;
+      }
+
+      if (LANG === "en") {
+        text = total
+          ? total + (total === 1 ? " light on" : " lights on")
+          : (LIVE ? "No lights on" : "All lights off");
+
+        if (LIVE && unavailableCount) {
+          text += " · " + unavailableCount +
+            (unavailableCount === 1
+              ? " device not responding"
+              : " devices not responding");
+        }
+
+        return text;
+      }
+
+      text = total
+        ? total + (total === 1 ? " luce accesa" : " luci accese")
+        : (LIVE ? "Nessuna luce accesa" : "Tutte le luci spente");
+
+      if (LIVE && unavailableCount) {
+        text += " · " + unavailableCount +
+          (unavailableCount === 1 ? " non risponde" : " non rispondono");
+      }
+
+      return text;
+    }
+
+    // Alarm presentation text only: service names and states stay unchanged.
+    var ALARM_I18N = {
+      fr: {
+        states: {
+          disarmed: [
+            "Désactivée",
+            "Alarme désactivée. Choisissez un mode pour l’activer.",
+            "Alarme désactivée"
+          ],
+          armed_night: [
+            "Activée — Nuit",
+            "Portes et fenêtres surveillées. Les mouvements intérieurs sont ignorés.",
+            "Alarme de nuit"
+          ],
+          armed_away: [
+            "Activée — Absence",
+            "Toute la maison est surveillée, y compris les mouvements intérieurs.",
+            "Alarme en mode absence"
+          ],
+          arming: [
+            "Activation en cours",
+            "L’alarme sera activée dans quelques secondes.",
+            "Activation de l’alarme"
+          ],
+          triggered: [
+            "ALARME DÉCLENCHÉE",
+            "L’alarme s’est déclenchée. Vérifiez les caméras.",
+            "ALARME DÉCLENCHÉE"
+          ]
+        },
+        disarm: "Désactiver",
+        night: "Nuit",
+        away: "Absence",
+        modes: "Mode de l’alarme",
+        image: "Image de l’état de l’alarme"
+      },
+      en: {
+        states: {
+          disarmed: [
+            "Disarmed",
+            "Alarm disarmed. Choose a mode to arm it.",
+            "Alarm disarmed"
+          ],
+          armed_night: [
+            "Armed — Night",
+            "Doors and windows are monitored. Indoor motion is ignored.",
+            "Night alarm"
+          ],
+          armed_away: [
+            "Armed — Away",
+            "The whole home is monitored, including indoor motion.",
+            "Away alarm"
+          ],
+          arming: [
+            "Arming",
+            "The alarm will be armed in a few seconds.",
+            "Alarm arming"
+          ],
+          triggered: [
+            "ALARM TRIGGERED",
+            "The alarm has been triggered. Check the cameras.",
+            "ALARM TRIGGERED"
+          ]
+        },
+        disarm: "Disarm",
+        night: "Night",
+        away: "Away",
+        modes: "Alarm mode",
+        image: "Alarm state image"
+      }
+    };
+
+    function translateAlarmLabels() {
+      var labels = ALARM_I18N[LANG];
+
+      // Keep the original Italian labels when appropriate.
+      if (!labels) {
+        return;
+      }
+
+      Object.keys(labels.states).forEach(function (key) {
+        if (!ALARM[key]) {
+          return;
+        }
+
+        var translatedState = labels.states[key];
+
+        ALARM[key].t = translatedState[0];
+        ALARM[key].d = translatedState[1];
+        ALARM[key].short = translatedState[2];
+      });
+
+      var buttons = [
+        ['#seg [data-mode="disarmed"]', labels.disarm],
+        ['#seg [data-mode="armed_night"]', labels.night],
+        ['#seg [data-mode="armed_away"]', labels.away],
+        ["#alert-off", labels.disarm]
+      ];
+
+      buttons.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (button) {
+          button.textContent = item[1];
+          button.setAttribute("aria-label", item[1]);
+        }
+      });
+
+      var modeGroup = ROOT.querySelector("#seg");
+
+      if (modeGroup) {
+        modeGroup.setAttribute("aria-label", labels.modes);
+      }
+
+      var alarmImage = ROOT.querySelector("#shield");
+
+      if (alarmImage) {
+        alarmImage.setAttribute("data-label", labels.image);
+      }
+    }
+
+    translateAlarmLabels();    
+    // Static labels in the alarm code dialog.
+    var CODE_DIALOG_I18N = {
+      it: {
+        title: "Inserisci il codice",
+        cancel: "Annulla",
+        confirm: "Conferma",
+        inputLabel: "Codice allarme"
+      },
+      fr: {
+        title: "Saisir le code",
+        cancel: "Annuler",
+        confirm: "Confirmer",
+        inputLabel: "Code de l’alarme"
+      },
+      en: {
+        title: "Enter the code",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        inputLabel: "Alarm code"
+      }
+    };
+
+    function translateCodeDialog() {
+      var labels = CODE_DIALOG_I18N[LANG] || CODE_DIALOG_I18N.it;
+
+      var targets = [
+        ["#code-title", labels.title],
+        ["#code-cancel", labels.cancel],
+        ["#code-ok", labels.confirm]
+      ];
+
+      targets.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.textContent = item[1];
+        }
+      });
+
+      var input = ROOT.querySelector("#code-in");
+
+      if (input) {
+        input.setAttribute("aria-label", labels.inputLabel);
+      }
+    }
+
+    translateCodeDialog();
+    // Motion detector names and state labels.
+    var MOTION_I18N = {
+      fr: {
+        rooms: {
+          salotto: "Salon",
+          ingresso: "Entrée",
+          cucina: "Cuisine",
+          corridoio: "Couloir",
+          cameretta: "Chambre d’enfant",
+          lavanderia: "Salle de lavage",
+          sgabuzzino: "Rangement",
+          camera: "Chambre"
+        },
+        unavailable: "Indisponible",
+        detected: "Mouvement détecté",
+        clear: "Aucun mouvement"
+      },
+      en: {
+        rooms: {
+          salotto: "Living room",
+          ingresso: "Entrance",
+          cucina: "Kitchen",
+          corridoio: "Hallway",
+          cameretta: "Child’s bedroom",
+          lavanderia: "Laundry room",
+          sgabuzzino: "Storage",
+          camera: "Bedroom"
+        },
+        unavailable: "Unavailable",
+        detected: "Motion detected",
+        clear: "No motion"
+      },
+      it: {
+        unavailable: "Non disponibile",
+        detected: "Movimento!",
+        clear: "Nessun movimento"
+      }
+    };
+
+    function translateMotionNames() {
+      var labels = MOTION_I18N[LANG] || MOTION_I18N.it;
+
+      if (!labels.rooms) {
+        return;
+      }
+
+      MOTION.forEach(function (sensor) {
+        var key = sensor[0];
+
+        if (Object.prototype.hasOwnProperty.call(labels.rooms, key)) {
+          sensor[1] = labels.rooms[key];
+        }
+      });
+    }
+
+    function motionStateLabel(isUnavailable, isActive) {
+      var labels = MOTION_I18N[LANG] || MOTION_I18N.it;
+
+      return isUnavailable
+        ? labels.unavailable
+        : isActive
+          ? labels.detected
+          : labels.clear;
+    }
+
+    translateMotionNames();
+    // Opening and lock labels; technical keys and images are preserved.
+    var OPENING_I18N = {
+      fr: {
+        names: {
+          ingresso: "Porte d’entrée",
+          balcone_salotto: "Porte du balcon — salon",
+          balcone_cucina: "Porte du balcon — cuisine",
+          cameretta: "Fenêtre de la chambre d’enfant",
+          balcone_camera: "Porte du balcon — chambre",
+          bagno: "Fenêtre de la salle de bain",
+          lavanderia: "Fenêtre de la salle de lavage",
+          cancello: "Serrure"
+        },
+        open: "Ouverte",
+        closed: "Fermée",
+        unlocked: "Déverrouillée",
+        locked: "Verrouillée",
+        unavailable: "Indisponible"
+      },
+      en: {
+        names: {
+          ingresso: "Entrance door",
+          balcone_salotto: "Balcony door — living room",
+          balcone_cucina: "Balcony door — kitchen",
+          cameretta: "Child’s bedroom window",
+          balcone_camera: "Balcony door — bedroom",
+          bagno: "Bathroom window",
+          lavanderia: "Laundry room window",
+          cancello: "Lock"
+        },
+        open: "Open",
+        closed: "Closed",
+        unlocked: "Unlocked",
+        locked: "Locked",
+        unavailable: "Unavailable"
+      },
+      it: {
+        unavailable: "Non disponibile"
+      }
+    };
+
+    function translateOpeningLabels() {
+      var labels = OPENING_I18N[LANG] || OPENING_I18N.it;
+
+      // Preserve the original Italian names and states.
+      if (!labels.names) {
+        return;
+      }
+
+      Object.keys(labels.names).forEach(function (key) {
+        if (!OPENS[key]) {
+          return;
+        }
+
+        OPENS[key][0] = labels.names[key];
+
+        if (key === "cancello") {
+          OPENS[key][2] = labels.unlocked;
+          OPENS[key][3] = labels.locked;
+        } else {
+          OPENS[key][2] = labels.open;
+          OPENS[key][3] = labels.closed;
+        }
+      });
+    }
+
+    function openingUnavailableLabel() {
+      var labels = OPENING_I18N[LANG] || OPENING_I18N.it;
+
+      return labels.unavailable;
+    }
+
+    translateOpeningLabels();
+
+    // Security section headings and opening summary.
+    var SECURITY_SECTION_I18N = {
+      it: {
+        motionTitle: "Movimento",
+        openingsTitle: "Porte, finestre e cancello",
+        allClosed: "Tutto chiuso",
+        noneOpen: "Nessuna aperta",
+        activeOne: " apertura attiva",
+        activeMany: " aperture attive",
+        offlineOne: " sensore offline",
+        offlineMany: " sensori offline"
+      },
+      fr: {
+        motionTitle: "Mouvement",
+        openingsTitle: "Portes, fenêtres et serrure",
+        allClosed: "Tout est fermé",
+        noneOpen: "Aucune ouverture active",
+        activeOne: " ouverture active",
+        activeMany: " ouvertures actives",
+        offlineOne: " détecteur hors ligne",
+        offlineMany: " détecteurs hors ligne"
+      },
+      en: {
+        motionTitle: "Motion",
+        openingsTitle: "Doors, windows and lock",
+        allClosed: "Everything is closed",
+        noneOpen: "No active openings",
+        activeOne: " active opening",
+        activeMany: " active openings",
+        offlineOne: " detector offline",
+        offlineMany: " detectors offline"
+      }
+    };
+
+    function openingSummaryLabel(activeCount, offlineCount) {
+      var labels =
+        SECURITY_SECTION_I18N[LANG] || SECURITY_SECTION_I18N.it;
+
+      var text = activeCount > 0
+        ? activeCount +
+          (activeCount === 1 ? labels.activeOne : labels.activeMany)
+        : offlineCount > 0
+          ? labels.noneOpen
+          : labels.allClosed;
+
+      if (offlineCount > 0) {
+        text += " · " + offlineCount +
+          (offlineCount === 1 ? labels.offlineOne : labels.offlineMany);
+      }
+
+      return text;
+    }
+
+    function translateSecurityHeadings() {
+      var labels =
+        SECURITY_SECTION_I18N[LANG] || SECURITY_SECTION_I18N.it;
+
+      function setPanelHeading(contentSelector, text) {
+        var content = ROOT.querySelector(contentSelector);
+        var panel = content ? content.closest("article.panel") : null;
+        var heading = panel ? panel.querySelector("h3") : null;
+
+        if (!heading) {
+          return;
+        }
+
+        // Preserve the heading icon.
+        var textNodes = Array.prototype.slice.call(heading.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          heading.appendChild(document.createTextNode(text));
+        }
+      }
+
+      setPanelHeading("#motion-tiles", labels.motionTitle);
+      setPanelHeading("#open-tiles", labels.openingsTitle);
+    }
+
+    translateSecurityHeadings();
+
+    // Climate mode names and status labels.
+    var CLIMATE_I18N = {
+      it: {
+        unavailable: "Non disponibile",
+        idle: "in pausa",
+        indoors: "In casa"
+      },
+      fr: {
+        modes: {
+          off: "Arrêt",
+          heat_cool: "Auto",
+          cool: "Climatisation",
+          dry: "Déshumidification",
+          fan_only: "Ventilation",
+          heat: "Chauffage"
+        },
+        statuses: {
+          off: "À l’arrêt",
+          heat_cool: "Automatique",
+          cool: "Climatisation",
+          dry: "Déshumidification",
+          fan_only: "Ventilation seule",
+          heat: "Chauffage"
+        },
+        unavailable: "Indisponible",
+        idle: "en pause",
+        indoors: "À l’intérieur"
+      },
+      en: {
+        modes: {
+          off: "Off",
+          heat_cool: "Auto",
+          cool: "Cool",
+          dry: "Dry",
+          fan_only: "Fan",
+          heat: "Heat"
+        },
+        statuses: {
+          off: "Off",
+          heat_cool: "Automatic",
+          cool: "Cooling",
+          dry: "Dehumidifying",
+          fan_only: "Fan only",
+          heat: "Heating"
+        },
+        unavailable: "Unavailable",
+        idle: "idle",
+        indoors: "Indoors"
+      }
+    };
+
+    function climateLabels() {
+      return CLIMATE_I18N[LANG] || CLIMATE_I18N.it;
+    }
+
+    function translateClimateModes() {
+      var labels = climateLabels();
+
+      // Keep the original Italian mode and status labels.
+      if (!labels.modes) {
+        return;
+      }
+
+      CL_MODES.forEach(function (mode) {
+        var key = mode[0];
+
+        if (Object.prototype.hasOwnProperty.call(labels.modes, key)) {
+          mode[1] = labels.modes[key];
+        }
+      });
+
+      Object.keys(labels.statuses).forEach(function (key) {
+        CL_STATUS[key] = labels.statuses[key];
+      });
+    }
+
+    translateClimateModes();
+
+    // Climate setting labels; actual option values stay unchanged.
+    var CLIMATE_SETTINGS_I18N = {
+      fr: {
+        modeTitle: "Mode",
+        fanTitle: "Ventilateur",
+        vertical: "Volets verticaux",
+        horizontal: "Volets horizontaux",
+        preset: "Préréglage",
+        values: {
+          Auto: "Auto",
+          Low: "Minimum",
+          LowMid: "Faible",
+          Mid: "Moyen",
+          HighMid: "Élevé",
+          High: "Maximum",
+          Up: "Haut",
+          UpMid: "Milieu-haut",
+          DownMid: "Milieu-bas",
+          Down: "Bas",
+          Left: "Gauche",
+          LeftMid: "Milieu-gauche",
+          RightMid: "Milieu-droite",
+          Right: "Droite",
+          none: "Normal",
+          quiet: "Silencieux",
+          powerful: "Puissant",
+          eco: "Éco",
+          boost: "Boost",
+          comfort: "Confort",
+          sleep: "Nuit",
+          away: "Absence"
+        }
+      },
+      en: {
+        modeTitle: "Mode",
+        fanTitle: "Fan",
+        vertical: "Vertical vanes",
+        horizontal: "Horizontal vanes",
+        preset: "Preset",
+        values: {
+          Auto: "Auto",
+          Low: "Minimum",
+          LowMid: "Low",
+          Mid: "Medium",
+          HighMid: "High",
+          High: "Maximum",
+          Up: "Up",
+          UpMid: "Upper-middle",
+          DownMid: "Lower-middle",
+          Down: "Down",
+          Left: "Left",
+          LeftMid: "Middle-left",
+          RightMid: "Middle-right",
+          Right: "Right",
+          none: "Normal",
+          quiet: "Quiet",
+          powerful: "Powerful",
+          eco: "Eco",
+          boost: "Boost",
+          comfort: "Comfort",
+          sleep: "Sleep",
+          away: "Away"
+        }
+      }
+    };
+
+    function translateClimateSettings() {
+      var labels = CLIMATE_SETTINGS_I18N[LANG];
+
+      // Italian keeps the original dictionary and headings.
+      if (!labels) {
+        return;
+      }
+
+      Object.keys(labels.values).forEach(function (key) {
+        CL_IT[key] = labels.values[key];
+      });
+
+      var modeButtons = ROOT.querySelector("#cl-modes");
+      var modeSection = modeButtons
+        ? modeButtons.closest(".cl-sec")
+        : null;
+      var modeHeading = modeSection
+        ? modeSection.querySelector("h5")
+        : null;
+
+      if (modeHeading) {
+        modeHeading.textContent = labels.modeTitle;
+      }
+
+      var fanHeading = ROOT.querySelector("#cl-fan-sec h5");
+
+      if (fanHeading) {
+        fanHeading.textContent = labels.fanTitle;
+      }
+
+      function setSelectLabel(selector, text) {
+        var select = ROOT.querySelector(selector);
+        var label = select ? select.closest("label") : null;
+
+        if (!label) {
+          return;
+        }
+
+        // Preserve the select element and its event listeners.
+        var textNodes = Array.prototype.slice.call(label.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          label.insertBefore(
+            document.createTextNode(text + " "),
+            select
+          );
+        }
+
+        select.setAttribute("aria-label", text);
+      }
+
+      setSelectLabel("#cl-swing", labels.vertical);
+      setSelectLabel("#cl-hswing", labels.horizontal);
+      setSelectLabel("#cl-preset", labels.preset);
+    }
+
+    translateClimateSettings();
+
+    // Static labels in the energy view.
+    var ENERGY_STATIC_I18N = {
+      it: {
+        powerNow: "Potenza adesso",
+        history: "Andamento",
+        period: "Periodo",
+        hours3: "3 ore",
+        hours24: "24 ore",
+        days7: "7 giorni",
+        noHistory: "Storico non disponibile",
+        appliances: "Elettrodomestici",
+        appliancesHint: "consumo adesso e oggi",
+        last14Days: "ultimi 14 giorni",
+        units: "Unità"
+      },
+      fr: {
+        powerNow: "Puissance actuelle",
+        history: "Historique",
+        period: "Période",
+        hours3: "3 heures",
+        hours24: "24 heures",
+        days7: "7 jours",
+        noHistory: "Historique indisponible",
+        appliances: "Appareils électriques",
+        appliancesHint: "Puissance actuelle et énergie consommée aujourd’hui",
+        last14Days: "14 derniers jours",
+        units: "Unité"
+      },
+      en: {
+        powerNow: "Current power",
+        history: "History",
+        period: "Period",
+        hours3: "3 hours",
+        hours24: "24 hours",
+        days7: "7 days",
+        noHistory: "History unavailable",
+        appliances: "Electrical appliances",
+        appliancesHint: "Current power and energy used today",
+        last14Days: "last 14 days",
+        units: "Unit"
+      }
+    };
+
+    function translateEnergyStaticLabels() {
+      var labels =
+        ENERGY_STATIC_I18N[LANG] || ENERGY_STATIC_I18N.it;
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      setDirectText(
+        ROOT.querySelector("#en-eyebrow"),
+        labels.powerNow
+      );
+
+      var range = ROOT.querySelector("#en-range");
+
+      if (range) {
+        range.setAttribute("aria-label", labels.period);
+
+        var chartHeader = range.closest(".en-chart-head");
+        var chartTitle = chartHeader
+          ? chartHeader.querySelector("h3")
+          : null;
+
+        if (chartTitle) {
+          chartTitle.textContent = labels.history;
+        }
+      }
+
+      var targets = [
+        ['#en-range [data-r="3h"]', labels.hours3],
+        ['#en-range [data-r="24h"]', labels.hours24],
+        ['#en-range [data-r="7g"]', labels.days7],
+        ["#en-empty", labels.noHistory]
+      ];
+
+      targets.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.textContent = item[1];
+        }
+      });
+
+      var applianceTitle = ROOT.querySelector("#view-en h2.sec-title");
+
+      if (applianceTitle) {
+        setDirectText(applianceTitle, labels.appliances);
+
+        var applianceHint = applianceTitle.querySelector("small");
+
+        if (applianceHint) {
+          applianceHint.textContent = labels.appliancesHint;
+        }
+      }
+
+      var dailyTitle = ROOT.querySelector("#en-days-t");
+      var dailyHeading = dailyTitle ? dailyTitle.parentElement : null;
+      var dailyDescription = dailyHeading
+        ? dailyHeading.querySelector("small")
+        : null;
+
+      if (dailyDescription) {
+        dailyDescription.textContent = labels.last14Days;
+      }
+
+      var unitGroup = ROOT.querySelector("#en-dunit");
+
+      if (unitGroup) {
+        unitGroup.setAttribute("aria-label", labels.units);
+      }
+    }
+
+    translateEnergyStaticLabels();
+
+    // Static labels in the energy rate dialog.
+    var PRICE_DIALOG_I18N = {
+      fr: {
+        title: "Coût de l’énergie",
+        subtitle: "Le prix d’un kWh sur ta facture",
+        cancel: "Annuler",
+        save: "Enregistrer le tarif",
+        calculate: "Calculer à partir de la facture",
+        bill: "Montant total à payer",
+        kwh: "Énergie consommée",
+        note: "Montant total ÷ kWh : un coût moyen incluant les frais fixes et les taxes présents dans le total. Ce n’est pas nécessairement le tarif variable de chaque kWh supplémentaire.",
+        close: "Fermer",
+        decrease: "Diminuer",
+        increase: "Augmenter",
+        input: "Prix en euros par kWh",
+        billExample: "Ex. : 84,50",
+        kwhExample: "Ex. : 210"
+      },
+      en: {
+        title: "Energy cost",
+        subtitle: "The price of one kWh on your bill",
+        cancel: "Cancel",
+        save: "Save rate",
+        calculate: "Calculate from the electricity bill",
+        bill: "Total amount due",
+        kwh: "Energy consumed",
+        note: "Total amount ÷ kWh gives an average cost including fixed charges and taxes included in the total. It is not necessarily the variable rate for each additional kWh.",
+        close: "Close",
+        decrease: "Decrease",
+        increase: "Increase",
+        input: "Price in euros per kWh",
+        billExample: "E.g. 84.50",
+        kwhExample: "E.g. 210"
+      }
+    };
+
+    function translatePriceDialog() {
+      var labels = PRICE_DIALOG_I18N[LANG];
+
+      // Italian retains the original labels.
+      if (!labels) {
+        return;
+      }
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(node.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      var targets = [
+        ["#pr-title", labels.title],
+        ["#pricebox .mhead h2 small", labels.subtitle],
+        ["#pr-cancel", labels.cancel],
+        ["#pr-ok", labels.save],
+        ["#pr-calc summary", labels.calculate],
+        ["#pr-calc > p.note-sm", labels.note]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var billInput = ROOT.querySelector("#pr-bill");
+
+      if (billInput) {
+        setDirectText(billInput.closest("label"), labels.bill);
+        billInput.setAttribute("placeholder", labels.billExample);
+        billInput.setAttribute("aria-label", labels.bill);
+      }
+
+      var kwhInput = ROOT.querySelector("#pr-kwh");
+
+      if (kwhInput) {
+        setDirectText(kwhInput.closest("label"), labels.kwh);
+        kwhInput.setAttribute("placeholder", labels.kwhExample);
+        kwhInput.setAttribute("aria-label", labels.kwh);
+      }
+
+      var accessibleLabels = [
+        ["#pr-close", labels.close],
+        ["#pr-minus", labels.decrease],
+        ["#pr-plus", labels.increase],
+        ["#pr-in", labels.input]
+      ];
+
+      accessibleLabels.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.setAttribute("aria-label", item[1]);
+        }
+      });
+    }
+
+    translatePriceDialog();
+
+
+
+    function translateEnergyStaticOverrides() {
+      var translations = {
+        it: {
+          power: "Potenza adesso",
+          trend: "Andamento",
+          period: "Periodo",
+          threeHours: "3 ore",
+          twentyFourHours: "24 ore",
+          sevenDays: "7 giorni",
+          lastDays: "ultimi 14 giorni",
+          appliances: "Elettrodomestici",
+          appliancesSubtitle: "consumo adesso e oggi",
+          energyPage: "Energia",
+          changeRate: "Modifica la tariffa dell’energia"
+        },
+        fr: {
+          power: "Puissance actuelle",
+          trend: "Évolution",
+          period: "Période",
+          threeHours: "3 h",
+          twentyFourHours: "24 h",
+          sevenDays: "7 jours",
+          lastDays: "14 derniers jours",
+          appliances: "Appareils",
+          appliancesSubtitle: "puissance actuelle et énergie consommée aujourd’hui",
+          energyPage: "Énergie",
+          changeRate: "Modifier le tarif de l’énergie"
+        },
+        en: {
+          power: "Current power",
+          trend: "Trend",
+          period: "Period",
+          threeHours: "3 hours",
+          twentyFourHours: "24 hours",
+          sevenDays: "7 days",
+          lastDays: "last 14 days",
+          appliances: "Appliances",
+          appliancesSubtitle: "current power and energy used today",
+          energyPage: "Energy",
+          changeRate: "Change the energy rate"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      function setDirectText(node, text) {
+        if (!node) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(
+          node.childNodes
+        ).filter(function (child) {
+          return child.nodeType === 3;
+        });
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          node.appendChild(document.createTextNode(text + " "));
+        }
+      }
+
+      var targets = [
+        ["#en-eyebrow", labels.power],
+        ["#view-en .en-chart .en-chart-head h3", labels.trend],
+        ["#en-range [data-r='3h']", labels.threeHours],
+        ["#en-range [data-r='24h']", labels.twentyFourHours],
+        ["#en-range [data-r='7g']", labels.sevenDays],
+        ["#view-en .en-days .en-chart-head h3 small", labels.lastDays],
+        ["#view-en .sec-title", labels.appliances],
+        ["#view-en .sec-title small", labels.appliancesSubtitle]
+      ];
+
+      targets.forEach(function (item) {
+        setDirectText(ROOT.querySelector(item[0]), item[1]);
+      });
+
+      var attributes = [
+        ["#view-en", "aria-label", labels.energyPage],
+        ["#en-range", "aria-label", labels.period],
+        ["#en-price", "aria-label", labels.changeRate],
+        ["#en-kpis", "title", labels.changeRate]
+      ];
+
+      attributes.forEach(function (item) {
+        var node = ROOT.querySelector(item[0]);
+
+        if (node) {
+          node.setAttribute(item[1], item[2]);
+        }
+      });
+    }
+
+    translateEnergyStaticOverrides();
+    function translateImageEditorStaticLabels() {
+      var translations = {
+        it: {
+          restore: "Ripristina originale",
+          done: "Fatto",
+          close: "Chiudi",
+          library: "Libreria",
+          note: "Puoi anche trascinare un file PNG, JPG, GIF animata o WebP sopra un riquadro. Le immagini scelte restano salvate in questo browser."
+        },
+        fr: {
+          restore: "Rétablir l’original",
+          done: "Terminé",
+          close: "Fermer",
+          library: "Bibliothèque",
+          note: "Tu peux aussi déposer un fichier PNG, JPG, GIF animé ou WebP sur un emplacement. Les images personnalisées sont enregistrées dans ce navigateur."
+        },
+        en: {
+          restore: "Restore original",
+          done: "Done",
+          close: "Close",
+          library: "Library",
+          note: "You can also drop a PNG, JPG, animated GIF or WebP file onto an image slot. Custom images are saved in this browser."
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      function setButtonLabel(selector, text) {
+        var button = ROOT.querySelector(selector);
+
+        if (!button) {
+          return;
+        }
+
+        var textNodes = Array.prototype.slice.call(
+          button.childNodes
+        ).filter(function (child) {
+          return child.nodeType === 3;
+        });
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = text + " ";
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          button.appendChild(document.createTextNode(text + " "));
+        }
+
+        button.setAttribute("aria-label", text);
+      }
+
+      setButtonLabel("#ed-reset", labels.restore);
+      setButtonLabel("#ed-done", labels.done);
+
+      var closeButton = ROOT.querySelector("#ed-close");
+
+      if (closeButton) {
+        closeButton.setAttribute("aria-label", labels.close);
+        closeButton.setAttribute("title", labels.close);
+      }
+
+      var libraryTabs = ROOT.querySelector("#lib-tabs");
+
+      if (libraryTabs) {
+        libraryTabs.setAttribute("aria-label", labels.library);
+      }
+
+      var note = ROOT.querySelector("#editor p.note-sm");
+
+      if (note) {
+        note.textContent = labels.note;
+      }
+    }
+
+    translateImageEditorStaticLabels();
+
+    function translateEditBannerLabels() {
+      var translations = {
+        it: {
+          instruction: "Modalità modifica: tocca un pulsante per cambiargli immagine o GIF",
+          done: "Fine",
+          exit: "Esci dalla modalità modifica"
+        },
+        fr: {
+          instruction: "Mode modification : touche un élément pour changer son image ou son GIF",
+          done: "Terminer",
+          exit: "Quitter le mode modification"
+        },
+        en: {
+          instruction: "Edit mode: tap an item to change its image or GIF",
+          done: "Done",
+          exit: "Exit edit mode"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var instruction = ROOT.querySelector(
+        "#edit-banner .in > span"
+      );
+
+      if (instruction) {
+        instruction.textContent = labels.instruction;
+      }
+
+      var doneButton = ROOT.querySelector("#edit-done");
+
+      if (doneButton) {
+        doneButton.textContent = labels.done;
+        doneButton.setAttribute("aria-label", labels.exit);
+        doneButton.setAttribute("title", labels.exit);
+      }
+    }
+
+    translateEditBannerLabels();
+    function translateClimateControlLabels() {
+      var translations = {
+        it: {
+          decrease: "Abbassa la temperatura desiderata",
+          increase: "Alza la temperatura desiderata",
+          target: "Temperatura desiderata",
+          image: "Immagine del climatizzatore"
+        },
+        fr: {
+          decrease: "Diminuer la température cible",
+          increase: "Augmenter la température cible",
+          target: "Température cible",
+          image: "Image du climatiseur"
+        },
+        en: {
+          decrease: "Decrease the target temperature",
+          increase: "Increase the target temperature",
+          target: "Target temperature",
+          image: "Climate device image"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var buttons = [
+        ["#cl-minus", labels.decrease],
+        ["#cl-plus", labels.increase]
+      ];
+
+      buttons.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (button) {
+          button.setAttribute("aria-label", item[1]);
+          button.setAttribute("title", item[1]);
+        }
+      });
+
+      var targetGroup = ROOT.querySelector("#clima .tctl");
+
+      if (targetGroup) {
+        targetGroup.setAttribute("aria-label", labels.target);
+      }
+
+      var image = ROOT.querySelector("#cl-art");
+
+      if (image) {
+        image.setAttribute("data-label", labels.image);
+      }
+    }
+
+    translateClimateControlLabels();
+
+    function translateViewAccessibilityLabels() {
+      var translations = {
+        it: {
+          home: "Casa",
+          security: "Sicurezza",
+          energy: "Energia",
+          alarmPanel: "Centrale allarme"
+        },
+        fr: {
+          home: "Maison",
+          security: "Sécurité",
+          energy: "Énergie",
+          alarmPanel: "Centrale d’alarme"
+        },
+        en: {
+          home: "Home",
+          security: "Security",
+          energy: "Energy",
+          alarmPanel: "Alarm control panel"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var views = [
+        ["#view-home", labels.home],
+        ["#view-sic", labels.security],
+        ["#view-en", labels.energy]
+      ];
+
+      views.forEach(function (item) {
+        var view = ROOT.querySelector(item[0]);
+
+        if (view) {
+          view.setAttribute("aria-label", item[1]);
+        }
+      });
+
+      var alarmHeading = ROOT.querySelector(
+        "#alarm .alarm-txt .eyebrow"
+      );
+
+      if (alarmHeading) {
+        alarmHeading.textContent = labels.alarmPanel;
+      }
+    }
+
+    translateViewAccessibilityLabels();
+
+    function translateDemoCameraLabels() {
+      if (LIVE) {
+        var cameraBox = ROOT.querySelector("#cams");
+
+        if (cameraBox) {
+          cameraBox.innerHTML = "";
+          cameraBox.hidden = true;
+        }
+
+        return;
+      }
+
+      var translations = {
+        it: {
+          names: {
+            Ingresso: "Ingresso",
+            Giardino: "Giardino"
+          },
+          badge: "DEMO",
+          badgeHint: "Anteprima simulata: nessun flusso video reale"
+        },
+        fr: {
+          names: {
+            Ingresso: "Entrée",
+            Giardino: "Jardin"
+          },
+          badge: "DÉMO",
+          badgeHint: "Aperçu simulé : aucun flux vidéo réel"
+        },
+        en: {
+          names: {
+            Ingresso: "Entrance",
+            Giardino: "Garden"
+          },
+          badge: "DEMO",
+          badgeHint: "Simulated preview: no real video stream"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var headings = ROOT.querySelectorAll("#cams .cam > h4");
+
+      Array.prototype.forEach.call(headings, function (heading) {
+        var originalName = heading.textContent.trim();
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            labels.names,
+            originalName
+          )
+        ) {
+          heading.textContent = labels.names[originalName];
+        }
+      });
+
+      var badges = ROOT.querySelectorAll("#cams .feed .live");
+
+      Array.prototype.forEach.call(badges, function (badge) {
+        badge.textContent = labels.badge;
+        badge.setAttribute("title", labels.badgeHint);
+        badge.setAttribute("aria-label", labels.badgeHint);
+      });
+    }
+
+    translateDemoCameraLabels();
+    function initializeSecuritySummaryLabels() {
+      var translations = {
+        it: {
+          pendingMotion: "In attesa dello stato dei sensori",
+          pendingOpenings: "In attesa dello stato delle aperture"
+        },
+        fr: {
+          pendingMotion: "En attente de l’état des détecteurs",
+          pendingOpenings: "En attente de l’état des ouvertures"
+        },
+        en: {
+          pendingMotion: "Waiting for detector states",
+          pendingOpenings: "Waiting for opening states"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var heroMotion = ROOT.querySelector("#hero-motion");
+
+      if (heroMotion) {
+        heroMotion.textContent = LIVE
+          ? labels.pendingMotion
+          : motionSummaryLabel(null, 0, 0);
+      }      
+
+      var motionSummary = ROOT.querySelector("#last-motion");
+
+      if (motionSummary) {
+        motionSummary.textContent = LIVE
+          ? labels.pendingMotion
+          : motionHistoryLabels().noRecent;
+      }
+
+      var openingsSummary = ROOT.querySelector("#open-sub");
+
+      if (openingsSummary) {
+        openingsSummary.textContent = LIVE
+          ? labels.pendingOpenings
+          : openingSummaryLabel(0, 0);
+      }
+    }
+
+    initializeSecuritySummaryLabels();
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
+        // Translate effect buttons after they have been created.
+    var EFFECT_I18N = {
+      it: {
+        none: "Nessuno",
+        pioggia: "Pioggia",
+        temporale: "Temporale",
+        neve: "Neve",
+        nebbia: "Nebbia",
+        foglie: "Foglie d'autunno",
+        petali: "Petali",
+        lucciole: "Lucciole",
+        stelle: "Stelle cadenti",
+        fuochi: "Fuochi d'artificio",
+        bolle: "Bolle",
+        coriandoli: "Coriandoli"
+      },
+      fr: {
+        none: "Aucun",
+        pioggia: "Pluie",
+        temporale: "Orage",
+        neve: "Neige",
+        nebbia: "Brouillard",
+        foglie: "Feuilles d’automne",
+        petali: "Pétales",
+        lucciole: "Lucioles",
+        stelle: "Étoiles filantes",
+        fuochi: "Feux d’artifice",
+        bolle: "Bulles",
+        coriandoli: "Confettis"
+      },
+      en: {
+        none: "None",
+        pioggia: "Rain",
+        temporale: "Thunderstorm",
+        neve: "Snow",
+        nebbia: "Fog",
+        foglie: "Autumn leaves",
+        petali: "Petals",
+        lucciole: "Fireflies",
+        stelle: "Shooting stars",
+        fuochi: "Fireworks",
+        bolle: "Bubbles",
+        coriandoli: "Confetti"
+      }
+    };
+
+    function translateEffectButtons() {
+      var labels = EFFECT_I18N[LANG] || EFFECT_I18N.it;
+      var buttons = ROOT.querySelectorAll("#fxgrid [data-fx]");
+
+      Array.prototype.forEach.call(buttons, function (button) {
+        var effectId = button.getAttribute("data-fx");
+        var label = labels[effectId];
+
+        if (label === undefined) {
+          return;
+        }
+
+        // Preserve the icon and replace only direct text nodes.
+        var textNodes = Array.prototype.slice.call(button.childNodes).filter(
+          function (child) {
+            return child.nodeType === 3;
+          }
+        );
+
+        if (textNodes.length) {
+          textNodes[0].nodeValue = label;
+
+          textNodes.slice(1).forEach(function (child) {
+            child.nodeValue = "";
+          });
+        } else {
+          button.appendChild(document.createTextNode(label));
+        }
+
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
+      });
+    }
+
+    translateEffectButtons();
+    // Translate room and light labels without changing configuration keys.
+    var ROOM_I18N = {
+      fr: {
+        groups: {
+          "Zona giorno": "Zone de vie",
+          "Cucina": "Cuisine",
+          "Zona notte": "Chambres",
+          "Bagni": "Salles de bain",
+          "Servizi": "Pièces utilitaires"
+        },
+        lights: {
+          salotto: "Salon",
+          ingresso: "Entrée",
+          corridoio: "Couloir",
+          cucina: "Cuisine",
+          balcone: "Balcon",
+          camera: "Chambre",
+          cameretta: "Chambre d’enfant",
+          bagno_piccolo: "Petite salle de bain",
+          bagno_doccia: "Salle de douche",
+          lavanderia: "Salle de lavage",
+          sgabuzzino: "Rangement"
+        },
+        lightPrefix: "Éclairage : "
+      },
+      en: {
+        groups: {
+          "Zona giorno": "Living area",
+          "Cucina": "Kitchen",
+          "Zona notte": "Bedrooms",
+          "Bagni": "Bathrooms",
+          "Servizi": "Utility rooms"
+        },
+        lights: {
+          salotto: "Living room",
+          ingresso: "Entrance",
+          corridoio: "Hallway",
+          cucina: "Kitchen",
+          balcone: "Balcony",
+          camera: "Bedroom",
+          cameretta: "Child’s bedroom",
+          bagno_piccolo: "Small bathroom",
+          bagno_doccia: "Shower room",
+          lavanderia: "Laundry room",
+          sgabuzzino: "Storage"
+        },
+        lightPrefix: "Light: "
+      }
+    };
+
+    function translateRoomLabels() {
+      var labels = ROOM_I18N[LANG];
+
+      // Italian keeps the original labels.
+      if (!labels) {
+        return;
+      }
+
+      var headings = ROOT.querySelectorAll("#rooms .room-head h3");
+
+      Array.prototype.forEach.call(headings, function (heading) {
+        var originalName = heading.textContent.trim();
+
+        if (Object.prototype.hasOwnProperty.call(labels.groups, originalName)) {
+          heading.textContent = labels.groups[originalName];
+        }
+      });
+
+      var buttons = ROOT.querySelectorAll("#rooms .orb[data-light]");
+
+      Array.prototype.forEach.call(buttons, function (button) {
+        var key = button.getAttribute("data-light");
+
+        if (!Object.prototype.hasOwnProperty.call(labels.lights, key)) {
+          return;
+        }
+
+        var translatedName = labels.lights[key];
+        var nameElement = button.querySelector(".o-name");
+
+        if (nameElement) {
+          nameElement.textContent = translatedName;
+        }
+
+        button.setAttribute(
+          "data-label",
+          labels.lightPrefix + translatedName
+        );
+
+        button.setAttribute(
+          "aria-label",
+          labels.lightPrefix + translatedName
+        );
+      });
+    }
+
+    translateRoomLabels();    
+
     var th = store("theme"); setTheme(th === "light" ? "light" : "dark");
     setBtn(S.btn === "compact" ? "compact" : "img");
     tickDate(); tickClock(); applyWorld();
@@ -2088,7 +6304,7 @@
 
 /* ---- scheda ---- */
 /* ============================================================================
-   AURORA GLASS v3 — scheda personalizzata per Home Assistant
+   LUMA HOME — scheda personalizzata per Home Assistant
    <aurora-v3-card> : una scheda a tutta pagina (usala in una vista "panel").
    Config facoltativa (YAML):
      type: custom:aurora-v3-card
@@ -2098,12 +6314,18 @@
    ========================================================================== */
 (function () {
   // Installata da HACS la scheda sta in /hacsfiles/aurora-glass-v3/: le immagini sono accanto al file.
-  function defaultAssets() {
-    var s = document.querySelector('script[src*="/hacsfiles/"][src*="aurora-v3.js"]');
-    return s ? s.src.replace(/aurora-v3\.js.*$/, "btn/") : "/local/aurora-v3/btn/";
-  }
-  var CSS = "\n/* ==========================================================================\n   AURORA GLASS v3 \u2014 \"Cielo vivo\"\n   I colori di tutta l'interfaccia vengono dalla palette dell'ora del giorno\n   (js/mondi-base.js). I token sono registrati con @property per scivolare.\n   ========================================================================== */\n\n\n\n\n\n\n\n:host {\n  --ease: cubic-bezier(.16, 1, .3, 1);\n  --spring: cubic-bezier(.34, 1.56, .64, 1);\n  --font-display: 'Sora', 'Manrope', system-ui, sans-serif;\n  --font-ui: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;\n  --ok: #34D399; --warn: #FBBF24; --danger: #FB7185;\n  --b1: #7C5CFF; --b2: #3B82F6; --b3: #22D3EE; --a1: #7C5CFF; --a2: #D946EF; --win: #FFD27A;\n  transition: --b1 1.6s ease, --b2 1.6s ease, --b3 1.6s ease, --a1 1.6s ease, --a2 1.6s ease, --win 1.6s ease;\n  color-scheme: dark;\n  --bg: #070A16;\n  --surface: rgba(255,255,255,.06);\n  --surface-2: rgba(255,255,255,.10);\n  --surface-solid: #12172D;\n  --border: rgba(255,255,255,.10);\n  --hi: rgba(255,255,255,.16);\n  --text: #F5F7FF; --dim: #A3AED0; --faint: #6B7599;\n  --acc-text: color-mix(in srgb, var(--b1) 55%, #fff);\n  --blob-o: .55;\n  --shadow: 0 24px 60px -26px rgba(0,0,0,.75);\n}\n:host([data-theme=\"light\"]) {\n  color-scheme: light;\n  --bg: #EDF0FA;\n  --surface: rgba(255,255,255,.68); --surface-2: rgba(20,25,60,.07); --surface-solid: #FFFFFF;\n  --border: rgba(20,25,60,.10); --hi: rgba(255,255,255,.95);\n  --text: #141838; --dim: #55608A; --faint: #8E97B8;\n  --acc-text: color-mix(in srgb, var(--a1) 85%, #000);\n  --blob-o: .38;\n  --shadow: 0 24px 50px -28px rgba(30,40,90,.38);\n  --ok: #059669; --warn: #B45309; --danger: #E11D48;\n}\n:host([data-alarm=\"alarm\"]) { --b1: #F43F5E !important; --b2: #EF4444 !important; --b3: #FB923C !important; --a1: #E11D48 !important; --a2: #F97316 !important; }\n\n* { box-sizing: border-box; }\nhtml { scroll-behavior: smooth; }\nbody { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; overflow-x: hidden; }\nbutton { font: inherit; color: inherit; }\n.shell { position: relative; isolation: isolate; min-height: var(--shell-min, 100vh); color: var(--text); font-family: var(--font-ui); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; }\n.scroll { position: var(--sp, static); inset: 0; overflow: var(--so, visible); scroll-behavior: smooth; }\ni.mdi { font-style: normal; }\nimg { -webkit-user-drag: none; user-select: none; }\n[hidden] { display: none !important; }\n:focus-visible { outline: 2px solid var(--acc-text); outline-offset: 3px; border-radius: 12px; }\n\n/* ---------- sfondo vivo ---------- */\n.bg { position: var(--lp, fixed); inset: 0; z-index: -3; overflow: hidden; background: var(--bg); }\n.bg i { position: absolute; width: 74vmax; height: 74vmax; border-radius: 50%; opacity: var(--blob-o); will-change: transform; }\n.bg .o1 { left: -24vmax; top: -30vmax; background: radial-gradient(circle, var(--b1), transparent 64%); animation: drift1 30s ease-in-out infinite alternate; }\n.bg .o2 { right: -30vmax; top: 8vh; background: radial-gradient(circle, var(--b2), transparent 64%); animation: drift2 38s ease-in-out infinite alternate; }\n.bg .o3 { left: 12vw; bottom: -44vmax; background: radial-gradient(circle, var(--b3), transparent 64%); animation: drift3 44s ease-in-out infinite alternate; }\n@keyframes drift1 { to { transform: translate(14vw, 12vh) scale(1.15); } }\n@keyframes drift2 { to { transform: translate(-16vw, 14vh) scale(.9); } }\n@keyframes drift3 { to { transform: translate(18vw, -10vh) scale(1.2); } }\n.grain { position: var(--lp, fixed); inset: 0; z-index: -1; pointer-events: none; opacity: .08; mix-blend-mode: overlay; background-image: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\"); }\n.fx-page { position: var(--lp, fixed); inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }\n:host([data-theme=\"light\"]) .fx-page { filter: drop-shadow(0 0 1.5px rgba(30,50,110,.55)); }\n.vignette { position: var(--lp, fixed); inset: 0; z-index: 40; pointer-events: none; background: rgba(214,228,255, calc(var(--flash, 0) * .28)); box-shadow: inset 0 0 0 0 transparent; }\n:host([data-alarm=\"alarm\"]) .vignette { animation: vig 1.1s ease-in-out infinite; }\n@keyframes vig { 0%, 100% { box-shadow: inset 0 0 120px 10px rgba(244,63,94,.0); } 50% { box-shadow: inset 0 0 160px 24px rgba(244,63,94,.38); } }\n\n/* ---------- barra superiore ---------- */\n.wrap { width: min(1240px, 100%); margin: 0 auto; padding: 0 clamp(14px, 3vw, 32px); }\n.topbar { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 58%, transparent); backdrop-filter: blur(16px) saturate(1.5); -webkit-backdrop-filter: blur(16px) saturate(1.5); border-bottom: 1px solid var(--border); }\n.topbar .wrap { display: flex; align-items: center; gap: 12px; height: 66px; }\n.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; letter-spacing: -.02em; font-size: 1.05rem; white-space: nowrap; }\n.brand em { font-style: normal; font-weight: 500; color: var(--dim); }\n.logo { width: 28px; height: 28px; border-radius: 50%; background: conic-gradient(from 0deg, var(--b1), var(--b2), var(--b3), var(--b1)); -webkit-mask: radial-gradient(farthest-side, transparent 52%, #000 55%); mask: radial-gradient(farthest-side, transparent 52%, #000 55%); animation: spin 7s linear infinite; }\n@keyframes spin { to { transform: rotate(360deg); } }\n.ver { font-size: .62rem; font-weight: 800; letter-spacing: .08em; color: #fff; padding: 3px 8px; border-radius: 99px; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.status { margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); font-size: .84rem; font-weight: 600; color: var(--dim); min-width: 0; }\n.status span#status-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); flex: none; animation: ping2 2.4s ease-in-out infinite; }\n:host([data-alarm=\"armed\"]) .status .dot { background: var(--warn); }\n:host([data-alarm=\"alarm\"]) .status .dot { background: var(--danger); animation-duration: 1s; }\n@keyframes ping2 { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .65; } 100% { transform: scale(1); opacity: 1; } }\n.top-actions { display: flex; align-items: center; gap: 10px; }\n\n.style-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; height: 40px; border: 0; border-radius: 99px; cursor: pointer; font-weight: 800; font-size: .86rem; color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -10px var(--a1); transition: transform .4s var(--spring); overflow: hidden; }\n.style-btn i { font-size: 1.15rem; animation: wiggle 3.2s ease-in-out infinite; }\n@keyframes wiggle { 0%, 80%, 100% { transform: rotate(0); } 86% { transform: rotate(-16deg) scale(1.15); } 93% { transform: rotate(14deg) scale(1.15); } }\n.style-btn::after { content: \"\"; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.35) 50%, transparent 62%); transform: translateX(-130%); animation: shine 4.5s ease-in-out infinite; }\n@keyframes shine { 0%, 55% { transform: translateX(-130%); } 80%, 100% { transform: translateX(130%); } }\n.style-btn:hover { transform: translateY(-2px) scale(1.04); }\n.style-btn:active { transform: scale(.95); }\n\n.phase { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); font-size: .78rem; font-weight: 700; color: var(--dim); }\n.phase i { font-size: 1.15rem; color: var(--acc-text); }\n.phase output { min-width: 3.4em; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }\ninput.ph[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 99px; outline-offset: 6px; background: linear-gradient(90deg, #1b1f4d, #e0678c 28%, #74bffb 45%, #74bffb 62%, #ea580c 78%, #1b1f4d); }\ninput.ph[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--a1); box-shadow: 0 2px 8px rgba(0,0,0,.4); cursor: grab; transition: transform .2s var(--spring); }\ninput.ph[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }\ninput.ph[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--a1); cursor: grab; }\n.icon-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 1.2rem; background: var(--surface); border: 1px solid var(--border); color: var(--dim); transition: transform .4s var(--spring), color .2s, border-color .2s; }\n.icon-btn:hover { color: var(--text); border-color: var(--acc-text); transform: rotate(18deg) scale(1.08); }\n.icon-btn:active { transform: scale(.9); }\n\n/* ---------- hints ---------- */\n.hints { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 18px; }\n.hint { font-size: .76rem; font-weight: 600; color: var(--dim); padding: 6px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; }\n.hint i { color: var(--acc-text); }\nbutton.hint { cursor: pointer; transition: transform .3s var(--spring), border-color .2s, color .2s; }\nbutton.hint:hover { color: var(--text); border-color: var(--acc-text); transform: translateY(-2px); }\nbutton.hint.danger:hover { border-color: var(--danger); }\nbutton.hint.danger i { color: var(--danger); }\n\n/* ---------- card ---------- */\nmain { display: flex; flex-direction: column; gap: 22px; padding: 18px 0 150px; }\n.card { position: relative; border-radius: 28px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow), inset 0 1px 0 var(--hi); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); }\n@keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }\n.enter > * { animation: rise .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }\n.sec-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px 4px; font-family: var(--font-display); font-weight: 700; font-size: .98rem; letter-spacing: -.01em; }\n.sec-title small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); font-size: .76rem; }\n.sec-title::before { content: \"\"; width: 4px; height: 16px; border-radius: 4px; background: linear-gradient(var(--a1), var(--a2)); }\n\n/* ---------- hero con il mondo animato ---------- */\n.hero { overflow: hidden; min-height: 290px; display: flex; }\n.hero-art { position: absolute; right: 0; bottom: 0; height: 100%; aspect-ratio: 640 / 260; z-index: 0;\n  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.7) 20%, #000 40%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.7) 20%, #000 40%); }\n.hero-art img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.1s ease; }\n.hero-art img.show { opacity: 1; }\n.wglow { position: absolute; border-radius: 2px; background: var(--win); box-shadow: 0 0 9px 2px var(--win); opacity: 0; transition: opacity .6s ease; pointer-events: none; }\n.wglow.on { opacity: 1; }\n.fx-hero { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }\n.hero-body { position: relative; z-index: 2; padding: clamp(22px, 3vw, 36px); display: flex; flex-direction: column; justify-content: center; gap: 4px; }\n.hero-tag { position: absolute; z-index: 3; right: 16px; top: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: #fff; background: rgba(8,10,30,.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); cursor: pointer; transition: transform .35s var(--spring), background .2s; }\n.hero-tag:hover { transform: translateY(-2px); background: rgba(8,10,30,.62); }\n.eyebrow { margin: 0; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }\n.greet { margin: 2px 0 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.1rem, 2.2vw, 1.5rem); letter-spacing: -.02em; }\n.clock { font-family: var(--font-display); font-weight: 800; line-height: 1; letter-spacing: -.05em; font-variant-numeric: tabular-nums; font-size: clamp(3.6rem, 9vw, 6.6rem); margin: 4px 0 8px; background: linear-gradient(110deg, var(--text) 10%, var(--acc-text) 55%, var(--a2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 6px 24px color-mix(in srgb, var(--a1) 35%, transparent)); }\n.clock .colon { animation: blink 1s steps(1) infinite; }\n@keyframes blink { 50% { opacity: .25; } }\n.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }\n.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 99px; font-size: .82rem; font-weight: 600; color: var(--dim); background: color-mix(in srgb, var(--bg) 45%, transparent); border: 1px solid var(--border); backdrop-filter: blur(8px); }\n.chip i { font-size: 1.1rem; color: var(--acc-text); }\n.chip b { color: var(--text); font-weight: 700; }\n.chip i.bolt { animation: zap 2.6s ease-in-out infinite; }\n@keyframes zap { 0%, 100% { transform: scale(1); } 8% { transform: scale(1.3) rotate(-8deg); } 16% { transform: scale(1); } }\n\n/* ---------- scene rapide (immagini) ---------- */\n.scenes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }\n.scene { --s1: #fff; --s2: #fff; position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; min-height: 92px; padding: 12px 14px 12px 12px; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); color: var(--text); text-align: left; cursor: pointer; box-shadow: inset 0 1px 0 var(--hi); transition: transform .45s var(--spring), border-color .25s, box-shadow .4s, background .4s; -webkit-tap-highlight-color: transparent; }\n.scene::after { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.2) 50%, transparent 62%); transform: translateX(-130%); transition: transform .9s var(--ease); }\n.scene:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--s1) 60%, transparent); box-shadow: 0 20px 44px -20px var(--s1), inset 0 1px 0 var(--hi); }\n.scene:hover::after { transform: translateX(130%); }\n.scene:active { transform: scale(.95); transition-duration: .12s; }\n.scene .s-img { flex: none; width: 68px; height: 68px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 22px -8px var(--s1); transition: transform .6s var(--spring); }\n.scene .s-ico { display: none; flex: none; width: 48px; height: 48px; border-radius: 16px; place-items: center; font-size: 1.55rem; color: #fff; background: linear-gradient(135deg, var(--s1), var(--s2)); box-shadow: 0 10px 22px -8px var(--s1); }\n.scene:hover .s-img { transform: scale(1.08) rotate(-3deg); }\n.scene b { display: block; font-family: var(--font-display); font-size: .95rem; font-weight: 700; letter-spacing: -.01em; }\n.scene small { display: block; color: var(--dim); font-size: .74rem; font-weight: 500; margin-top: 2px; }\n.scene.active { background: linear-gradient(135deg, color-mix(in srgb, var(--s1) 34%, transparent), color-mix(in srgb, var(--s2) 24%, transparent)); border-color: color-mix(in srgb, var(--s1) 70%, transparent); box-shadow: 0 18px 40px -22px var(--s1), inset 0 1px 0 var(--hi); }\n.spark { position: var(--lp, fixed); width: 7px; height: 7px; border-radius: 50%; pointer-events: none; z-index: 70; }\n\n/* ---------- stanze e luci (immagini) ---------- */\n.rooms { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }\n.room { --room: #8B5CF6; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }\n.room.w3 { grid-column: span 3; } .room.w2 { grid-column: span 2; }\n.room-head { display: flex; align-items: center; gap: 12px; position: relative; }\n.r-ico { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; font-size: 1.3rem; color: #fff; background: linear-gradient(135deg, var(--room), color-mix(in srgb, var(--room) 55%, #000)); box-shadow: 0 8px 18px -8px var(--room); }\n.room-head h3 { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }\n.room-head .count { margin-left: auto; font-size: .76rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: color-mix(in srgb, var(--room) 18%, transparent); color: color-mix(in srgb, var(--room) 75%, var(--text)); font-variant-numeric: tabular-nums; }\n.bar { height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-top: -4px; }\n.bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--room), color-mix(in srgb, var(--room) 60%, #fff)); transition: width .7s var(--ease); }\n.room-body { display: grid; gap: 10px; align-content: start; }\n.w3 .room-body { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n.w2 .room-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n\n.orb { position: relative; overflow: hidden; aspect-ratio: 1 / 1; padding: 0; border-radius: 22px; text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--border); color: #fff; transition: transform .45s var(--spring), border-color .45s, box-shadow .45s; -webkit-tap-highlight-color: transparent; }\n.orb .o-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease); }\n.orb:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--room) 60%, var(--border)); }\n.orb:hover .o-img { transform: scale(1.06); }\n.orb:active { transform: scale(.94); transition-duration: .1s; }\n.orb.pop { animation: pop .55s var(--spring); }\n@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(.92); } 70% { transform: scale(1.05); } 100% { transform: scale(1); } }\n.o-shade { position: absolute; inset: auto 0 0 0; height: 56%; background: linear-gradient(to top, rgba(4,6,18,.86), transparent); pointer-events: none; }\n.o-ico { display: none; position: relative; width: 46px; height: 46px; border-radius: 15px; place-items: center; font-size: 1.6rem; background: var(--surface-2); color: var(--dim); transition: background .4s, color .4s; }\n.o-txt { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; flex-direction: column; z-index: 2; }\n.o-name { font-weight: 800; font-size: .95rem; text-shadow: 0 1px 6px rgba(0,0,0,.5); }\n.o-state { font-size: .76rem; color: rgba(255,255,255,.72); margin-top: 1px; }\n.orb .sw { position: absolute; top: 12px; right: 12px; width: 40px; height: 24px; border-radius: 99px; background: rgba(8,10,30,.55); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(6px); transition: background .35s; z-index: 2; }\n.orb .sw::after { content: \"\"; position: absolute; top: 2px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: transform .5s var(--spring); }\n.orb[aria-pressed=\"true\"] { border-color: color-mix(in srgb, var(--room) 80%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--room) 50%, transparent), 0 20px 40px -18px var(--room); }\n.orb[aria-pressed=\"true\"] .o-state { color: #fff; font-weight: 800; }\n.orb[aria-pressed=\"true\"] .sw { background: var(--room); border-color: transparent; }\n.orb[aria-pressed=\"true\"] .sw::after { transform: translateX(16px); }\n\n.sensors { display: flex; flex-wrap: wrap; gap: 6px; }\n.w3 .sensors.strip, .w2 .sensors.strip { grid-column: 1 / -1; }\n.sens { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: var(--dim); background: var(--surface-2); border: 1px solid transparent; transition: background .3s, color .3s, border-color .3s, transform .35s var(--spring); position: relative; }\n.sens .s-ph { position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex: none; background: #0b1020; }\n.sens .s-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.75); }\n.sens > i { display: none; font-size: .95rem; margin-left: 6px; }\n.sens.active { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border-color: color-mix(in srgb, var(--ok) 45%, transparent); transform: scale(1.05); }\n.sens-cell { display: flex; flex-direction: column; gap: 8px; justify-content: center; }\n\n/* ---------- sicurezza ---------- */\n.alert { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 22px; color: #fff; font-weight: 700; background: linear-gradient(100deg, #E11D48, #F97316); box-shadow: 0 16px 40px -14px #E11D48; animation: rise .5s var(--spring) both; }\n.alert i { font-size: 1.6rem; animation: shake .7s ease-in-out infinite; }\n@keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }\n.alert span { flex: 1; }\n.alert button { border: 0; border-radius: 14px; padding: 10px 16px; font-weight: 800; cursor: pointer; background: #fff; color: #BE123C; transition: transform .3s var(--spring); }\n.alert button:hover { transform: scale(1.06); }\n.alarm { --al: var(--ok); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: clamp(18px, 3vw, 34px); padding: clamp(20px, 3vw, 30px); overflow: hidden; transition: border-color .6s; }\n.alarm[data-state=\"armed\"] { --al: var(--warn); }\n.alarm[data-state=\"alarm\"] { --al: var(--danger); border-color: color-mix(in srgb, var(--danger) 70%, transparent); }\n.alarm::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(90% 140% at 0% 50%, color-mix(in srgb, var(--al) 26%, transparent), transparent 62%); transition: background .6s; }\n.shield { position: relative; width: 132px; height: 132px; border-radius: 30px; overflow: hidden; box-shadow: 0 18px 40px -14px var(--al); cursor: default; }\n.shield img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.alarm-txt { position: relative; min-width: 0; }\n.alarm-txt .eyebrow { color: var(--dim); }\n.alarm-txt h2 { margin: 4px 0 6px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2.3rem); letter-spacing: -.03em; }\n.alarm-txt p.d { margin: 0; color: var(--dim); font-size: .92rem; max-width: 46ch; }\n.seg { position: relative; display: flex; padding: 5px; border-radius: 20px; background: color-mix(in srgb, var(--bg) 40%, transparent); border: 1px solid var(--border); }\n.seg-pill { position: absolute; top: 5px; bottom: 5px; left: 5px; width: 90px; border-radius: 15px; background: linear-gradient(135deg, var(--al), color-mix(in srgb, var(--al) 55%, #000)); box-shadow: 0 8px 20px -8px var(--al); transition: transform .55s var(--spring), width .55s var(--spring), opacity .3s, background .5s; }\n.seg button { position: relative; z-index: 1; border: 0; background: transparent; padding: 14px 20px; border-radius: 15px; font-weight: 700; font-size: .88rem; color: var(--dim); cursor: pointer; transition: color .25s; white-space: nowrap; }\n.seg button[aria-pressed=\"true\"] { color: #fff; }\n.seg button:not([aria-pressed=\"true\"]):hover { color: var(--text); }\n.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.panel { padding: 20px; }\n.panel h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }\n.panel .sub { margin: 0 0 14px; color: var(--dim); font-size: .82rem; }\n.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }\n.stile { position: relative; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 20px; padding: 0; background: var(--surface-2); color: var(--text); cursor: pointer; text-align: left; transition: transform .4s var(--spring), border-color .3s, box-shadow .3s; }\n.stile .st-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }\n.stile .st-ico { display: none; margin: 10px 0 0 10px; font-size: 1.5rem; color: var(--dim); }\n.stile .st-txt { padding: 8px 10px 10px; display: flex; flex-direction: column; }\n.stile .st-name { font-weight: 800; font-size: .8rem; }\n.stile .st-state { font-size: .7rem; color: var(--dim); font-weight: 600; }\n.stile:hover { transform: translateY(-3px); }\n.stile.active, .stile.open { border-color: color-mix(in srgb, var(--ok) 60%, transparent); box-shadow: 0 14px 30px -16px var(--ok); }\n.stile.active .st-state { color: var(--ok); }\n.stile.open { border-color: color-mix(in srgb, var(--warn) 65%, transparent); box-shadow: 0 14px 30px -16px var(--warn); }\n.stile.open .st-state { color: var(--warn); }\n.cams { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.cam { padding: 14px; display: flex; flex-direction: column; gap: 10px; }\n.cam h4 { margin: 2px 4px 0; font-family: var(--font-display); font-size: .92rem; font-weight: 700; }\n.feed { position: relative; overflow: hidden; border-radius: 20px; aspect-ratio: 16 / 8.5; background: repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 4px), radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--b1) 60%, #10142e), transparent 70%), linear-gradient(135deg, #141a3a, color-mix(in srgb, var(--b3) 40%, #0b0f24)); }\n.feed::before { content: \"\"; position: absolute; inset: -20% -60%; background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.14) 50%, transparent 58%); animation: sweep 6s ease-in-out infinite; }\n@keyframes sweep { 0%, 100% { transform: translateX(-40%); } 50% { transform: translateX(40%); } }\n.live { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; background: rgba(0,0,0,.4); color: #fff; font-size: .66rem; font-weight: 800; letter-spacing: .08em; }\n.live::before { content: \"\"; width: 7px; height: 7px; border-radius: 50%; background: #FF4D6A; animation: ping2 1.4s ease-in-out infinite; }\n.stamp { position: absolute; right: 12px; bottom: 10px; color: rgba(255,255,255,.8); font-size: .7rem; font-weight: 700; font-variant-numeric: tabular-nums; text-shadow: 0 1px 4px rgba(0,0,0,.6); }\n\n/* ---------- modalit\u00e0 compatta (solo icone) ---------- */\n:host([data-btn=\"compact\"]) .scene .s-img, :host([data-btn=\"compact\"]) .orb .o-img, :host([data-btn=\"compact\"]) .o-shade, :host([data-btn=\"compact\"]) .sens .s-ph, :host([data-btn=\"compact\"]) .stile .st-img { display: none; }\n:host([data-btn=\"compact\"]) .scene .s-ico, :host([data-btn=\"compact\"]) .o-ico, :host([data-btn=\"compact\"]) .stile .st-ico { display: grid; }\n:host([data-btn=\"compact\"]) .sens > i { display: inline-block; }\n:host([data-btn=\"compact\"]) .sens { padding: 6px 12px; }\n:host([data-btn=\"compact\"]) .orb { aspect-ratio: auto; min-height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; color: var(--text); }\n:host([data-btn=\"compact\"]) .o-txt { position: static; }\n:host([data-btn=\"compact\"]) .o-name { text-shadow: none; }\n:host([data-btn=\"compact\"]) .o-state { color: var(--dim); }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] { background: linear-gradient(160deg, color-mix(in srgb, var(--room) 26%, transparent), color-mix(in srgb, var(--room) 6%, transparent)); }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] .o-ico { background: var(--room); color: #fff; }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] .o-state { color: color-mix(in srgb, var(--room) 70%, var(--text)); }\n\n/* ---------- dock ---------- */\n.dock { position: var(--lp, fixed); left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 35; display: flex; align-items: flex-end; gap: 6px; padding: 8px; border-radius: 28px; background: color-mix(in srgb, var(--surface-solid) 62%, transparent); border: 1px solid var(--border); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6); box-shadow: 0 24px 60px -16px rgba(0,0,0,.6), inset 0 1px 0 var(--hi); }\n.dock button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 70px; padding: 10px 10px 8px; border: 0; border-radius: 20px; background: transparent; color: var(--dim); cursor: pointer; transform-origin: bottom center; transition: transform .4s var(--spring), color .2s, background .3s; -webkit-tap-highlight-color: transparent; }\n.dock button i { font-size: 1.6rem; line-height: 1; }\n.dock button span { font-size: .68rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }\n.dock button:hover { transform: translateY(-8px) scale(1.18); color: var(--text); }\n.dock button:hover + button, .dock button:has(+ button:hover) { transform: translateY(-3px) scale(1.07); }\n.dock button:active { transform: translateY(-2px) scale(.95); transition-duration: .1s; }\n.dock button[aria-current=\"page\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -8px var(--a1); }\n.dock .sep { width: 1px; align-self: stretch; margin: 8px 4px; background: var(--border); }\n.toast { position: var(--lp, fixed); left: 50%; bottom: 128px; z-index: 80; transform: translate(-50%, 24px) scale(.96); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 99px; font-weight: 700; font-size: .88rem; background: var(--surface-solid); border: 1px solid var(--border); box-shadow: 0 18px 40px -12px rgba(0,0,0,.55); transition: transform .5s var(--spring), opacity .3s; max-width: calc(100vw - 28px); }\n.toast.show { transform: translate(-50%, 0) scale(1); opacity: 1; }\n.toast i { font-size: 1.25rem; color: var(--ok); }\nfooter.note { text-align: center; color: var(--faint); font-size: .78rem; padding: 6px 0 0; }\n\n/* ---------- pannello Stile ---------- */\n.scrim { position: var(--lp, fixed); inset: 0; z-index: 50; background: rgba(4,6,18,.5); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .4s ease; }\n.scrim.open { opacity: 1; pointer-events: auto; }\n.drawer { position: var(--lp, fixed); top: 0; right: 0; bottom: 0; z-index: 55; width: min(430px, 100vw); display: flex; flex-direction: column; background: color-mix(in srgb, var(--surface-solid) 86%, transparent); backdrop-filter: blur(26px) saturate(1.5); -webkit-backdrop-filter: blur(26px) saturate(1.5); border-left: 1px solid var(--border); box-shadow: -30px 0 80px -30px rgba(0,0,0,.6); transform: translateX(104%); transition: transform .6s var(--ease); }\n.drawer.open { transform: none; }\n.dr-head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 12px; }\n.dr-head h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; flex: 1; }\n.dr-body { flex: 1; overflow-y: auto; padding: 4px 20px 26px; display: flex; flex-direction: column; gap: 22px; }\n.dr-sec h3 { margin: 0 0 10px; font-family: var(--font-display); font-size: .85rem; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; }\n.dr-sec h3 small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); }\n.worlds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }\n.wcard { position: relative; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: 18px; background: var(--surface-2); cursor: pointer; text-align: left; transition: transform .4s var(--spring), border-color .3s, box-shadow .3s; }\n.wcard img { display: block; width: 100%; aspect-ratio: 640 / 260; object-fit: cover; }\n.wcard span { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 8px; font-weight: 800; font-size: .8rem; color: #fff; background: linear-gradient(to top, rgba(4,6,18,.8), transparent); display: flex; align-items: center; gap: 6px; }\n.wcard:hover { transform: translateY(-3px) scale(1.02); }\n.wcard.sel { border-color: var(--acc-text); box-shadow: 0 12px 30px -12px var(--a1); }\n.wcard.sel::after { content: \"\\2713\"; font-weight: 900; position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; font-size: 1rem; }\n.fxgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }\n.fxchip { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); color: var(--dim); font-size: .72rem; font-weight: 700; cursor: pointer; text-align: center; transition: transform .35s var(--spring), border-color .25s, background .25s, color .25s; }\n.fxchip i { font-size: 1.5rem; }\n.fxchip:hover { transform: translateY(-2px); color: var(--text); }\n.fxchip.sel { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); border-color: transparent; box-shadow: 0 10px 22px -10px var(--a1); }\n.row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: var(--surface-2); font-size: .84rem; font-weight: 700; }\n.row small { display: block; font-weight: 500; color: var(--dim); font-size: .72rem; }\n.row .grow { flex: 1; }\n.toggle { position: relative; width: 44px; height: 26px; border-radius: 99px; border: 0; background: rgba(120,130,170,.35); cursor: pointer; flex: none; transition: background .3s; }\n.toggle::after { content: \"\"; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: transform .45s var(--spring); }\n.toggle[aria-pressed=\"true\"] { background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.toggle[aria-pressed=\"true\"]::after { transform: translateX(18px); }\n.segm { display: flex; padding: 4px; border-radius: 14px; background: var(--surface-2); gap: 2px; }\n.segm button { flex: 1; border: 0; background: transparent; padding: 9px 10px; border-radius: 11px; font-weight: 700; font-size: .8rem; color: var(--dim); cursor: pointer; transition: background .3s, color .3s; }\n.segm button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 800; font-size: .86rem; cursor: pointer; color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); transition: transform .35s var(--spring); }\n.btn:hover { transform: translateY(-2px); } .btn:active { transform: scale(.96); }\n.btn.ghost { color: var(--text); background: var(--surface-2); border: 1px solid var(--border); }\n.btn.wide { width: 100%; }\n\n/* ---------- modalit\u00e0 modifica + editor immagini ---------- */\n.edit-banner { position: sticky; top: 66px; z-index: 29; }\n.edit-banner .wrap { padding-top: 10px; }\n.edit-banner .in { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 18px; font-weight: 700; font-size: .86rem; color: #fff; background: linear-gradient(100deg, var(--a1), var(--a2)); box-shadow: 0 14px 30px -14px var(--a1); animation: rise .5s var(--spring) both; }\n.edit-banner .in i { font-size: 1.3rem; }\n.edit-banner .in span { flex: 1; }\n.edit-banner .in button { border: 0; border-radius: 12px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: #fff; color: #1b1740; }\n.edit-badge { display: none; position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%; place-items: center; font-size: .95rem; color: #fff; z-index: 6; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 6px 14px -4px var(--a1); animation: pulse-b 1.6s ease-in-out infinite; pointer-events: none; }\n@keyframes pulse-b { 50% { transform: scale(1.14); } }\n:host([data-edit=\"1\"]) [data-img] { outline: 2px dashed color-mix(in srgb, var(--acc-text) 80%, transparent); outline-offset: 2px; cursor: copy !important; }\n:host([data-edit=\"1\"]) .edit-badge { display: grid; }\n:host([data-edit=\"1\"]) .sens .edit-badge { top: -6px; left: -6px; width: 20px; height: 20px; font-size: .7rem; }\n:host([data-edit=\"1\"]) .shield { cursor: copy; }\n.modal { position: var(--lp, fixed); inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(4,6,18,.6); backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity .35s; }\n.modal.open { opacity: 1; pointer-events: auto; }\n.mcard { width: min(820px, 100%); max-height: calc(100vh - 32px); overflow: auto; border-radius: 28px; background: color-mix(in srgb, var(--surface-solid) 94%, transparent); border: 1px solid var(--border); box-shadow: 0 40px 100px -30px rgba(0,0,0,.7); padding: 22px; display: flex; flex-direction: column; gap: 18px; transform: translateY(24px) scale(.97); transition: transform .5s var(--spring); }\n.modal.open .mcard { transform: none; }\n.mhead { display: flex; align-items: center; gap: 12px; }\n.mhead h2 { margin: 0; font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; flex: 1; letter-spacing: -.02em; }\n.mhead small { display: block; font-family: var(--font-ui); font-weight: 600; color: var(--dim); font-size: .78rem; margin-top: 2px; }\n.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.slots.one { grid-template-columns: minmax(0, 260px); justify-content: center; }\n.slot { display: flex; flex-direction: column; gap: 8px; }\n.slot h4 { margin: 0; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 800; }\n.drop { position: relative; aspect-ratio: 1 / 1; max-height: 230px; width: 100%; border-radius: 22px; overflow: hidden; border: 2px dashed var(--border); background: var(--surface-2); display: grid; place-items: center; cursor: pointer; transition: border-color .25s, transform .3s var(--spring); }\n.drop:hover, .drop.over { border-color: var(--acc-text); transform: scale(1.02); }\n.drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }\n.drop .hintt { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 10px 10px; text-align: center; font-size: .74rem; font-weight: 700; color: #fff; background: linear-gradient(to top, rgba(4,6,18,.82), transparent); }\n.drop input { display: none; }\n.libtabs { display: flex; gap: 6px; flex-wrap: wrap; }\n.libtabs button { border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); border-radius: 99px; padding: 6px 14px; font-weight: 700; font-size: .78rem; cursor: pointer; }\n.libtabs button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); border-color: transparent; }\n.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }\n.lib button { padding: 0; border: 2px solid transparent; border-radius: 16px; overflow: hidden; background: var(--surface-2); cursor: pointer; transition: transform .3s var(--spring), border-color .25s; position: relative; }\n.lib button:hover { transform: scale(1.06); border-color: var(--acc-text); }\n.lib img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }\n.lib span { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 4px 4px; font-size: .62rem; font-weight: 800; color: #fff; text-align: center; background: linear-gradient(to top, rgba(4,6,18,.8), transparent); }\n.mfoot { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }\n.note-sm { font-size: .76rem; color: var(--dim); margin: 0; }\n\n/* ---------- dati reali (Home Assistant) ---------- */\n:host([data-live]) [data-demo] { display: none !important; }\n.sens.na, .stile.na, .orb.na { opacity: .5; }\n.sens.na .s-ph, .stile.na .st-img { filter: grayscale(1); }\n.drow { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: var(--surface-2); }\n.drow i { font-size: 1.3rem; color: var(--acc-text); }\n.drow output { min-width: 3.2em; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; font-size: .86rem; }\n.code-in { width: 100%; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: 1.4rem; letter-spacing: .4em; text-align: center; }\n.cam .feed-live { border-radius: 20px; overflow: hidden; background: #0b0f24; min-height: 120px; }\n.cam .feed-live > * { display: block; }\n.cam .feed-live ha-card { border-radius: 0; box-shadow: none; }\n.cam-na { display: grid; place-items: center; align-content: center; gap: 8px; aspect-ratio: 16 / 8.5; color: var(--dim); font-weight: 700; font-size: .82rem; text-align: center; cursor: pointer; background: linear-gradient(135deg, color-mix(in srgb, var(--b1) 22%, #0b0f24), #0b0f24); }\n.cam-na i { font-size: 2.2rem; color: var(--acc-text); }\n\n/* ---------- indicatore \"in tempo reale\" ---------- */\n.livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; vertical-align: middle; background: #34D399; box-shadow: 0 0 0 0 rgba(52,211,153,.7); animation: livep 1.8s ease-out infinite; flex: none; }\n.eyebrow .livedot { margin: 0 8px 0 0; }\n@keyframes livep { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,.7); } 70%, 100% { box-shadow: 0 0 0 9px rgba(52,211,153,0); } }\n.pdelta { font-size: .68rem; font-weight: 800; margin-left: 2px; opacity: 0; transition: opacity .5s; font-variant-numeric: tabular-nums; }\n.pdelta.up { color: #FB923C; opacity: 1; } .pdelta.dn { color: #34D399; opacity: 1; }\n#power-val, #en-num { font-variant-numeric: tabular-nums; }\n#en-age { font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--faint); }\n\n/* ---------- energia ---------- */\n.en-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 14px; }\n.en-hero { --lc: #34D399; display: flex; align-items: center; gap: 18px; padding: 22px; overflow: hidden; }\n.en-hero[data-lvl=\"mid\"] { --lc: #FBBF24; } .en-hero[data-lvl=\"high\"] { --lc: #FB923C; } .en-hero[data-lvl=\"crit\"] { --lc: #F43F5E; } .en-hero.na { opacity: .6; }\n.en-hero::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(70% 120% at 0% 50%, color-mix(in srgb, var(--lc) 22%, transparent), transparent 62%); transition: background .8s; }\n.en-gauge { position: relative; flex: none; width: 210px; height: 190px; }\n.gsvg { width: 100%; height: 100%; display: block; overflow: visible; }\n.g-track { fill: none; stroke: var(--surface-2); stroke-width: 15; stroke-linecap: round; }\n.g-val { fill: none; stroke: url(#engrad); stroke-width: 15; stroke-linecap: round; transition: stroke-dasharray 1s var(--ease); }\n.g-glow { opacity: .55; }\n.g-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 6px; pointer-events: none; }\n.g-num { font-family: var(--font-display); font-weight: 800; font-size: 2.9rem; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }\n.g-unit { font-weight: 800; font-size: .95rem; color: var(--dim); margin-top: 2px; letter-spacing: .06em; }\n.en-side { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 4px; }\n.en-side h3 { margin: 2px 0 2px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.25rem, 2.4vw, 1.7rem); letter-spacing: -.03em; color: var(--lc); }\n.en-side p.d { margin: 0; color: var(--dim); font-size: .88rem; }\n.en-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }\n.echip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: var(--dim); background: var(--surface-2); }\n.echip b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }\n.echip i { font-size: 1rem; color: var(--acc-text); }\n.en-chart { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 8px; }\n.en-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }\n.en-chart-head h3 { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 700; }\n.en-chart-head h3 small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); font-size: .76rem; margin-left: 6px; }\n.rchips { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-2); gap: 2px; }\n.rchips button { border: 0; background: transparent; color: var(--dim); padding: 6px 12px; border-radius: 9px; font-weight: 700; font-size: .76rem; cursor: pointer; transition: background .25s, color .25s; }\n.rchips button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.en-plot { position: relative; height: 170px; }\n.en-plot svg { width: 100%; height: 100%; display: block; overflow: visible; }\n.en-plot .area { fill: url(#enarea); } .en-plot .line { fill: none; stroke: var(--acc-text); stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }\n.en-plot .base { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; opacity: .7; }\n.en-plot .grid { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }\n.en-plot .cursor { stroke: var(--text); stroke-width: 1; opacity: .55; vector-effect: non-scaling-stroke; }\n.en-tip { position: absolute; top: 4px; transform: translateX(-50%); padding: 5px 9px; border-radius: 10px; font-size: .72rem; font-weight: 800; white-space: nowrap; pointer-events: none; background: var(--surface-solid); border: 1px solid var(--border); box-shadow: 0 8px 20px -8px rgba(0,0,0,.5); }\n.en-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--faint); font-weight: 700; font-size: .84rem; }\n.en-axis { display: flex; justify-content: space-between; font-size: .68rem; color: var(--faint); font-weight: 700; font-variant-numeric: tabular-nums; }\n.en-stats { display: flex; flex-wrap: wrap; gap: 6px; }\n.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }\n.kpi { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }\n.kpi .k-l { display: flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }\n.kpi .k-l i { color: var(--acc-text); font-size: 1.05rem; }\n.kpi .k-v { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; letter-spacing: -.04em; font-variant-numeric: tabular-nums; line-height: 1.1; }\n.kpi .k-v small { font-family: var(--font-ui); font-size: .8rem; font-weight: 700; color: var(--dim); letter-spacing: 0; margin-left: 3px; }\n.kpi .k-c { font-weight: 800; font-size: .9rem; color: var(--acc-text); font-variant-numeric: tabular-nums; }\n.kpi .k-s { font-size: .72rem; color: var(--dim); font-weight: 600; }\n.kpi.na { opacity: .55; }\n.en-days { padding: 18px 20px 16px; }\n.days { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; align-items: end; height: 150px; margin-top: 10px; }\n.day { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; min-width: 0; }\n.day .bar2 { width: 100%; max-width: 34px; min-height: 3px; border-radius: 8px 8px 4px 4px; background: linear-gradient(to top, var(--a1), var(--a2)); opacity: .8; transition: height .9s var(--ease); position: relative; }\n.day.today .bar2 { opacity: 1; box-shadow: 0 0 18px -2px var(--a1); }\n.day .d-v { font-size: .66rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dim); }\n.day .d-l { font-size: .64rem; font-weight: 700; color: var(--faint); }\n.share { display: flex; height: 14px; border-radius: 99px; overflow: hidden; background: var(--surface-2); margin: 0 2px 8px; }\n.share i { display: block; height: 100%; transition: width .9s var(--ease); }\n.share-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 2px 12px; font-size: .74rem; font-weight: 700; color: var(--dim); }\n.share-legend span::before { content: \"\"; display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: var(--c); margin-right: 6px; }\n.apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }\n.app { --c: #8B5CF6; position: relative; display: flex; flex-direction: column; gap: 3px; padding: 14px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--hi); transition: border-color .4s, box-shadow .4s, transform .4s var(--spring); cursor: pointer; text-align: left; color: var(--text); }\n.app:hover { transform: translateY(-3px); }\n.app .a-ico { position: relative; width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; font-size: 1.6rem; color: var(--dim); background: var(--surface-2); margin-bottom: 6px; transition: background .4s, color .4s; }\n.app .a-name { font-weight: 800; font-size: .88rem; }\n.app .a-w { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }\n.app .a-e { font-size: .72rem; color: var(--dim); font-weight: 600; }\n\n/* ---------- tariffa (\u20ac/kWh) ---------- */\n.price-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; width: 100%; text-align: left; color: var(--text); font: inherit; cursor: pointer; transition: transform .35s var(--spring), border-color .25s; }\n.price-bar:hover { transform: translateY(-2px); border-color: var(--acc-text); }\n.price-bar .pb-ico { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; font-size: 1.55rem; color: #fff; flex: none; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.price-bar.unset .pb-ico { background: linear-gradient(135deg, #F59E0B, #F43F5E); }\n.price-bar .pb-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }\n.price-bar .pb-txt b { font-family: var(--font-display); font-weight: 800; font-size: 1.04rem; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }\n.price-bar .pb-txt small { color: var(--dim); font-size: .76rem; font-weight: 600; line-height: 1.3; }\n.price-bar .pb-cta { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 99px; font-weight: 800; font-size: .8rem; flex: none; background: var(--surface-2); color: var(--acc-text); }\n.kpis { cursor: pointer; }\n.echip.cost { cursor: pointer; }\n.pr-field { display: flex; align-items: center; gap: 8px; }\n.pr-field .icon-btn { flex: none; }\n.pr-box { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface-2); }\n.pr-box:focus-within { border-color: var(--acc-text); }\n.pr-box input { width: 4.6em; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; letter-spacing: -.04em; text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }\n.pr-box input::-webkit-outer-spin-button, .pr-box input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }\n.pr-box span { font-weight: 800; color: var(--dim); font-size: .8rem; white-space: nowrap; }\n.pr-pre { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }\n.pr-pre button, .linkb { border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); border-radius: 99px; padding: 6px 13px; font: inherit; font-weight: 800; font-size: .78rem; cursor: pointer; font-variant-numeric: tabular-nums; transition: transform .3s var(--spring), color .2s, border-color .2s; }\n.pr-pre button:hover, .linkb:hover { color: var(--text); border-color: var(--acc-text); transform: translateY(-2px); }\n.pr-pre button[aria-pressed=\"true\"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.linkb { padding: 4px 11px; font-size: .74rem; margin-left: 6px; color: var(--acc-text); }\n.pr-hint { margin: 0; padding: 10px 14px; border-radius: 14px; font-size: .8rem; font-weight: 600; color: var(--dim); background: var(--surface-2); }\n.pr-hint b { color: var(--text); }\n.pr-calc { border-radius: 16px; background: var(--surface-2); padding: 12px 14px; }\n.pr-calc summary { cursor: pointer; font-weight: 800; font-size: .84rem; display: flex; align-items: center; gap: 8px; list-style: none; }\n.pr-calc summary::-webkit-details-marker { display: none; }\n.pr-calc summary i { color: var(--acc-text); font-size: 1.2rem; }\n.pr-calc-in { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }\n.pr-calc-in label { display: flex; flex-direction: column; gap: 5px; font-size: .72rem; font-weight: 700; color: var(--dim); }\n.pr-calc-in label span { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--dim); font-weight: 800; }\n.pr-calc-in input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-weight: 800; font-size: 1rem; font-variant-numeric: tabular-nums; }\n.pr-calc-out { margin: 10px 0 4px; font-size: .86rem; font-weight: 700; color: var(--dim); min-height: 1.2em; }\n.pr-calc-out b { color: var(--text); font-size: 1rem; }\n.app.run { border-color: color-mix(in srgb, var(--c) 60%, transparent); box-shadow: 0 16px 34px -18px var(--c); }\n.app.run .a-ico { color: #fff; background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); animation: halo2 2.2s ease-out infinite; }\n@keyframes halo2 { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 60%, transparent); } 70%, 100% { box-shadow: 0 0 0 12px transparent; } }\n.app.na { opacity: .5; }\n\n/* ---------- clima ---------- */\n.clima { --cl: #64748B; display: grid; grid-template-columns: auto 1fr; gap: clamp(16px, 3vw, 30px); padding: clamp(18px, 2.4vw, 26px); overflow: hidden; transition: border-color .5s; }\n.clima::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 140% at 0% 40%, color-mix(in srgb, var(--cl) 26%, transparent), transparent 62%); transition: background .6s; }\n.clima:not([data-mode=\"off\"]) { border-color: color-mix(in srgb, var(--cl) 45%, var(--border)); }\n.clima.na { opacity: .6; }\n.cl-art { position: relative; width: 230px; aspect-ratio: 1 / 1; border-radius: 28px; overflow: hidden; box-shadow: 0 22px 44px -18px var(--cl); align-self: start; }\n.cl-art img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.cl-main { position: relative; display: flex; flex-direction: column; gap: 16px; min-width: 0; }\n.cl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; flex-wrap: wrap; }\n.cl-top h3 { margin: 4px 0 4px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -.03em; }\n.cl-top p.d { margin: 0; color: var(--dim); font-size: .9rem; }\n.tctl { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 26px; background: color-mix(in srgb, var(--bg) 40%, transparent); border: 1px solid var(--border); }\n.tbig { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; letter-spacing: -.04em; line-height: 1; min-width: 4.4ch; text-align: center; font-variant-numeric: tabular-nums; }\n.tbig small { font-size: 1rem; font-weight: 700; color: var(--dim); margin-left: 2px; }\n.rbtn { width: 52px; height: 52px; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 1.6rem; color: #fff; background: linear-gradient(135deg, var(--cl), color-mix(in srgb, var(--cl) 55%, #000)); box-shadow: 0 10px 22px -10px var(--cl); transition: transform .35s var(--spring), opacity .25s; }\n.rbtn:hover { transform: scale(1.1); } .rbtn:active { transform: scale(.88); transition-duration: .08s; }\n.rbtn:disabled { opacity: .4; cursor: default; }\n.cl-sec h5 { margin: 0 0 8px; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 800; }\n.cchips { display: flex; flex-wrap: wrap; gap: 8px; }\n.cchip { --cl: #64748B; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); font-weight: 700; font-size: .82rem; cursor: pointer; transition: transform .35s var(--spring), background .3s, color .3s, box-shadow .3s; }\n.cchip.sm { padding: 8px 12px; font-size: .78rem; }\n.cchip:hover { transform: translateY(-2px); color: var(--text); }\n.cchip[aria-pressed=\"true\"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--cl), color-mix(in srgb, var(--cl) 55%, #000)); box-shadow: 0 10px 22px -10px var(--cl); }\n.clima[data-mode=\"off\"] .cchip.sm[aria-pressed=\"true\"] { background: var(--surface-2); color: var(--text); box-shadow: none; border-color: var(--border); }\n.cl-sel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }\n.cl-sel label { display: flex; flex-direction: column; gap: 6px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }\n.cl-sel select { width: 100%; padding: 11px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: .84rem; font-weight: 700; letter-spacing: 0; text-transform: none; cursor: pointer; }\n.cl-sel select option { background: var(--surface-solid); color: var(--text); }\n.cam-head { display: flex; align-items: center; gap: 8px; margin: 2px 2px 0; }\n.cam-head h4 { margin: 0; flex: 1; font-family: var(--font-display); font-size: .92rem; font-weight: 700; }\n.cl-hint { margin: 10px 0 0; padding: 9px 13px; border-radius: 14px; max-width: 48ch; font-size: .8rem; font-weight: 700; line-height: 1.35; color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); }\n.cam-off { font-size: .64rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: #E11D48; padding: 3px 8px; border-radius: 99px; }\n.cam-meta { font-size: .68rem; color: var(--faint); font-weight: 700; }\n.cbtn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 12px; padding: 7px 10px; font-weight: 800; font-size: .74rem; cursor: pointer; transition: transform .3s var(--spring), background .25s; }\n.cbtn:hover { transform: translateY(-2px); }\n.cbtn.go { color: #fff; border-color: transparent; background: linear-gradient(135deg, #F43F5E, #F97316); }\n.cbtn.go.on { background: linear-gradient(135deg, #64748B, #334155); }\n.feed-live { position: relative; }\n.cam-img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; cursor: pointer; }\n.live-box { background: #000; }\n\n/* ---------- responsive ---------- */\n@media (max-width: 1020px) {\n  .en-top { grid-template-columns: 1fr; }\n  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n  .clima { grid-template-columns: 1fr; }\n  .cl-art { width: min(260px, 100%); }\n  .cl-sel { grid-template-columns: 1fr 1fr; }\n  .scenes { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n  .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .room.w3, .room.w2 { grid-column: span 1; }\n  .room.w3 { grid-column: span 2; }\n  .alarm { grid-template-columns: auto 1fr; }\n  .alarm .seg { grid-column: 1 / -1; }\n}\n@media (max-width: 720px) {\n  .status { display: none; }\n  .top-actions { margin-left: auto; }\n  .style-btn span, .ver { display: none; }\n  .style-btn { padding: 0 12px; }\n  .topbar .wrap { gap: 8px; }\n  .scenes { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .scene { flex-direction: column; align-items: flex-start; gap: 10px; }\n  .rooms { grid-template-columns: 1fr; }\n  .room.w3 { grid-column: span 1; }\n  .w3 .room-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .grid2, .cams { grid-template-columns: 1fr; }\n  .hero { min-height: 410px; }\n  .hero-art { height: auto; width: 100%; -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 42%); mask-image: linear-gradient(180deg, transparent 0%, #000 42%); }\n  .hero-body { padding-bottom: 190px; }\n  .hero-tag { top: auto; bottom: 12px; }\n  .dock button { min-width: 54px; padding: 9px 6px 7px; }\n  .dock button span { font-size: .6rem; }\n  .seg { width: 100%; } .seg button { flex: 1; padding: 14px 6px; }\n  .brand em { display: none; }\n  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .en-hero { flex-direction: column; align-items: flex-start; }\n  .days { gap: 3px; } .day .d-v { display: none; }\n  .slots { grid-template-columns: 1fr 1fr; }\n  .shield { width: 104px; height: 104px; }\n}\n@media (prefers-reduced-motion: reduce) {\n  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }\n}\n";
-  var HTML = "<div class=\"shell\" id=\"shell\">\n\n<div class=\"bg\" aria-hidden=\"true\"><i class=\"o1\"></i><i class=\"o2\"></i><i class=\"o3\"></i></div>\n<canvas class=\"fx-page\" id=\"fx-page\" aria-hidden=\"true\"></canvas>\n<div class=\"grain\" aria-hidden=\"true\"></div>\n<div class=\"vignette\" aria-hidden=\"true\"></div>\n\n<div class=\"scroll\" id=\"scroll\">\n<header class=\"topbar\">\n  <div class=\"wrap\">\n    <div class=\"brand\"><span class=\"logo\" aria-hidden=\"true\"></span>Aurora <em>Glass</em><span class=\"ver\">v3</span></div>\n    <div class=\"status\" id=\"status\" role=\"status\" aria-live=\"polite\"><span class=\"dot\"></span><span id=\"status-text\">\u2026</span></div>\n    <div class=\"top-actions\">\n      <button class=\"style-btn\" id=\"style-btn\" type=\"button\" aria-haspopup=\"dialog\" aria-controls=\"drawer\"><i class=\"mdi mdi-palette-swatch-variant\"></i><span>Stile</span></button>\n      <button class=\"icon-btn\" id=\"theme-btn\" type=\"button\" aria-label=\"Cambia tema chiaro/scuro\"><i class=\"mdi mdi-weather-night\" id=\"theme-ico\"></i></button>\n    </div>\n  </div>\n</header>\n\n<div class=\"edit-banner\" id=\"edit-banner\" hidden>\n  <div class=\"wrap\"><div class=\"in\"><i class=\"mdi mdi-image-edit\"></i><span>Modalit\u00e0 modifica: tocca un pulsante per cambiargli immagine o GIF</span><button type=\"button\" id=\"edit-done\">Fine</button></div></div>\n</div>\n\n<div class=\"wrap\">\n  <div class=\"hints\">\n    <span class=\"hint\"><i class=\"mdi mdi-gesture-tap\"></i>Tocca scene e luci</span>\n    <button class=\"hint\" id=\"hint-style\" type=\"button\"><i class=\"mdi mdi-palette-swatch-variant\"></i>Cambia mondo, effetti e ora</button>\n    <button class=\"hint\" id=\"hint-edit\" type=\"button\"><i class=\"mdi mdi-image-edit\"></i>Modifica le immagini</button>\n    <button class=\"hint danger\" id=\"sim-alarm\" type=\"button\" data-demo><i class=\"mdi mdi-bell-ring\"></i>Simula intrusione</button>\n  </div>\n\n  <main id=\"main\">\n    <!-- ===================== VISTA CASA ===================== -->\n    <section id=\"view-home\" class=\"enter\" aria-label=\"Casa\" style=\"display:flex;flex-direction:column;gap:22px\">\n      <article class=\"card hero\" id=\"hero\" style=\"--i:0\">\n        <div class=\"hero-art\" id=\"hero-art\" aria-hidden=\"true\">\n          <img id=\"art-a\" alt=\"\" draggable=\"false\"><img id=\"art-b\" alt=\"\" draggable=\"false\">\n          <div id=\"win-layer\"></div>\n        </div>\n        <canvas class=\"fx-hero\" id=\"fx-hero\" aria-hidden=\"true\"></canvas>\n        <button class=\"hero-tag\" id=\"hero-tag\" type=\"button\"><i class=\"mdi mdi-earth\"></i><span id=\"hero-tag-text\">Casetta</span><i class=\"mdi mdi-chevron-right\"></i></button>\n        <div class=\"hero-body\">\n          <p class=\"eyebrow\" id=\"date-text\">Luned\u00ec 12 ottobre</p>\n          <h1 class=\"greet\" id=\"greet\">Buonasera, Alex</h1>\n          <div class=\"clock\" id=\"clock\" aria-live=\"off\">21<span class=\"colon\">:</span>00</div>\n          <div class=\"hero-chips\">\n            <span class=\"chip\" id=\"chip-temp\"><i class=\"mdi mdi-weather-partly-cloudy\" id=\"temp-ico\"></i>Esterno <b id=\"temp-val\">21,4 \u00b0C</b></span>\n            <span class=\"chip\" id=\"chip-power\" role=\"button\" tabindex=\"0\" title=\"Apri i consumi\" style=\"cursor:pointer\"><i class=\"mdi mdi-flash bolt\"></i>Consumo <b id=\"power-val\">612 W</b><span class=\"pdelta\" id=\"power-delta\"></span><span class=\"livedot\" title=\"Aggiornamento in tempo reale\"></span></span>\n            <span class=\"chip\"><i class=\"mdi mdi-motion-sensor\"></i><span id=\"hero-motion\">Casa tranquilla</span></span>\n          </div>\n        </div>\n      </article>\n\n      <div style=\"--i:1\">\n        <h2 class=\"sec-title\">Scene rapide <small>un tocco, tutta la casa</small></h2>\n        <div class=\"scenes\" id=\"scenes\"></div>\n      </div>\n\n      <div style=\"--i:2\">\n        <h2 class=\"sec-title\">Luci e stanze <small>tocca l'immagine per accendere</small></h2>\n        <div class=\"rooms\" id=\"rooms\"></div>\n      </div>\n\n      <div style=\"--i:3\" id=\"clima-wrap\">\n        <h2 class=\"sec-title\">Clima <small id=\"cl-sub\">Aria salone</small></h2>\n        <article class=\"card clima\" id=\"clima\" data-mode=\"off\">\n          <div class=\"cl-art\" id=\"cl-art\" data-img=\"clima_off\" data-label=\"Immagine del climatizzatore\"><img alt=\"\" draggable=\"false\"><span class=\"edit-badge\"><i class=\"mdi mdi-pencil\"></i></span></div>\n          <div class=\"cl-main\">\n            <div class=\"cl-top\">\n              <div>\n                <p class=\"eyebrow\" id=\"cl-name\">Aria salone</p>\n                <h3 id=\"cl-status\">Spento</h3>\n                <p class=\"d\" id=\"cl-cur\">In casa 23 \u00b0C</p>\n                <p class=\"cl-hint\" id=\"cl-hint\" hidden></p>\n              </div>\n              <div class=\"tctl\" role=\"group\" aria-label=\"Temperatura desiderata\">\n                <button class=\"rbtn\" id=\"cl-minus\" type=\"button\" aria-label=\"Abbassa\"><i class=\"mdi mdi-minus\"></i></button>\n                <div class=\"tbig\"><span id=\"cl-tgt\">25,0</span><small>\u00b0C</small></div>\n                <button class=\"rbtn\" id=\"cl-plus\" type=\"button\" aria-label=\"Alza\"><i class=\"mdi mdi-plus\"></i></button>\n              </div>\n            </div>\n            <div class=\"cl-sec\"><h5>Modalit\u00e0</h5><div class=\"cchips\" id=\"cl-modes\"></div></div>\n            <div class=\"cl-sec\" id=\"cl-fan-sec\"><h5>Ventola</h5><div class=\"cchips\" id=\"cl-fans\"></div></div>\n            <div class=\"cl-sel\">\n              <label>Alette verticali<select id=\"cl-swing\"></select></label>\n              <label>Alette orizzontali<select id=\"cl-hswing\"></select></label>\n              <label>Preset<select id=\"cl-preset\"></select></label>\n            </div>\n          </div>\n        </article>\n      </div>\n    </section>\n\n    <!-- ===================== VISTA SICUREZZA ===================== -->\n    <section id=\"view-sic\" class=\"enter\" aria-label=\"Sicurezza\" hidden style=\"display:flex;flex-direction:column;gap:14px\">\n      <div class=\"alert\" id=\"alert\" role=\"alert\" hidden>\n        <i class=\"mdi mdi-alarm-light\"></i><span>ALLARME \u2014 movimento rilevato in Ingresso</span><button type=\"button\" id=\"alert-off\">Disattiva</button>\n      </div>\n\n      <article class=\"card alarm\" id=\"alarm\" data-state=\"off\" style=\"--i:1\">\n        <div class=\"shield\" id=\"shield\" data-img=\"allarme_off\" data-label=\"Immagine dello stato allarme\"><img id=\"alarm-img\" alt=\"\" draggable=\"false\"><span class=\"edit-badge\"><i class=\"mdi mdi-pencil\"></i></span></div>\n        <div class=\"alarm-txt\">\n          <p class=\"eyebrow\">Centrale allarme</p>\n          <h2 id=\"alarm-title\">Disattivato</h2>\n          <p class=\"d\" id=\"alarm-desc\">Casa libera.</p>\n        </div>\n        <div class=\"seg\" id=\"seg\" role=\"group\" aria-label=\"Modalit\u00e0 allarme\">\n          <span class=\"seg-pill\" id=\"seg-pill\"></span>\n          <button type=\"button\" data-mode=\"disarmed\" aria-pressed=\"true\">Disattiva</button>\n          <button type=\"button\" data-mode=\"armed_night\" aria-pressed=\"false\">Notte</button>\n          <button type=\"button\" data-mode=\"armed_away\" aria-pressed=\"false\">Fuori casa</button>\n        </div>\n      </article>\n\n      <div class=\"grid2\" style=\"--i:2\">\n        <article class=\"card panel\">\n          <h3><i class=\"mdi mdi-motion-sensor\" style=\"color:var(--acc-text)\"></i>Movimento</h3>\n          <p class=\"sub\" id=\"last-motion\">Nessun movimento recente</p>\n          <div class=\"tiles\" id=\"motion-tiles\"></div>\n        </article>\n        <article class=\"card panel\">\n          <h3><i class=\"mdi mdi-door-closed-lock\" style=\"color:var(--acc-text)\"></i>Porte, finestre e cancello</h3>\n          <p class=\"sub\" id=\"open-sub\">Tutto chiuso</p>\n          <div class=\"tiles\" id=\"open-tiles\"></div>\n        </article>\n      </div>\n\n      <div class=\"cams\" id=\"cams\" style=\"--i:3\">\n        <article class=\"card cam\"><h4>Ingresso</h4><div class=\"feed\"><span class=\"live\">LIVE</span><span class=\"stamp\" data-stamp>--:--:--</span></div></article>\n        <article class=\"card cam\"><h4>Giardino</h4><div class=\"feed\"><span class=\"live\">LIVE</span><span class=\"stamp\" data-stamp>--:--:--</span></div></article>\n      </div>\n    </section>\n\n    <!-- ===================== VISTA ENERGIA ===================== -->\n    <section id=\"view-en\" class=\"enter\" aria-label=\"Energia\" hidden style=\"display:flex;flex-direction:column;gap:14px\">\n      <div class=\"en-top\" style=\"--i:0\">\n        <article class=\"card en-hero\" id=\"en-hero\" data-lvl=\"low\">\n          <div class=\"en-gauge\">\n            <svg viewBox=\"0 0 220 200\" class=\"gsvg\" aria-hidden=\"true\">\n              <defs>\n                <linearGradient id=\"engrad\" x1=\"0\" y1=\"1\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#34D399\"/><stop offset=\".55\" stop-color=\"#FBBF24\"/><stop offset=\"1\" stop-color=\"#F43F5E\"/></linearGradient>\n                <filter id=\"engl\" x=\"-30%\" y=\"-30%\" width=\"160%\" height=\"160%\"><feGaussianBlur stdDeviation=\"6\"/></filter>\n              </defs>\n              <path class=\"g-track\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\"/>\n              <path class=\"g-val g-glow\" id=\"en-glow\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\" stroke-dasharray=\"0 100\" filter=\"url(#engl)\"/>\n              <path class=\"g-val\" id=\"en-arc\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\" stroke-dasharray=\"0 100\"/>\n            </svg>\n            <div class=\"g-center\"><span class=\"g-num\" id=\"en-num\">0</span><span class=\"g-unit\" id=\"en-unit\">W</span></div>\n          </div>\n          <div class=\"en-side\">\n            <p class=\"eyebrow\" id=\"en-eyebrow\"><span class=\"livedot\"></span>Potenza adesso <span id=\"en-age\"></span></p>\n            <h3 id=\"en-title\">Consumo basso</h3>\n            <p class=\"d\" id=\"en-sub\">Misura generale della casa</p>\n            <div class=\"en-chips\" id=\"en-chips\"></div>\n          </div>\n        </article>\n        <article class=\"card en-chart\">\n          <div class=\"en-chart-head\">\n            <h3>Andamento</h3>\n            <div class=\"rchips\" id=\"en-range\" role=\"group\" aria-label=\"Periodo\">\n              <button type=\"button\" data-r=\"3h\" aria-pressed=\"false\">3 ore</button><button type=\"button\" data-r=\"24h\" aria-pressed=\"true\">24 ore</button><button type=\"button\" data-r=\"7g\" aria-pressed=\"false\">7 giorni</button>\n            </div>\n          </div>\n          <div class=\"en-plot\" id=\"en-plot\"><svg viewBox=\"0 0 600 170\" preserveAspectRatio=\"none\" id=\"en-svg\" aria-hidden=\"true\"></svg><div class=\"en-tip\" id=\"en-tip\" hidden></div><div class=\"en-empty\" id=\"en-empty\" hidden>Storico non disponibile</div></div>\n          <div class=\"en-axis\" id=\"en-axis\"></div>\n          <div class=\"en-stats\" id=\"en-stats\"></div>\n        </article>\n      </div>\n      <button type=\"button\" class=\"card price-bar\" id=\"en-price\" style=\"--i:1\" aria-label=\"Imposta la tariffa dell'energia\">\n        <span class=\"pb-ico\"><i class=\"mdi mdi-currency-eur\"></i></span>\n        <span class=\"pb-txt\"><b id=\"pb-main\">Tariffa</b><small id=\"pb-sub\"></small></span>\n        <span class=\"pb-cta\"><i class=\"mdi mdi-pencil\"></i><span id=\"pb-cta\">Imposta</span></span>\n      </button>\n      <div class=\"kpis\" id=\"en-kpis\" style=\"--i:1\" title=\"Tocca per cambiare la tariffa\"></div>\n      <article class=\"card en-days\" style=\"--i:2\">\n        <div class=\"en-chart-head\"><h3><span id=\"en-days-t\">Consumo giornaliero</span> <small>ultimi 14 giorni</small></h3>\n          <div class=\"rchips\" id=\"en-dunit\" role=\"group\" aria-label=\"Unit\u00e0\"><button type=\"button\" data-u=\"kwh\" aria-pressed=\"true\">kWh</button><button type=\"button\" data-u=\"eur\" aria-pressed=\"false\">\u20ac</button></div></div>\n        <div class=\"days\" id=\"en-days\"></div>\n        <div class=\"en-stats\" id=\"en-days-sum\" style=\"margin-top:12px\"></div>\n      </article>\n      <div style=\"--i:3\">\n        <h2 class=\"sec-title\">Elettrodomestici <small>consumo adesso e oggi</small></h2>\n        <div class=\"share\" id=\"en-share\"></div>\n        <div class=\"apps\" id=\"en-apps\"></div>\n      </div>\n    </section>\n\n    <footer class=\"note\">Aurora Glass v3 \u00b7 anteprima: non riflette dati reali di un impianto.</footer>\n  </main>\n</div>\n\n</div><!-- /scroll -->\n\n<nav class=\"dock\" aria-label=\"Navigazione\">\n  <button type=\"button\" data-view=\"home\" aria-current=\"page\"><i class=\"mdi mdi-home-variant\"></i><span>Casa</span></button>\n  <button type=\"button\" data-view=\"sic\"><i class=\"mdi mdi-shield-home\"></i><span>Sicurezza</span></button>\n  <button type=\"button\" data-view=\"en\"><i class=\"mdi mdi-lightning-bolt\"></i><span>Energia</span></button>\n  <span class=\"sep\" aria-hidden=\"true\"></span>\n  <button type=\"button\" id=\"dock-scenes\"><i class=\"mdi mdi-palette\"></i><span>Scene</span></button>\n  <button type=\"button\" id=\"dock-off\"><i class=\"mdi mdi-lightbulb-off-outline\"></i><span>Spegni tutto</span></button>\n  <button type=\"button\" id=\"dock-style\"><i class=\"mdi mdi-palette-swatch-variant\"></i><span>Stile</span></button>\n</nav>\n<div class=\"toast\" id=\"toast\" role=\"status\" aria-live=\"polite\"><i class=\"mdi mdi-check-circle\"></i><span id=\"toast-text\"></span></div>\n\n<!-- ===================== PANNELLO STILE ===================== -->\n<div class=\"scrim\" id=\"scrim\"></div>\n<aside class=\"drawer\" id=\"drawer\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"dr-title\" aria-hidden=\"true\">\n  <div class=\"dr-head\"><h2 id=\"dr-title\">Personalizza lo stile</h2><button class=\"icon-btn\" id=\"dr-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n  <div class=\"dr-body\">\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-earth\"></i>Mondo <small>10 paesaggi animati, tutti con alba, giorno, tramonto e notte</small></h3><div class=\"worlds\" id=\"worlds\"></div></section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-clock-outline\"></i>Ora del giorno <small>simula cielo e colori</small></h3>\n      <div class=\"drow\"><i class=\"mdi mdi-weather-sunset\" id=\"phase-icon\"></i><input class=\"ph\" type=\"range\" id=\"phase-range\" min=\"0\" max=\"24\" step=\"0.25\" value=\"21\" aria-label=\"Simula l'ora del giorno\"><output id=\"phase-out\">21:00</output></div>\n      <button class=\"btn ghost wide\" id=\"phase-real\" type=\"button\" style=\"margin-top:8px\"><i class=\"mdi mdi-clock-check-outline\"></i>Usa l'ora reale</button>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-weather-partly-rainy\"></i>Meteo ed effetti <small>si sovrappongono a qualsiasi mondo</small></h3>\n      <div class=\"fxgrid\" id=\"fxgrid\"></div>\n      <div class=\"row\" style=\"margin-top:10px\"><span class=\"grow\">Anche sullo sfondo della pagina<small>Particelle dietro a tutte le card</small></span><button class=\"toggle\" id=\"fx-page-toggle\" type=\"button\" aria-pressed=\"false\" aria-label=\"Effetto su tutta la pagina\"></button></div>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-shuffle-variant\"></i>Sorpresa</h3>\n      <div class=\"row\"><span class=\"grow\">Cambia mondo ogni 30 secondi<small>Una playlist di paesaggi</small></span><button class=\"toggle\" id=\"cycle-toggle\" type=\"button\" aria-pressed=\"false\" aria-label=\"Cambia mondo automaticamente\"></button></div>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-gesture-tap-button\"></i>Pulsanti</h3>\n      <div class=\"segm\" id=\"btn-style\"><button type=\"button\" data-v=\"img\" aria-pressed=\"true\">Immagini e GIF</button><button type=\"button\" data-v=\"compact\" aria-pressed=\"false\">Compatti</button></div>\n      <button class=\"btn wide\" id=\"edit-start\" type=\"button\" style=\"margin-top:10px\"><i class=\"mdi mdi-image-edit\"></i>Modifica le immagini dei pulsanti</button>\n    </section>\n    <section class=\"dr-sec\"><button class=\"btn ghost wide\" id=\"reset-all\" type=\"button\"><i class=\"mdi mdi-restore\"></i>Ripristina tutto</button></section>\n  </div>\n</aside>\n\n<!-- ===================== EDITOR IMMAGINI ===================== -->\n<div class=\"modal\" id=\"editor\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"ed-title\" aria-hidden=\"true\">\n  <div class=\"mcard\">\n    <div class=\"mhead\"><h2><span id=\"ed-title\">Modifica immagine</span><small id=\"ed-sub\"></small></h2><button class=\"icon-btn\" id=\"ed-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n    <div class=\"slots\" id=\"ed-slots\"></div>\n    <div>\n      <div class=\"libtabs\" id=\"lib-tabs\" role=\"group\" aria-label=\"Libreria\"></div>\n      <div class=\"lib\" id=\"lib\" style=\"margin-top:10px\"></div>\n    </div>\n    <p class=\"note-sm\">Puoi anche trascinare un file (PNG, JPG, GIF animata, WebP) sopra un riquadro. Le immagini scelte restano salvate in questo browser.</p>\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"ed-reset\" type=\"button\"><i class=\"mdi mdi-restore\"></i>Ripristina originale</button><button class=\"btn\" id=\"ed-done\" type=\"button\"><i class=\"mdi mdi-check\"></i>Fatto</button></div>\n  </div>\n</div>\n\n<div class=\"modal\" id=\"codebox\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"code-title\" aria-hidden=\"true\">\n  <div class=\"mcard\" style=\"width:min(360px,100%)\">\n    <div class=\"mhead\"><h2><span id=\"code-title\">Inserisci il codice</span><small id=\"code-sub\"></small></h2></div>\n    <input class=\"code-in\" id=\"code-in\" type=\"password\" inputmode=\"numeric\" autocomplete=\"off\" aria-label=\"Codice allarme\">\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"code-cancel\" type=\"button\">Annulla</button><button class=\"btn\" id=\"code-ok\" type=\"button\">Conferma</button></div>\n  </div>\n</div>\n<div class=\"modal\" id=\"pricebox\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"pr-title\" aria-hidden=\"true\">\n  <div class=\"mcard\" style=\"width:min(440px,100%)\">\n    <div class=\"mhead\"><h2><span id=\"pr-title\">Costo dell'energia</span><small>Quanto paghi un kWh in bolletta</small></h2><button class=\"icon-btn\" id=\"pr-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n    <div class=\"pr-field\">\n      <button class=\"icon-btn\" id=\"pr-minus\" type=\"button\" aria-label=\"Diminuisci\"><i class=\"mdi mdi-minus\"></i></button>\n      <label class=\"pr-box\"><input id=\"pr-in\" type=\"number\" inputmode=\"decimal\" step=\"0.001\" min=\"0\" max=\"5\" aria-label=\"Prezzo in euro per kWh\"><span>\u20ac / kWh</span></label>\n      <button class=\"icon-btn\" id=\"pr-plus\" type=\"button\" aria-label=\"Aumenta\"><i class=\"mdi mdi-plus\"></i></button>\n    </div>\n    <div class=\"pr-pre\" id=\"pr-pre\"></div>\n    <p class=\"pr-hint\" id=\"pr-hint\" hidden></p>\n    <details class=\"pr-calc\" id=\"pr-calc\">\n      <summary><i class=\"mdi mdi-calculator-variant\"></i>Non lo so: calcolalo dalla bolletta</summary>\n      <div class=\"pr-calc-in\">\n        <label>Totale da pagare<span><input id=\"pr-bill\" type=\"number\" inputmode=\"decimal\" step=\"0.01\" min=\"0\" placeholder=\"es. 84,50\"> \u20ac</span></label>\n        <label>kWh consumati<span><input id=\"pr-kwh\" type=\"number\" inputmode=\"decimal\" step=\"1\" min=\"0\" placeholder=\"es. 210\"> kWh</span></label>\n      </div>\n      <p class=\"pr-calc-out\" id=\"pr-calc-out\"></p>\n      <p class=\"note-sm\">Dividere il totale per i kWh include anche quota fissa, trasporto e imposte: \u00e8 il costo reale di ogni kWh che consumi.</p>\n    </details>\n    <p class=\"note-sm\" id=\"pr-where\"></p>\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"pr-cancel\" type=\"button\">Annulla</button><button class=\"btn\" id=\"pr-ok\" type=\"button\"><i class=\"mdi mdi-check\"></i>Salva tariffa</button></div>\n  </div>\n</div>\n</div><!-- /shell -->";
+function defaultAssets() {
+  var s = document.querySelector(
+    'script[src*="/hacsfiles/"][src*="luma-home.js"]'
+  );
+
+  return s
+    ? s.src.replace(/luma-home\.js.*$/, "btn/")
+    : "/local/luma-home/btn/";
+}
+
+  var CSS = "\n/* ==========================================================================\n   LUMA HOME \u2014 \"Cielo vivo\"\n   I colori di tutta l'interfaccia vengono dalla palette dell'ora del giorno\n   (js/mondi-base.js). I token sono registrati con @property per scivolare.\n   ========================================================================== */\n\n\n\n\n\n\n\n:host {\n  --ease: cubic-bezier(.16, 1, .3, 1);\n  --spring: cubic-bezier(.34, 1.56, .64, 1);\n  --font-display: 'Sora', 'Manrope', system-ui, sans-serif;\n  --font-ui: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;\n  --ok: #34D399; --warn: #FBBF24; --danger: #FB7185;\n  --b1: #7C5CFF; --b2: #3B82F6; --b3: #22D3EE; --a1: #7C5CFF; --a2: #D946EF; --win: #FFD27A;\n  transition: --b1 1.6s ease, --b2 1.6s ease, --b3 1.6s ease, --a1 1.6s ease, --a2 1.6s ease, --win 1.6s ease;\n  color-scheme: dark;\n  --bg: #070A16;\n  --surface: rgba(255,255,255,.06);\n  --surface-2: rgba(255,255,255,.10);\n  --surface-solid: #12172D;\n  --border: rgba(255,255,255,.10);\n  --hi: rgba(255,255,255,.16);\n  --text: #F5F7FF; --dim: #A3AED0; --faint: #6B7599;\n  --acc-text: color-mix(in srgb, var(--b1) 55%, #fff);\n  --blob-o: .55;\n  --shadow: 0 24px 60px -26px rgba(0,0,0,.75);\n}\n:host([data-theme=\"light\"]) {\n  color-scheme: light;\n  --bg: #EDF0FA;\n  --surface: rgba(255,255,255,.68); --surface-2: rgba(20,25,60,.07); --surface-solid: #FFFFFF;\n  --border: rgba(20,25,60,.10); --hi: rgba(255,255,255,.95);\n  --text: #141838; --dim: #55608A; --faint: #8E97B8;\n  --acc-text: color-mix(in srgb, var(--a1) 85%, #000);\n  --blob-o: .38;\n  --shadow: 0 24px 50px -28px rgba(30,40,90,.38);\n  --ok: #059669; --warn: #B45309; --danger: #E11D48;\n}\n:host([data-alarm=\"alarm\"]) { --b1: #F43F5E !important; --b2: #EF4444 !important; --b3: #FB923C !important; --a1: #E11D48 !important; --a2: #F97316 !important; }\n\n* { box-sizing: border-box; }\nhtml { scroll-behavior: smooth; }\nbody { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; overflow-x: hidden; }\nbutton { font: inherit; color: inherit; }\n.shell { position: relative; isolation: isolate; min-height: var(--shell-min, 100vh); color: var(--text); font-family: var(--font-ui); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; }\n.scroll { position: var(--sp, static); inset: 0; overflow: var(--so, visible); scroll-behavior: smooth; }\ni.mdi { font-style: normal; }\nimg { -webkit-user-drag: none; user-select: none; }\n[hidden] { display: none !important; }\n:focus-visible { outline: 2px solid var(--acc-text); outline-offset: 3px; border-radius: 12px; }\n\n/* ---------- sfondo vivo ---------- */\n.bg { position: var(--lp, fixed); inset: 0; z-index: -3; overflow: hidden; background: var(--bg); }\n.bg i { position: absolute; width: 74vmax; height: 74vmax; border-radius: 50%; opacity: var(--blob-o); will-change: transform; }\n.bg .o1 { left: -24vmax; top: -30vmax; background: radial-gradient(circle, var(--b1), transparent 64%); animation: drift1 30s ease-in-out infinite alternate; }\n.bg .o2 { right: -30vmax; top: 8vh; background: radial-gradient(circle, var(--b2), transparent 64%); animation: drift2 38s ease-in-out infinite alternate; }\n.bg .o3 { left: 12vw; bottom: -44vmax; background: radial-gradient(circle, var(--b3), transparent 64%); animation: drift3 44s ease-in-out infinite alternate; }\n@keyframes drift1 { to { transform: translate(14vw, 12vh) scale(1.15); } }\n@keyframes drift2 { to { transform: translate(-16vw, 14vh) scale(.9); } }\n@keyframes drift3 { to { transform: translate(18vw, -10vh) scale(1.2); } }\n.grain { position: var(--lp, fixed); inset: 0; z-index: -1; pointer-events: none; opacity: .08; mix-blend-mode: overlay; background-image: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\"); }\n.fx-page { position: var(--lp, fixed); inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }\n:host([data-theme=\"light\"]) .fx-page { filter: drop-shadow(0 0 1.5px rgba(30,50,110,.55)); }\n.vignette { position: var(--lp, fixed); inset: 0; z-index: 40; pointer-events: none; background: rgba(214,228,255, calc(var(--flash, 0) * .28)); box-shadow: inset 0 0 0 0 transparent; }\n:host([data-alarm=\"alarm\"]) .vignette { animation: vig 1.1s ease-in-out infinite; }\n@keyframes vig { 0%, 100% { box-shadow: inset 0 0 120px 10px rgba(244,63,94,.0); } 50% { box-shadow: inset 0 0 160px 24px rgba(244,63,94,.38); } }\n\n/* ---------- barra superiore ---------- */\n.wrap { width: min(1240px, 100%); margin: 0 auto; padding: 0 clamp(14px, 3vw, 32px); }\n.topbar { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 58%, transparent); backdrop-filter: blur(16px) saturate(1.5); -webkit-backdrop-filter: blur(16px) saturate(1.5); border-bottom: 1px solid var(--border); }\n.topbar .wrap { display: flex; align-items: center; gap: 12px; height: 66px; }\n.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; letter-spacing: -.02em; font-size: 1.05rem; white-space: nowrap; }\n.brand em { font-style: normal; font-weight: 500; color: var(--dim); }\n.logo { width: 28px; height: 28px; border-radius: 50%; background: conic-gradient(from 0deg, var(--b1), var(--b2), var(--b3), var(--b1)); -webkit-mask: radial-gradient(farthest-side, transparent 52%, #000 55%); mask: radial-gradient(farthest-side, transparent 52%, #000 55%); animation: spin 7s linear infinite; }\n@keyframes spin { to { transform: rotate(360deg); } }\n.ver { font-size: .62rem; font-weight: 800; letter-spacing: .08em; color: #fff; padding: 3px 8px; border-radius: 99px; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.status { margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); font-size: .84rem; font-weight: 600; color: var(--dim); min-width: 0; }\n.status span#status-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); flex: none; animation: ping2 2.4s ease-in-out infinite; }\n:host([data-alarm=\"armed\"]) .status .dot { background: var(--warn); }\n:host([data-alarm=\"alarm\"]) .status .dot { background: var(--danger); animation-duration: 1s; }\n@keyframes ping2 { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .65; } 100% { transform: scale(1); opacity: 1; } }\n.top-actions { display: flex; align-items: center; gap: 10px; }\n\n.style-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; height: 40px; border: 0; border-radius: 99px; cursor: pointer; font-weight: 800; font-size: .86rem; color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -10px var(--a1); transition: transform .4s var(--spring); overflow: hidden; }\n.style-btn i { font-size: 1.15rem; animation: wiggle 3.2s ease-in-out infinite; }\n@keyframes wiggle { 0%, 80%, 100% { transform: rotate(0); } 86% { transform: rotate(-16deg) scale(1.15); } 93% { transform: rotate(14deg) scale(1.15); } }\n.style-btn::after { content: \"\"; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.35) 50%, transparent 62%); transform: translateX(-130%); animation: shine 4.5s ease-in-out infinite; }\n@keyframes shine { 0%, 55% { transform: translateX(-130%); } 80%, 100% { transform: translateX(130%); } }\n.style-btn:hover { transform: translateY(-2px) scale(1.04); }\n.style-btn:active { transform: scale(.95); }\n\n.phase { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); font-size: .78rem; font-weight: 700; color: var(--dim); }\n.phase i { font-size: 1.15rem; color: var(--acc-text); }\n.phase output { min-width: 3.4em; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }\ninput.ph[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 99px; outline-offset: 6px; background: linear-gradient(90deg, #1b1f4d, #e0678c 28%, #74bffb 45%, #74bffb 62%, #ea580c 78%, #1b1f4d); }\ninput.ph[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--a1); box-shadow: 0 2px 8px rgba(0,0,0,.4); cursor: grab; transition: transform .2s var(--spring); }\ninput.ph[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }\ninput.ph[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--a1); cursor: grab; }\n.icon-btn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 1.2rem; background: var(--surface); border: 1px solid var(--border); color: var(--dim); transition: transform .4s var(--spring), color .2s, border-color .2s; }\n.icon-btn:hover { color: var(--text); border-color: var(--acc-text); transform: rotate(18deg) scale(1.08); }\n.icon-btn:active { transform: scale(.9); }\n\n/* ---------- hints ---------- */\n.hints { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 18px; }\n.hint { font-size: .76rem; font-weight: 600; color: var(--dim); padding: 6px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; }\n.hint i { color: var(--acc-text); }\nbutton.hint { cursor: pointer; transition: transform .3s var(--spring), border-color .2s, color .2s; }\nbutton.hint:hover { color: var(--text); border-color: var(--acc-text); transform: translateY(-2px); }\nbutton.hint.danger:hover { border-color: var(--danger); }\nbutton.hint.danger i { color: var(--danger); }\n\n/* ---------- card ---------- */\nmain { display: flex; flex-direction: column; gap: 22px; padding: 18px 0 150px; }\n.card { position: relative; border-radius: 28px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow), inset 0 1px 0 var(--hi); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); }\n@keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }\n.enter > * { animation: rise .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }\n.sec-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px 4px; font-family: var(--font-display); font-weight: 700; font-size: .98rem; letter-spacing: -.01em; }\n.sec-title small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); font-size: .76rem; }\n.sec-title::before { content: \"\"; width: 4px; height: 16px; border-radius: 4px; background: linear-gradient(var(--a1), var(--a2)); }\n\n/* ---------- hero con il mondo animato ---------- */\n.hero { overflow: hidden; min-height: 290px; display: flex; }\n.hero-art { position: absolute; right: 0; bottom: 0; height: 100%; aspect-ratio: 640 / 260; z-index: 0;\n  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.7) 20%, #000 40%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.7) 20%, #000 40%); }\n.hero-art img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.1s ease; }\n.hero-art img.show { opacity: 1; }\n.wglow { position: absolute; border-radius: 2px; background: var(--win); box-shadow: 0 0 9px 2px var(--win); opacity: 0; transition: opacity .6s ease; pointer-events: none; }\n.wglow.on { opacity: 1; }\n.fx-hero { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }\n.hero-body { position: relative; z-index: 2; padding: clamp(22px, 3vw, 36px); display: flex; flex-direction: column; justify-content: center; gap: 4px; }\n.hero-tag { position: absolute; z-index: 3; right: 16px; top: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: #fff; background: rgba(8,10,30,.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); cursor: pointer; transition: transform .35s var(--spring), background .2s; }\n.hero-tag:hover { transform: translateY(-2px); background: rgba(8,10,30,.62); }\n.eyebrow { margin: 0; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }\n.greet { margin: 2px 0 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.1rem, 2.2vw, 1.5rem); letter-spacing: -.02em; }\n.clock { font-family: var(--font-display); font-weight: 800; line-height: 1; letter-spacing: -.05em; font-variant-numeric: tabular-nums; font-size: clamp(3.6rem, 9vw, 6.6rem); margin: 4px 0 8px; background: linear-gradient(110deg, var(--text) 10%, var(--acc-text) 55%, var(--a2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 6px 24px color-mix(in srgb, var(--a1) 35%, transparent)); }\n.clock .colon { animation: blink 1s steps(1) infinite; }\n@keyframes blink { 50% { opacity: .25; } }\n.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }\n.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 99px; font-size: .82rem; font-weight: 600; color: var(--dim); background: color-mix(in srgb, var(--bg) 45%, transparent); border: 1px solid var(--border); backdrop-filter: blur(8px); }\n.chip i { font-size: 1.1rem; color: var(--acc-text); }\n.chip b { color: var(--text); font-weight: 700; }\n.chip i.bolt { animation: zap 2.6s ease-in-out infinite; }\n@keyframes zap { 0%, 100% { transform: scale(1); } 8% { transform: scale(1.3) rotate(-8deg); } 16% { transform: scale(1); } }\n\n/* ---------- scene rapide (immagini) ---------- */\n.scenes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }\n.scene { --s1: #fff; --s2: #fff; position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; min-height: 92px; padding: 12px 14px 12px 12px; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); color: var(--text); text-align: left; cursor: pointer; box-shadow: inset 0 1px 0 var(--hi); transition: transform .45s var(--spring), border-color .25s, box-shadow .4s, background .4s; -webkit-tap-highlight-color: transparent; }\n.scene::after { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.2) 50%, transparent 62%); transform: translateX(-130%); transition: transform .9s var(--ease); }\n.scene:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--s1) 60%, transparent); box-shadow: 0 20px 44px -20px var(--s1), inset 0 1px 0 var(--hi); }\n.scene:hover::after { transform: translateX(130%); }\n.scene:active { transform: scale(.95); transition-duration: .12s; }\n.scene .s-img { flex: none; width: 68px; height: 68px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 22px -8px var(--s1); transition: transform .6s var(--spring); }\n.scene .s-ico { display: none; flex: none; width: 48px; height: 48px; border-radius: 16px; place-items: center; font-size: 1.55rem; color: #fff; background: linear-gradient(135deg, var(--s1), var(--s2)); box-shadow: 0 10px 22px -8px var(--s1); }\n.scene:hover .s-img { transform: scale(1.08) rotate(-3deg); }\n.scene b { display: block; font-family: var(--font-display); font-size: .95rem; font-weight: 700; letter-spacing: -.01em; }\n.scene small { display: block; color: var(--dim); font-size: .74rem; font-weight: 500; margin-top: 2px; }\n.scene.active { background: linear-gradient(135deg, color-mix(in srgb, var(--s1) 34%, transparent), color-mix(in srgb, var(--s2) 24%, transparent)); border-color: color-mix(in srgb, var(--s1) 70%, transparent); box-shadow: 0 18px 40px -22px var(--s1), inset 0 1px 0 var(--hi); }\n.spark { position: var(--lp, fixed); width: 7px; height: 7px; border-radius: 50%; pointer-events: none; z-index: 70; }\n\n/* ---------- stanze e luci (immagini) ---------- */\n.rooms { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }\n.room { --room: #8B5CF6; padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }\n.room.w3 { grid-column: span 3; } .room.w2 { grid-column: span 2; }\n.room-head { display: flex; align-items: center; gap: 12px; position: relative; }\n.r-ico { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; font-size: 1.3rem; color: #fff; background: linear-gradient(135deg, var(--room), color-mix(in srgb, var(--room) 55%, #000)); box-shadow: 0 8px 18px -8px var(--room); }\n.room-head h3 { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }\n.room-head .count { margin-left: auto; font-size: .76rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: color-mix(in srgb, var(--room) 18%, transparent); color: color-mix(in srgb, var(--room) 75%, var(--text)); font-variant-numeric: tabular-nums; }\n.bar { height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-top: -4px; }\n.bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--room), color-mix(in srgb, var(--room) 60%, #fff)); transition: width .7s var(--ease); }\n.room-body { display: grid; gap: 10px; align-content: start; }\n.w3 .room-body { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n.w2 .room-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n\n.orb { position: relative; overflow: hidden; aspect-ratio: 1 / 1; padding: 0; border-radius: 22px; text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--border); color: #fff; transition: transform .45s var(--spring), border-color .45s, box-shadow .45s; -webkit-tap-highlight-color: transparent; }\n.orb .o-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease); }\n.orb:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--room) 60%, var(--border)); }\n.orb:hover .o-img { transform: scale(1.06); }\n.orb:active { transform: scale(.94); transition-duration: .1s; }\n.orb.pop { animation: pop .55s var(--spring); }\n@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(.92); } 70% { transform: scale(1.05); } 100% { transform: scale(1); } }\n.o-shade { position: absolute; inset: auto 0 0 0; height: 56%; background: linear-gradient(to top, rgba(4,6,18,.86), transparent); pointer-events: none; }\n.o-ico { display: none; position: relative; width: 46px; height: 46px; border-radius: 15px; place-items: center; font-size: 1.6rem; background: var(--surface-2); color: var(--dim); transition: background .4s, color .4s; }\n.o-txt { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; flex-direction: column; z-index: 2; }\n.o-name { font-weight: 800; font-size: .95rem; text-shadow: 0 1px 6px rgba(0,0,0,.5); }\n.o-state { font-size: .76rem; color: rgba(255,255,255,.72); margin-top: 1px; }\n.orb .sw { position: absolute; top: 12px; right: 12px; width: 40px; height: 24px; border-radius: 99px; background: rgba(8,10,30,.55); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(6px); transition: background .35s; z-index: 2; }\n.orb .sw::after { content: \"\"; position: absolute; top: 2px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: transform .5s var(--spring); }\n.orb[aria-pressed=\"true\"] { border-color: color-mix(in srgb, var(--room) 80%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--room) 50%, transparent), 0 20px 40px -18px var(--room); }\n.orb[aria-pressed=\"true\"] .o-state { color: #fff; font-weight: 800; }\n.orb[aria-pressed=\"true\"] .sw { background: var(--room); border-color: transparent; }\n.orb[aria-pressed=\"true\"] .sw::after { transform: translateX(16px); }\n\n.sensors { display: flex; flex-wrap: wrap; gap: 6px; }\n.w3 .sensors.strip, .w2 .sensors.strip { grid-column: 1 / -1; }\n.sens { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: var(--dim); background: var(--surface-2); border: 1px solid transparent; transition: background .3s, color .3s, border-color .3s, transform .35s var(--spring); position: relative; }\n.sens .s-ph { position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex: none; background: #0b1020; }\n.sens .s-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.75); }\n.sens > i { display: none; font-size: .95rem; margin-left: 6px; }\n.sens.active { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); border-color: color-mix(in srgb, var(--ok) 45%, transparent); transform: scale(1.05); }\n.sens-cell { display: flex; flex-direction: column; gap: 8px; justify-content: center; }\n\n/* ---------- sicurezza ---------- */\n.alert { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 22px; color: #fff; font-weight: 700; background: linear-gradient(100deg, #E11D48, #F97316); box-shadow: 0 16px 40px -14px #E11D48; animation: rise .5s var(--spring) both; }\n.alert i { font-size: 1.6rem; animation: shake .7s ease-in-out infinite; }\n@keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }\n.alert span { flex: 1; }\n.alert button { border: 0; border-radius: 14px; padding: 10px 16px; font-weight: 800; cursor: pointer; background: #fff; color: #BE123C; transition: transform .3s var(--spring); }\n.alert button:hover { transform: scale(1.06); }\n.alarm { --al: var(--ok); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: clamp(18px, 3vw, 34px); padding: clamp(20px, 3vw, 30px); overflow: hidden; transition: border-color .6s; }\n.alarm[data-state=\"armed\"] { --al: var(--warn); }\n.alarm[data-state=\"alarm\"] { --al: var(--danger); border-color: color-mix(in srgb, var(--danger) 70%, transparent); }\n.alarm::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(90% 140% at 0% 50%, color-mix(in srgb, var(--al) 26%, transparent), transparent 62%); transition: background .6s; }\n.shield { position: relative; width: 132px; height: 132px; border-radius: 30px; overflow: hidden; box-shadow: 0 18px 40px -14px var(--al); cursor: default; }\n.shield img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.alarm-txt { position: relative; min-width: 0; }\n.alarm-txt .eyebrow { color: var(--dim); }\n.alarm-txt h2 { margin: 4px 0 6px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2.3rem); letter-spacing: -.03em; }\n.alarm-txt p.d { margin: 0; color: var(--dim); font-size: .92rem; max-width: 46ch; }\n.seg { position: relative; display: flex; padding: 5px; border-radius: 20px; background: color-mix(in srgb, var(--bg) 40%, transparent); border: 1px solid var(--border); }\n.seg-pill { position: absolute; top: 5px; bottom: 5px; left: 5px; width: 90px; border-radius: 15px; background: linear-gradient(135deg, var(--al), color-mix(in srgb, var(--al) 55%, #000)); box-shadow: 0 8px 20px -8px var(--al); transition: transform .55s var(--spring), width .55s var(--spring), opacity .3s, background .5s; }\n.seg button { position: relative; z-index: 1; border: 0; background: transparent; padding: 14px 20px; border-radius: 15px; font-weight: 700; font-size: .88rem; color: var(--dim); cursor: pointer; transition: color .25s; white-space: nowrap; }\n.seg button[aria-pressed=\"true\"] { color: #fff; }\n.seg button:not([aria-pressed=\"true\"]):hover { color: var(--text); }\n.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.panel { padding: 20px; }\n.panel h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }\n.panel .sub { margin: 0 0 14px; color: var(--dim); font-size: .82rem; }\n.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }\n.stile { position: relative; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 20px; padding: 0; background: var(--surface-2); color: var(--text); cursor: pointer; text-align: left; transition: transform .4s var(--spring), border-color .3s, box-shadow .3s; }\n.stile .st-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }\n.stile .st-ico { display: none; margin: 10px 0 0 10px; font-size: 1.5rem; color: var(--dim); }\n.stile .st-txt { padding: 8px 10px 10px; display: flex; flex-direction: column; }\n.stile .st-name { font-weight: 800; font-size: .8rem; }\n.stile .st-state { font-size: .7rem; color: var(--dim); font-weight: 600; }\n.stile:hover { transform: translateY(-3px); }\n.stile.active, .stile.open { border-color: color-mix(in srgb, var(--ok) 60%, transparent); box-shadow: 0 14px 30px -16px var(--ok); }\n.stile.active .st-state { color: var(--ok); }\n.stile.open { border-color: color-mix(in srgb, var(--warn) 65%, transparent); box-shadow: 0 14px 30px -16px var(--warn); }\n.stile.open .st-state { color: var(--warn); }\n.cams { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.cam { padding: 14px; display: flex; flex-direction: column; gap: 10px; }\n.cam h4 { margin: 2px 4px 0; font-family: var(--font-display); font-size: .92rem; font-weight: 700; }\n.feed { position: relative; overflow: hidden; border-radius: 20px; aspect-ratio: 16 / 8.5; background: repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 4px), radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--b1) 60%, #10142e), transparent 70%), linear-gradient(135deg, #141a3a, color-mix(in srgb, var(--b3) 40%, #0b0f24)); }\n.feed::before { content: \"\"; position: absolute; inset: -20% -60%; background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.14) 50%, transparent 58%); animation: sweep 6s ease-in-out infinite; }\n@keyframes sweep { 0%, 100% { transform: translateX(-40%); } 50% { transform: translateX(40%); } }\n.live { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 99px; background: rgba(0,0,0,.4); color: #fff; font-size: .66rem; font-weight: 800; letter-spacing: .08em; }\n.live::before { content: \"\"; width: 7px; height: 7px; border-radius: 50%; background: #FF4D6A; animation: ping2 1.4s ease-in-out infinite; }\n.stamp { position: absolute; right: 12px; bottom: 10px; color: rgba(255,255,255,.8); font-size: .7rem; font-weight: 700; font-variant-numeric: tabular-nums; text-shadow: 0 1px 4px rgba(0,0,0,.6); }\n\n/* ---------- modalit\u00e0 compatta (solo icone) ---------- */\n:host([data-btn=\"compact\"]) .scene .s-img, :host([data-btn=\"compact\"]) .orb .o-img, :host([data-btn=\"compact\"]) .o-shade, :host([data-btn=\"compact\"]) .sens .s-ph, :host([data-btn=\"compact\"]) .stile .st-img { display: none; }\n:host([data-btn=\"compact\"]) .scene .s-ico, :host([data-btn=\"compact\"]) .o-ico, :host([data-btn=\"compact\"]) .stile .st-ico { display: grid; }\n:host([data-btn=\"compact\"]) .sens > i { display: inline-block; }\n:host([data-btn=\"compact\"]) .sens { padding: 6px 12px; }\n:host([data-btn=\"compact\"]) .orb { aspect-ratio: auto; min-height: 112px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; color: var(--text); }\n:host([data-btn=\"compact\"]) .o-txt { position: static; }\n:host([data-btn=\"compact\"]) .o-name { text-shadow: none; }\n:host([data-btn=\"compact\"]) .o-state { color: var(--dim); }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] { background: linear-gradient(160deg, color-mix(in srgb, var(--room) 26%, transparent), color-mix(in srgb, var(--room) 6%, transparent)); }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] .o-ico { background: var(--room); color: #fff; }\n:host([data-btn=\"compact\"]) .orb[aria-pressed=\"true\"] .o-state { color: color-mix(in srgb, var(--room) 70%, var(--text)); }\n\n/* ---------- dock ---------- */\n.dock { position: var(--lp, fixed); left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 35; display: flex; align-items: flex-end; gap: 6px; padding: 8px; border-radius: 28px; background: color-mix(in srgb, var(--surface-solid) 62%, transparent); border: 1px solid var(--border); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6); box-shadow: 0 24px 60px -16px rgba(0,0,0,.6), inset 0 1px 0 var(--hi); }\n.dock button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 70px; padding: 10px 10px 8px; border: 0; border-radius: 20px; background: transparent; color: var(--dim); cursor: pointer; transform-origin: bottom center; transition: transform .4s var(--spring), color .2s, background .3s; -webkit-tap-highlight-color: transparent; }\n.dock button i { font-size: 1.6rem; line-height: 1; }\n.dock button span { font-size: .68rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }\n.dock button:hover { transform: translateY(-8px) scale(1.18); color: var(--text); }\n.dock button:hover + button, .dock button:has(+ button:hover) { transform: translateY(-3px) scale(1.07); }\n.dock button:active { transform: translateY(-2px) scale(.95); transition-duration: .1s; }\n.dock button[aria-current=\"page\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -8px var(--a1); }\n.dock .sep { width: 1px; align-self: stretch; margin: 8px 4px; background: var(--border); }\n.toast { position: var(--lp, fixed); left: 50%; bottom: 128px; z-index: 80; transform: translate(-50%, 24px) scale(.96); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 99px; font-weight: 700; font-size: .88rem; background: var(--surface-solid); border: 1px solid var(--border); box-shadow: 0 18px 40px -12px rgba(0,0,0,.55); transition: transform .5s var(--spring), opacity .3s; max-width: calc(100vw - 28px); }\n.toast.show { transform: translate(-50%, 0) scale(1); opacity: 1; }\n.toast i { font-size: 1.25rem; color: var(--ok); }\nfooter.note { text-align: center; color: var(--faint); font-size: .78rem; padding: 6px 0 0; }\n\n/* ---------- pannello Stile ---------- */\n.scrim { position: var(--lp, fixed); inset: 0; z-index: 50; background: rgba(4,6,18,.5); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .4s ease; }\n.scrim.open { opacity: 1; pointer-events: auto; }\n.drawer { position: var(--lp, fixed); top: 0; right: 0; bottom: 0; z-index: 55; width: min(430px, 100vw); display: flex; flex-direction: column; background: color-mix(in srgb, var(--surface-solid) 86%, transparent); backdrop-filter: blur(26px) saturate(1.5); -webkit-backdrop-filter: blur(26px) saturate(1.5); border-left: 1px solid var(--border); box-shadow: -30px 0 80px -30px rgba(0,0,0,.6); transform: translateX(104%); transition: transform .6s var(--ease); }\n.drawer.open { transform: none; }\n.dr-head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 12px; }\n.dr-head h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; flex: 1; }\n.dr-body { flex: 1; overflow-y: auto; padding: 4px 20px 26px; display: flex; flex-direction: column; gap: 22px; }\n.dr-sec h3 { margin: 0 0 10px; font-family: var(--font-display); font-size: .85rem; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; }\n.dr-sec h3 small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); }\n.worlds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }\n.wcard { position: relative; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: 18px; background: var(--surface-2); cursor: pointer; text-align: left; transition: transform .4s var(--spring), border-color .3s, box-shadow .3s; }\n.wcard img { display: block; width: 100%; aspect-ratio: 640 / 260; object-fit: cover; }\n.wcard span { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 8px; font-weight: 800; font-size: .8rem; color: #fff; background: linear-gradient(to top, rgba(4,6,18,.8), transparent); display: flex; align-items: center; gap: 6px; }\n.wcard:hover { transform: translateY(-3px) scale(1.02); }\n.wcard.sel { border-color: var(--acc-text); box-shadow: 0 12px 30px -12px var(--a1); }\n.wcard.sel::after { content: \"\\2713\"; font-weight: 900; position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; font-size: 1rem; }\n.fxgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }\n.fxchip { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px 10px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); color: var(--dim); font-size: .72rem; font-weight: 700; cursor: pointer; text-align: center; transition: transform .35s var(--spring), border-color .25s, background .25s, color .25s; }\n.fxchip i { font-size: 1.5rem; }\n.fxchip:hover { transform: translateY(-2px); color: var(--text); }\n.fxchip.sel { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); border-color: transparent; box-shadow: 0 10px 22px -10px var(--a1); }\n.row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: var(--surface-2); font-size: .84rem; font-weight: 700; }\n.row small { display: block; font-weight: 500; color: var(--dim); font-size: .72rem; }\n.row .grow { flex: 1; }\n.toggle { position: relative; width: 44px; height: 26px; border-radius: 99px; border: 0; background: rgba(120,130,170,.35); cursor: pointer; flex: none; transition: background .3s; }\n.toggle::after { content: \"\"; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: transform .45s var(--spring); }\n.toggle[aria-pressed=\"true\"] { background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.toggle[aria-pressed=\"true\"]::after { transform: translateX(18px); }\n.segm { display: flex; padding: 4px; border-radius: 14px; background: var(--surface-2); gap: 2px; }\n.segm button { flex: 1; border: 0; background: transparent; padding: 9px 10px; border-radius: 11px; font-weight: 700; font-size: .8rem; color: var(--dim); cursor: pointer; transition: background .3s, color .3s; }\n.segm button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 800; font-size: .86rem; cursor: pointer; color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); transition: transform .35s var(--spring); }\n.btn:hover { transform: translateY(-2px); } .btn:active { transform: scale(.96); }\n.btn.ghost { color: var(--text); background: var(--surface-2); border: 1px solid var(--border); }\n.btn.wide { width: 100%; }\n\n/* ---------- modalit\u00e0 modifica + editor immagini ---------- */\n.edit-banner { position: sticky; top: 66px; z-index: 29; }\n.edit-banner .wrap { padding-top: 10px; }\n.edit-banner .in { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 18px; font-weight: 700; font-size: .86rem; color: #fff; background: linear-gradient(100deg, var(--a1), var(--a2)); box-shadow: 0 14px 30px -14px var(--a1); animation: rise .5s var(--spring) both; }\n.edit-banner .in i { font-size: 1.3rem; }\n.edit-banner .in span { flex: 1; }\n.edit-banner .in button { border: 0; border-radius: 12px; padding: 8px 14px; font-weight: 800; cursor: pointer; background: #fff; color: #1b1740; }\n.edit-badge { display: none; position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%; place-items: center; font-size: .95rem; color: #fff; z-index: 6; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 6px 14px -4px var(--a1); animation: pulse-b 1.6s ease-in-out infinite; pointer-events: none; }\n@keyframes pulse-b { 50% { transform: scale(1.14); } }\n:host([data-edit=\"1\"]) [data-img] { outline: 2px dashed color-mix(in srgb, var(--acc-text) 80%, transparent); outline-offset: 2px; cursor: copy !important; }\n:host([data-edit=\"1\"]) .edit-badge { display: grid; }\n:host([data-edit=\"1\"]) .sens .edit-badge { top: -6px; left: -6px; width: 20px; height: 20px; font-size: .7rem; }\n:host([data-edit=\"1\"]) .shield { cursor: copy; }\n.modal { position: var(--lp, fixed); inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(4,6,18,.6); backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: opacity .35s; }\n.modal.open { opacity: 1; pointer-events: auto; }\n.mcard { width: min(820px, 100%); max-height: calc(100vh - 32px); overflow: auto; border-radius: 28px; background: color-mix(in srgb, var(--surface-solid) 94%, transparent); border: 1px solid var(--border); box-shadow: 0 40px 100px -30px rgba(0,0,0,.7); padding: 22px; display: flex; flex-direction: column; gap: 18px; transform: translateY(24px) scale(.97); transition: transform .5s var(--spring); }\n.modal.open .mcard { transform: none; }\n.mhead { display: flex; align-items: center; gap: 12px; }\n.mhead h2 { margin: 0; font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; flex: 1; letter-spacing: -.02em; }\n.mhead small { display: block; font-family: var(--font-ui); font-weight: 600; color: var(--dim); font-size: .78rem; margin-top: 2px; }\n.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n.slots.one { grid-template-columns: minmax(0, 260px); justify-content: center; }\n.slot { display: flex; flex-direction: column; gap: 8px; }\n.slot h4 { margin: 0; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 800; }\n.drop { position: relative; aspect-ratio: 1 / 1; max-height: 230px; width: 100%; border-radius: 22px; overflow: hidden; border: 2px dashed var(--border); background: var(--surface-2); display: grid; place-items: center; cursor: pointer; transition: border-color .25s, transform .3s var(--spring); }\n.drop:hover, .drop.over { border-color: var(--acc-text); transform: scale(1.02); }\n.drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }\n.drop .hintt { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 10px 10px; text-align: center; font-size: .74rem; font-weight: 700; color: #fff; background: linear-gradient(to top, rgba(4,6,18,.82), transparent); }\n.drop input { display: none; }\n.libtabs { display: flex; gap: 6px; flex-wrap: wrap; }\n.libtabs button { border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); border-radius: 99px; padding: 6px 14px; font-weight: 700; font-size: .78rem; cursor: pointer; }\n.libtabs button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); border-color: transparent; }\n.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }\n.lib button { padding: 0; border: 2px solid transparent; border-radius: 16px; overflow: hidden; background: var(--surface-2); cursor: pointer; transition: transform .3s var(--spring), border-color .25s; position: relative; }\n.lib button:hover { transform: scale(1.06); border-color: var(--acc-text); }\n.lib img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }\n.lib span { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 4px 4px; font-size: .62rem; font-weight: 800; color: #fff; text-align: center; background: linear-gradient(to top, rgba(4,6,18,.8), transparent); }\n.mfoot { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }\n.note-sm { font-size: .76rem; color: var(--dim); margin: 0; }\n\n/* ---------- dati reali (Home Assistant) ---------- */\n:host([data-live]) [data-demo] { display: none !important; }\n.sens.na, .stile.na, .orb.na { opacity: .5; }\n.sens.na .s-ph, .stile.na .st-img { filter: grayscale(1); }\n.drow { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: var(--surface-2); }\n.drow i { font-size: 1.3rem; color: var(--acc-text); }\n.drow output { min-width: 3.2em; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; font-size: .86rem; }\n.code-in { width: 100%; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: 1.4rem; letter-spacing: .4em; text-align: center; }\n.cam .feed-live { border-radius: 20px; overflow: hidden; background: #0b0f24; min-height: 120px; }\n.cam .feed-live > * { display: block; }\n.cam .feed-live ha-card { border-radius: 0; box-shadow: none; }\n.cam-na { display: grid; place-items: center; align-content: center; gap: 8px; aspect-ratio: 16 / 8.5; color: var(--dim); font-weight: 700; font-size: .82rem; text-align: center; cursor: pointer; background: linear-gradient(135deg, color-mix(in srgb, var(--b1) 22%, #0b0f24), #0b0f24); }\n.cam-na i { font-size: 2.2rem; color: var(--acc-text); }\n\n/* ---------- indicatore \"in tempo reale\" ---------- */\n.livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; vertical-align: middle; background: #34D399; box-shadow: 0 0 0 0 rgba(52,211,153,.7); animation: livep 1.8s ease-out infinite; flex: none; }\n.eyebrow .livedot { margin: 0 8px 0 0; }\n@keyframes livep { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,.7); } 70%, 100% { box-shadow: 0 0 0 9px rgba(52,211,153,0); } }\n.pdelta { font-size: .68rem; font-weight: 800; margin-left: 2px; opacity: 0; transition: opacity .5s; font-variant-numeric: tabular-nums; }\n.pdelta.up { color: #FB923C; opacity: 1; } .pdelta.dn { color: #34D399; opacity: 1; }\n#power-val, #en-num { font-variant-numeric: tabular-nums; }\n#en-age { font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--faint); }\n\n/* ---------- energia ---------- */\n.en-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 14px; }\n.en-hero { --lc: #34D399; display: flex; align-items: center; gap: 18px; padding: 22px; overflow: hidden; }\n.en-hero[data-lvl=\"mid\"] { --lc: #FBBF24; } .en-hero[data-lvl=\"high\"] { --lc: #FB923C; } .en-hero[data-lvl=\"crit\"] { --lc: #F43F5E; } .en-hero.na { opacity: .6; }\n.en-hero::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(70% 120% at 0% 50%, color-mix(in srgb, var(--lc) 22%, transparent), transparent 62%); transition: background .8s; }\n.en-gauge { position: relative; flex: none; width: 210px; height: 190px; }\n.gsvg { width: 100%; height: 100%; display: block; overflow: visible; }\n.g-track { fill: none; stroke: var(--surface-2); stroke-width: 15; stroke-linecap: round; }\n.g-val { fill: none; stroke: url(#engrad); stroke-width: 15; stroke-linecap: round; transition: stroke-dasharray 1s var(--ease); }\n.g-glow { opacity: .55; }\n.g-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 6px; pointer-events: none; }\n.g-num { font-family: var(--font-display); font-weight: 800; font-size: 2.9rem; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }\n.g-unit { font-weight: 800; font-size: .95rem; color: var(--dim); margin-top: 2px; letter-spacing: .06em; }\n.en-side { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 4px; }\n.en-side h3 { margin: 2px 0 2px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.25rem, 2.4vw, 1.7rem); letter-spacing: -.03em; color: var(--lc); }\n.en-side p.d { margin: 0; color: var(--dim); font-size: .88rem; }\n.en-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }\n.echip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 99px; font-size: .74rem; font-weight: 700; color: var(--dim); background: var(--surface-2); }\n.echip b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }\n.echip i { font-size: 1rem; color: var(--acc-text); }\n.en-chart { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 8px; }\n.en-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }\n.en-chart-head h3 { margin: 0; font-family: var(--font-display); font-size: 1rem; font-weight: 700; }\n.en-chart-head h3 small { font-family: var(--font-ui); font-weight: 600; color: var(--faint); font-size: .76rem; margin-left: 6px; }\n.rchips { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-2); gap: 2px; }\n.rchips button { border: 0; background: transparent; color: var(--dim); padding: 6px 12px; border-radius: 9px; font-weight: 700; font-size: .76rem; cursor: pointer; transition: background .25s, color .25s; }\n.rchips button[aria-pressed=\"true\"] { color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.en-plot { position: relative; height: 170px; }\n.en-plot svg { width: 100%; height: 100%; display: block; overflow: visible; }\n.en-plot .area { fill: url(#enarea); } .en-plot .line { fill: none; stroke: var(--acc-text); stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }\n.en-plot .base { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; opacity: .7; }\n.en-plot .grid { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }\n.en-plot .cursor { stroke: var(--text); stroke-width: 1; opacity: .55; vector-effect: non-scaling-stroke; }\n.en-tip { position: absolute; top: 4px; transform: translateX(-50%); padding: 5px 9px; border-radius: 10px; font-size: .72rem; font-weight: 800; white-space: nowrap; pointer-events: none; background: var(--surface-solid); border: 1px solid var(--border); box-shadow: 0 8px 20px -8px rgba(0,0,0,.5); }\n.en-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--faint); font-weight: 700; font-size: .84rem; }\n.en-axis { display: flex; justify-content: space-between; font-size: .68rem; color: var(--faint); font-weight: 700; font-variant-numeric: tabular-nums; }\n.en-stats { display: flex; flex-wrap: wrap; gap: 6px; }\n.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }\n.kpi { padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }\n.kpi .k-l { display: flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }\n.kpi .k-l i { color: var(--acc-text); font-size: 1.05rem; }\n.kpi .k-v { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; letter-spacing: -.04em; font-variant-numeric: tabular-nums; line-height: 1.1; }\n.kpi .k-v small { font-family: var(--font-ui); font-size: .8rem; font-weight: 700; color: var(--dim); letter-spacing: 0; margin-left: 3px; }\n.kpi .k-c { font-weight: 800; font-size: .9rem; color: var(--acc-text); font-variant-numeric: tabular-nums; }\n.kpi .k-s { font-size: .72rem; color: var(--dim); font-weight: 600; }\n.kpi.na { opacity: .55; }\n.en-days { padding: 18px 20px 16px; }\n.days { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; align-items: end; height: 150px; margin-top: 10px; }\n.day { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; min-width: 0; }\n.day .bar2 { width: 100%; max-width: 34px; min-height: 3px; border-radius: 8px 8px 4px 4px; background: linear-gradient(to top, var(--a1), var(--a2)); opacity: .8; transition: height .9s var(--ease); position: relative; }\n.day.today .bar2 { opacity: 1; box-shadow: 0 0 18px -2px var(--a1); }\n.day .d-v { font-size: .66rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dim); }\n.day .d-l { font-size: .64rem; font-weight: 700; color: var(--faint); }\n.share { display: flex; height: 14px; border-radius: 99px; overflow: hidden; background: var(--surface-2); margin: 0 2px 8px; }\n.share i { display: block; height: 100%; transition: width .9s var(--ease); }\n.share-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 2px 12px; font-size: .74rem; font-weight: 700; color: var(--dim); }\n.share-legend span::before { content: \"\"; display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: var(--c); margin-right: 6px; }\n.apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }\n.app { --c: #8B5CF6; position: relative; display: flex; flex-direction: column; gap: 3px; padding: 14px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--hi); transition: border-color .4s, box-shadow .4s, transform .4s var(--spring); cursor: pointer; text-align: left; color: var(--text); }\n.app:hover { transform: translateY(-3px); }\n.app .a-ico { position: relative; width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; font-size: 1.6rem; color: var(--dim); background: var(--surface-2); margin-bottom: 6px; transition: background .4s, color .4s; }\n.app .a-name { font-weight: 800; font-size: .88rem; }\n.app .a-w { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }\n.app .a-e { font-size: .72rem; color: var(--dim); font-weight: 600; }\n\n/* ---------- tariffa (\u20ac/kWh) ---------- */\n.price-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; width: 100%; text-align: left; color: var(--text); font: inherit; cursor: pointer; transition: transform .35s var(--spring), border-color .25s; }\n.price-bar:hover { transform: translateY(-2px); border-color: var(--acc-text); }\n.price-bar .pb-ico { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; font-size: 1.55rem; color: #fff; flex: none; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.price-bar.unset .pb-ico { background: linear-gradient(135deg, #F59E0B, #F43F5E); }\n.price-bar .pb-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }\n.price-bar .pb-txt b { font-family: var(--font-display); font-weight: 800; font-size: 1.04rem; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }\n.price-bar .pb-txt small { color: var(--dim); font-size: .76rem; font-weight: 600; line-height: 1.3; }\n.price-bar .pb-cta { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 99px; font-weight: 800; font-size: .8rem; flex: none; background: var(--surface-2); color: var(--acc-text); }\n.kpis { cursor: pointer; }\n.echip.cost { cursor: pointer; }\n.pr-field { display: flex; align-items: center; gap: 8px; }\n.pr-field .icon-btn { flex: none; }\n.pr-box { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface-2); }\n.pr-box:focus-within { border-color: var(--acc-text); }\n.pr-box input { width: 4.6em; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; letter-spacing: -.04em; text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }\n.pr-box input::-webkit-outer-spin-button, .pr-box input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }\n.pr-box span { font-weight: 800; color: var(--dim); font-size: .8rem; white-space: nowrap; }\n.pr-pre { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }\n.pr-pre button, .linkb { border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); border-radius: 99px; padding: 6px 13px; font: inherit; font-weight: 800; font-size: .78rem; cursor: pointer; font-variant-numeric: tabular-nums; transition: transform .3s var(--spring), color .2s, border-color .2s; }\n.pr-pre button:hover, .linkb:hover { color: var(--text); border-color: var(--acc-text); transform: translateY(-2px); }\n.pr-pre button[aria-pressed=\"true\"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--a1), var(--a2)); }\n.linkb { padding: 4px 11px; font-size: .74rem; margin-left: 6px; color: var(--acc-text); }\n.pr-hint { margin: 0; padding: 10px 14px; border-radius: 14px; font-size: .8rem; font-weight: 600; color: var(--dim); background: var(--surface-2); }\n.pr-hint b { color: var(--text); }\n.pr-calc { border-radius: 16px; background: var(--surface-2); padding: 12px 14px; }\n.pr-calc summary { cursor: pointer; font-weight: 800; font-size: .84rem; display: flex; align-items: center; gap: 8px; list-style: none; }\n.pr-calc summary::-webkit-details-marker { display: none; }\n.pr-calc summary i { color: var(--acc-text); font-size: 1.2rem; }\n.pr-calc-in { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }\n.pr-calc-in label { display: flex; flex-direction: column; gap: 5px; font-size: .72rem; font-weight: 700; color: var(--dim); }\n.pr-calc-in label span { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--dim); font-weight: 800; }\n.pr-calc-in input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-weight: 800; font-size: 1rem; font-variant-numeric: tabular-nums; }\n.pr-calc-out { margin: 10px 0 4px; font-size: .86rem; font-weight: 700; color: var(--dim); min-height: 1.2em; }\n.pr-calc-out b { color: var(--text); font-size: 1rem; }\n.app.run { border-color: color-mix(in srgb, var(--c) 60%, transparent); box-shadow: 0 16px 34px -18px var(--c); }\n.app.run .a-ico { color: #fff; background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); animation: halo2 2.2s ease-out infinite; }\n@keyframes halo2 { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 60%, transparent); } 70%, 100% { box-shadow: 0 0 0 12px transparent; } }\n.app.na { opacity: .5; }\n\n/* ---------- clima ---------- */\n.clima { --cl: #64748B; display: grid; grid-template-columns: auto 1fr; gap: clamp(16px, 3vw, 30px); padding: clamp(18px, 2.4vw, 26px); overflow: hidden; transition: border-color .5s; }\n.clima::before { content: \"\"; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(80% 140% at 0% 40%, color-mix(in srgb, var(--cl) 26%, transparent), transparent 62%); transition: background .6s; }\n.clima:not([data-mode=\"off\"]) { border-color: color-mix(in srgb, var(--cl) 45%, var(--border)); }\n.clima.na { opacity: .6; }\n.cl-art { position: relative; width: 230px; aspect-ratio: 1 / 1; border-radius: 28px; overflow: hidden; box-shadow: 0 22px 44px -18px var(--cl); align-self: start; }\n.cl-art img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.cl-main { position: relative; display: flex; flex-direction: column; gap: 16px; min-width: 0; }\n.cl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; flex-wrap: wrap; }\n.cl-top h3 { margin: 4px 0 4px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -.03em; }\n.cl-top p.d { margin: 0; color: var(--dim); font-size: .9rem; }\n.tctl { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 26px; background: color-mix(in srgb, var(--bg) 40%, transparent); border: 1px solid var(--border); }\n.tbig { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; letter-spacing: -.04em; line-height: 1; min-width: 4.4ch; text-align: center; font-variant-numeric: tabular-nums; }\n.tbig small { font-size: 1rem; font-weight: 700; color: var(--dim); margin-left: 2px; }\n.rbtn { width: 52px; height: 52px; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; font-size: 1.6rem; color: #fff; background: linear-gradient(135deg, var(--cl), color-mix(in srgb, var(--cl) 55%, #000)); box-shadow: 0 10px 22px -10px var(--cl); transition: transform .35s var(--spring), opacity .25s; }\n.rbtn:hover { transform: scale(1.1); } .rbtn:active { transform: scale(.88); transition-duration: .08s; }\n.rbtn:disabled { opacity: .4; cursor: default; }\n.cl-sec h5 { margin: 0 0 8px; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-weight: 800; }\n.cchips { display: flex; flex-wrap: wrap; gap: 8px; }\n.cchip { --cl: #64748B; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); color: var(--dim); font-weight: 700; font-size: .82rem; cursor: pointer; transition: transform .35s var(--spring), background .3s, color .3s, box-shadow .3s; }\n.cchip.sm { padding: 8px 12px; font-size: .78rem; }\n.cchip:hover { transform: translateY(-2px); color: var(--text); }\n.cchip[aria-pressed=\"true\"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--cl), color-mix(in srgb, var(--cl) 55%, #000)); box-shadow: 0 10px 22px -10px var(--cl); }\n.clima[data-mode=\"off\"] .cchip.sm[aria-pressed=\"true\"] { background: var(--surface-2); color: var(--text); box-shadow: none; border-color: var(--border); }\n.cl-sel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }\n.cl-sel label { display: flex; flex-direction: column; gap: 6px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }\n.cl-sel select { width: 100%; padding: 11px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; font-size: .84rem; font-weight: 700; letter-spacing: 0; text-transform: none; cursor: pointer; }\n.cl-sel select option { background: var(--surface-solid); color: var(--text); }\n.cam-head { display: flex; align-items: center; gap: 8px; margin: 2px 2px 0; }\n.cam-head h4 { margin: 0; flex: 1; font-family: var(--font-display); font-size: .92rem; font-weight: 700; }\n.cl-hint { margin: 10px 0 0; padding: 9px 13px; border-radius: 14px; max-width: 48ch; font-size: .8rem; font-weight: 700; line-height: 1.35; color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); }\n.cam-off { font-size: .64rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: #E11D48; padding: 3px 8px; border-radius: 99px; }\n.cam-meta { font-size: .68rem; color: var(--faint); font-weight: 700; }\n.cbtn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 12px; padding: 7px 10px; font-weight: 800; font-size: .74rem; cursor: pointer; transition: transform .3s var(--spring), background .25s; }\n.cbtn:hover { transform: translateY(-2px); }\n.cbtn.go { color: #fff; border-color: transparent; background: linear-gradient(135deg, #F43F5E, #F97316); }\n.cbtn.go.on { background: linear-gradient(135deg, #64748B, #334155); }\n.feed-live { position: relative; }\n.cam-img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; cursor: pointer; }\n.live-box { background: #000; }\n\n/* ---------- responsive ---------- */\n@media (max-width: 1020px) {\n  .en-top { grid-template-columns: 1fr; }\n  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n  .clima { grid-template-columns: 1fr; }\n  .cl-art { width: min(260px, 100%); }\n  .cl-sel { grid-template-columns: 1fr 1fr; }\n  .scenes { grid-template-columns: repeat(3, minmax(0, 1fr)); }\n  .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .room.w3, .room.w2 { grid-column: span 1; }\n  .room.w3 { grid-column: span 2; }\n  .alarm { grid-template-columns: auto 1fr; }\n  .alarm .seg { grid-column: 1 / -1; }\n}\n@media (max-width: 720px) {\n  .status { display: none; }\n  .top-actions { margin-left: auto; }\n  .style-btn span, .ver { display: none; }\n  .style-btn { padding: 0 12px; }\n  .topbar .wrap { gap: 8px; }\n  .scenes { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .scene { flex-direction: column; align-items: flex-start; gap: 10px; }\n  .rooms { grid-template-columns: 1fr; }\n  .room.w3 { grid-column: span 1; }\n  .w3 .room-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .grid2, .cams { grid-template-columns: 1fr; }\n  .hero { min-height: 410px; }\n  .hero-art { height: auto; width: 100%; -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 42%); mask-image: linear-gradient(180deg, transparent 0%, #000 42%); }\n  .hero-body { padding-bottom: 190px; }\n  .hero-tag { top: auto; bottom: 12px; }\n  .dock button { min-width: 54px; padding: 9px 6px 7px; }\n  .dock button span { font-size: .6rem; }\n  .seg { width: 100%; } .seg button { flex: 1; padding: 14px 6px; }\n  .brand em { display: none; }\n  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .en-hero { flex-direction: column; align-items: flex-start; }\n  .days { gap: 3px; } .day .d-v { display: none; }\n  .slots { grid-template-columns: 1fr 1fr; }\n  .shield { width: 104px; height: 104px; }\n}\n@media (prefers-reduced-motion: reduce) {\n  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }\n}\n";
+  var HTML = "<div class=\"shell\" id=\"shell\">\n\n<div class=\"bg\" aria-hidden=\"true\"><i class=\"o1\"></i><i class=\"o2\"></i><i class=\"o3\"></i></div>\n<canvas class=\"fx-page\" id=\"fx-page\" aria-hidden=\"true\"></canvas>\n<div class=\"grain\" aria-hidden=\"true\"></div>\n<div class=\"vignette\" aria-hidden=\"true\"></div>\n\n<div class=\"scroll\" id=\"scroll\">\n<header class=\"topbar\">\n  <div class=\"wrap\">\n    <div class=\"brand\"><span class=\"logo\" aria-hidden=\"true\"></span>Luma <em>Home</em><span class=\"ver\">v3</span></div>\n    <div class=\"status\" id=\"status\" role=\"status\" aria-live=\"polite\"><span class=\"dot\"></span><span id=\"status-text\">\u2026</span></div>\n    <div class=\"top-actions\">\n      <button class=\"style-btn\" id=\"style-btn\" type=\"button\" aria-haspopup=\"dialog\" aria-controls=\"drawer\"><i class=\"mdi mdi-palette-swatch-variant\"></i><span>Stile</span></button>\n      <button class=\"icon-btn\" id=\"theme-btn\" type=\"button\" aria-label=\"Cambia tema chiaro/scuro\"><i class=\"mdi mdi-weather-night\" id=\"theme-ico\"></i></button>\n    </div>\n  </div>\n</header>\n\n<div class=\"edit-banner\" id=\"edit-banner\" hidden>\n  <div class=\"wrap\"><div class=\"in\"><i class=\"mdi mdi-image-edit\"></i><span>Modalit\u00e0 modifica: tocca un pulsante per cambiargli immagine o GIF</span><button type=\"button\" id=\"edit-done\">Fine</button></div></div>\n</div>\n\n<div class=\"wrap\">\n  <div class=\"hints\">\n    <span class=\"hint\"><i class=\"mdi mdi-gesture-tap\"></i>Tocca scene e luci</span>\n    <button class=\"hint\" id=\"hint-style\" type=\"button\"><i class=\"mdi mdi-palette-swatch-variant\"></i>Cambia mondo, effetti e ora</button>\n    <button class=\"hint\" id=\"hint-edit\" type=\"button\"><i class=\"mdi mdi-image-edit\"></i>Modifica le immagini</button>\n    <button class=\"hint danger\" id=\"sim-alarm\" type=\"button\" data-demo><i class=\"mdi mdi-bell-ring\"></i>Simula intrusione</button>\n  </div>\n\n  <main id=\"main\">\n    <!-- ===================== VISTA CASA ===================== -->\n    <section id=\"view-home\" class=\"enter\" aria-label=\"Casa\" style=\"display:flex;flex-direction:column;gap:22px\">\n      <article class=\"card hero\" id=\"hero\" style=\"--i:0\">\n        <div class=\"hero-art\" id=\"hero-art\" aria-hidden=\"true\">\n          <img id=\"art-a\" alt=\"\" draggable=\"false\"><img id=\"art-b\" alt=\"\" draggable=\"false\">\n          <div id=\"win-layer\"></div>\n        </div>\n        <canvas class=\"fx-hero\" id=\"fx-hero\" aria-hidden=\"true\"></canvas>\n        <button class=\"hero-tag\" id=\"hero-tag\" type=\"button\"><i class=\"mdi mdi-earth\"></i><span id=\"hero-tag-text\">Casetta</span><i class=\"mdi mdi-chevron-right\"></i></button>\n        <div class=\"hero-body\">\n          <p class=\"eyebrow\" id=\"date-text\">Luned\u00ec 12 ottobre</p>\n          <h1 class=\"greet\" id=\"greet\">Buonasera, Alex</h1>\n          <div class=\"clock\" id=\"clock\" aria-live=\"off\">21<span class=\"colon\">:</span>00</div>\n          <div class=\"hero-chips\">\n            <span class=\"chip\" id=\"chip-temp\"><i class=\"mdi mdi-weather-partly-cloudy\" id=\"temp-ico\"></i>Esterno <b id=\"temp-val\">21,4 \u00b0C</b></span>\n            <span class=\"chip\" id=\"chip-power\" role=\"button\" tabindex=\"0\" title=\"Apri i consumi\" style=\"cursor:pointer\"><i class=\"mdi mdi-flash bolt\"></i>Consumo <b id=\"power-val\">612 W</b><span class=\"pdelta\" id=\"power-delta\"></span><span class=\"livedot\" title=\"Aggiornamento in tempo reale\"></span></span>\n            <span class=\"chip\"><i class=\"mdi mdi-motion-sensor\"></i><span id=\"hero-motion\">Casa tranquilla</span></span>\n          </div>\n        </div>\n      </article>\n\n      <div style=\"--i:1\">\n        <h2 class=\"sec-title\">Scene rapide <small>un tocco, tutta la casa</small></h2>\n        <div class=\"scenes\" id=\"scenes\"></div>\n      </div>\n\n      <div style=\"--i:2\">\n        <h2 class=\"sec-title\">Luci e stanze <small>tocca l'immagine per accendere</small></h2>\n        <div class=\"rooms\" id=\"rooms\"></div>\n      </div>\n\n      <div style=\"--i:3\" id=\"clima-wrap\">\n        <h2 class=\"sec-title\">Clima <small id=\"cl-sub\">Aria salone</small></h2>\n        <article class=\"card clima\" id=\"clima\" data-mode=\"off\">\n          <div class=\"cl-art\" id=\"cl-art\" data-img=\"clima_off\" data-label=\"Immagine del climatizzatore\"><img alt=\"\" draggable=\"false\"><span class=\"edit-badge\"><i class=\"mdi mdi-pencil\"></i></span></div>\n          <div class=\"cl-main\">\n            <div class=\"cl-top\">\n              <div>\n                <p class=\"eyebrow\" id=\"cl-name\">Aria salone</p>\n                <h3 id=\"cl-status\">Spento</h3>\n                <p class=\"d\" id=\"cl-cur\">In casa 23 \u00b0C</p>\n                <p class=\"cl-hint\" id=\"cl-hint\" hidden></p>\n              </div>\n              <div class=\"tctl\" role=\"group\" aria-label=\"Temperatura desiderata\">\n                <button class=\"rbtn\" id=\"cl-minus\" type=\"button\" aria-label=\"Abbassa\"><i class=\"mdi mdi-minus\"></i></button>\n                <div class=\"tbig\"><span id=\"cl-tgt\">25,0</span><small>\u00b0C</small></div>\n                <button class=\"rbtn\" id=\"cl-plus\" type=\"button\" aria-label=\"Alza\"><i class=\"mdi mdi-plus\"></i></button>\n              </div>\n            </div>\n            <div class=\"cl-sec\"><h5>Modalit\u00e0</h5><div class=\"cchips\" id=\"cl-modes\"></div></div>\n            <div class=\"cl-sec\" id=\"cl-fan-sec\"><h5>Ventola</h5><div class=\"cchips\" id=\"cl-fans\"></div></div>\n            <div class=\"cl-sel\">\n              <label>Alette verticali<select id=\"cl-swing\"></select></label>\n              <label>Alette orizzontali<select id=\"cl-hswing\"></select></label>\n              <label>Preset<select id=\"cl-preset\"></select></label>\n            </div>\n          </div>\n        </article>\n      </div>\n    </section>\n\n    <!-- ===================== VISTA SICUREZZA ===================== -->\n    <section id=\"view-sic\" class=\"enter\" aria-label=\"Sicurezza\" hidden style=\"display:flex;flex-direction:column;gap:14px\">\n      <div class=\"alert\" id=\"alert\" role=\"alert\" hidden>\n        <i class=\"mdi mdi-alarm-light\"></i><span>ALLARME \u2014 movimento rilevato in Ingresso</span><button type=\"button\" id=\"alert-off\">Disattiva</button>\n      </div>\n\n      <article class=\"card alarm\" id=\"alarm\" data-state=\"off\" style=\"--i:1\">\n        <div class=\"shield\" id=\"shield\" data-img=\"allarme_off\" data-label=\"Immagine dello stato allarme\"><img id=\"alarm-img\" alt=\"\" draggable=\"false\"><span class=\"edit-badge\"><i class=\"mdi mdi-pencil\"></i></span></div>\n        <div class=\"alarm-txt\">\n          <p class=\"eyebrow\">Centrale allarme</p>\n          <h2 id=\"alarm-title\">Disattivato</h2>\n          <p class=\"d\" id=\"alarm-desc\">Casa libera.</p>\n        </div>\n        <div class=\"seg\" id=\"seg\" role=\"group\" aria-label=\"Modalit\u00e0 allarme\">\n          <span class=\"seg-pill\" id=\"seg-pill\"></span>\n          <button type=\"button\" data-mode=\"disarmed\" aria-pressed=\"true\">Disattiva</button>\n          <button type=\"button\" data-mode=\"armed_night\" aria-pressed=\"false\">Notte</button>\n          <button type=\"button\" data-mode=\"armed_away\" aria-pressed=\"false\">Fuori casa</button>\n        </div>\n      </article>\n\n      <div class=\"grid2\" style=\"--i:2\">\n        <article class=\"card panel\">\n          <h3><i class=\"mdi mdi-motion-sensor\" style=\"color:var(--acc-text)\"></i>Movimento</h3>\n          <p class=\"sub\" id=\"last-motion\">Nessun movimento recente</p>\n          <div class=\"tiles\" id=\"motion-tiles\"></div>\n        </article>\n        <article class=\"card panel\">\n          <h3><i class=\"mdi mdi-door-closed-lock\" style=\"color:var(--acc-text)\"></i>Porte, finestre e cancello</h3>\n          <p class=\"sub\" id=\"open-sub\">Tutto chiuso</p>\n          <div class=\"tiles\" id=\"open-tiles\"></div>\n        </article>\n      </div>\n\n      <div class=\"cams\" id=\"cams\" style=\"--i:3\">\n        <article class=\"card cam\"><h4>Ingresso</h4><div class=\"feed\"><span class=\"live\">LIVE</span><span class=\"stamp\" data-stamp>--:--:--</span></div></article>\n        <article class=\"card cam\"><h4>Giardino</h4><div class=\"feed\"><span class=\"live\">LIVE</span><span class=\"stamp\" data-stamp>--:--:--</span></div></article>\n      </div>\n    </section>\n\n    <!-- ===================== VISTA ENERGIA ===================== -->\n    <section id=\"view-en\" class=\"enter\" aria-label=\"Energia\" hidden style=\"display:flex;flex-direction:column;gap:14px\">\n      <div class=\"en-top\" style=\"--i:0\">\n        <article class=\"card en-hero\" id=\"en-hero\" data-lvl=\"low\">\n          <div class=\"en-gauge\">\n            <svg viewBox=\"0 0 220 200\" class=\"gsvg\" aria-hidden=\"true\">\n              <defs>\n                <linearGradient id=\"engrad\" x1=\"0\" y1=\"1\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#34D399\"/><stop offset=\".55\" stop-color=\"#FBBF24\"/><stop offset=\"1\" stop-color=\"#F43F5E\"/></linearGradient>\n                <filter id=\"engl\" x=\"-30%\" y=\"-30%\" width=\"160%\" height=\"160%\"><feGaussianBlur stdDeviation=\"6\"/></filter>\n              </defs>\n              <path class=\"g-track\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\"/>\n              <path class=\"g-val g-glow\" id=\"en-glow\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\" stroke-dasharray=\"0 100\" filter=\"url(#engl)\"/>\n              <path class=\"g-val\" id=\"en-arc\" d=\"M 46.4 153.6 A 80 80 0 1 1 173.6 153.6\" pathLength=\"100\" stroke-dasharray=\"0 100\"/>\n            </svg>\n            <div class=\"g-center\"><span class=\"g-num\" id=\"en-num\">0</span><span class=\"g-unit\" id=\"en-unit\">W</span></div>\n          </div>\n          <div class=\"en-side\">\n            <p class=\"eyebrow\" id=\"en-eyebrow\"><span class=\"livedot\"></span>Potenza adesso <span id=\"en-age\"></span></p>\n            <h3 id=\"en-title\">Consumo basso</h3>\n            <p class=\"d\" id=\"en-sub\">Misura generale della casa</p>\n            <div class=\"en-chips\" id=\"en-chips\"></div>\n          </div>\n        </article>\n        <article class=\"card en-chart\">\n          <div class=\"en-chart-head\">\n            <h3>Andamento</h3>\n            <div class=\"rchips\" id=\"en-range\" role=\"group\" aria-label=\"Periodo\">\n              <button type=\"button\" data-r=\"3h\" aria-pressed=\"false\">3 ore</button><button type=\"button\" data-r=\"24h\" aria-pressed=\"true\">24 ore</button><button type=\"button\" data-r=\"7g\" aria-pressed=\"false\">7 giorni</button>\n            </div>\n          </div>\n          <div class=\"en-plot\" id=\"en-plot\"><svg viewBox=\"0 0 600 170\" preserveAspectRatio=\"none\" id=\"en-svg\" aria-hidden=\"true\"></svg><div class=\"en-tip\" id=\"en-tip\" hidden></div><div class=\"en-empty\" id=\"en-empty\" hidden>Storico non disponibile</div></div>\n          <div class=\"en-axis\" id=\"en-axis\"></div>\n          <div class=\"en-stats\" id=\"en-stats\"></div>\n        </article>\n      </div>\n      <button type=\"button\" class=\"card price-bar\" id=\"en-price\" style=\"--i:1\" aria-label=\"Imposta la tariffa dell'energia\">\n        <span class=\"pb-ico\"><i class=\"mdi mdi-currency-eur\"></i></span>\n        <span class=\"pb-txt\"><b id=\"pb-main\">Tariffa</b><small id=\"pb-sub\"></small></span>\n        <span class=\"pb-cta\"><i class=\"mdi mdi-pencil\"></i><span id=\"pb-cta\">Imposta</span></span>\n      </button>\n      <div class=\"kpis\" id=\"en-kpis\" style=\"--i:1\" title=\"Tocca per cambiare la tariffa\"></div>\n      <article class=\"card en-days\" style=\"--i:2\">\n        <div class=\"en-chart-head\"><h3><span id=\"en-days-t\">Consumo giornaliero</span> <small>ultimi 14 giorni</small></h3>\n          <div class=\"rchips\" id=\"en-dunit\" role=\"group\" aria-label=\"Unit\u00e0\"><button type=\"button\" data-u=\"kwh\" aria-pressed=\"true\">kWh</button><button type=\"button\" data-u=\"eur\" aria-pressed=\"false\">\u20ac</button></div></div>\n        <div class=\"days\" id=\"en-days\"></div>\n        <div class=\"en-stats\" id=\"en-days-sum\" style=\"margin-top:12px\"></div>\n      </article>\n      <div style=\"--i:3\">\n        <h2 class=\"sec-title\">Elettrodomestici <small>consumo adesso e oggi</small></h2>\n        <div class=\"share\" id=\"en-share\"></div>\n        <div class=\"apps\" id=\"en-apps\"></div>\n      </div>\n    </section>\n\n    <footer class=\"note\">Luma Home \u00b7 anteprima: non riflette dati reali di un impianto.</footer>\n  </main>\n</div>\n\n</div><!-- /scroll -->\n\n<nav class=\"dock\" aria-label=\"Navigazione\">\n  <button type=\"button\" data-view=\"home\" aria-current=\"page\"><i class=\"mdi mdi-home-variant\"></i><span>Casa</span></button>\n  <button type=\"button\" data-view=\"sic\"><i class=\"mdi mdi-shield-home\"></i><span>Sicurezza</span></button>\n  <button type=\"button\" data-view=\"en\"><i class=\"mdi mdi-lightning-bolt\"></i><span>Energia</span></button>\n  <span class=\"sep\" aria-hidden=\"true\"></span>\n  <button type=\"button\" id=\"dock-scenes\"><i class=\"mdi mdi-palette\"></i><span>Scene</span></button>\n  <button type=\"button\" id=\"dock-off\"><i class=\"mdi mdi-lightbulb-off-outline\"></i><span>Spegni tutto</span></button>\n  <button type=\"button\" id=\"dock-style\"><i class=\"mdi mdi-palette-swatch-variant\"></i><span>Stile</span></button>\n</nav>\n<div class=\"toast\" id=\"toast\" role=\"status\" aria-live=\"polite\"><i class=\"mdi mdi-check-circle\"></i><span id=\"toast-text\"></span></div>\n\n<!-- ===================== PANNELLO STILE ===================== -->\n<div class=\"scrim\" id=\"scrim\"></div>\n<aside class=\"drawer\" id=\"drawer\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"dr-title\" aria-hidden=\"true\">\n  <div class=\"dr-head\"><h2 id=\"dr-title\">Personalizza lo stile</h2><button class=\"icon-btn\" id=\"dr-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n  <div class=\"dr-body\">\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-earth\"></i>Mondo <small>10 paesaggi animati, tutti con alba, giorno, tramonto e notte</small></h3><div class=\"worlds\" id=\"worlds\"></div></section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-clock-outline\"></i>Ora del giorno <small>simula cielo e colori</small></h3>\n      <div class=\"drow\"><i class=\"mdi mdi-weather-sunset\" id=\"phase-icon\"></i><input class=\"ph\" type=\"range\" id=\"phase-range\" min=\"0\" max=\"24\" step=\"0.25\" value=\"21\" aria-label=\"Simula l'ora del giorno\"><output id=\"phase-out\">21:00</output></div>\n      <button class=\"btn ghost wide\" id=\"phase-real\" type=\"button\" style=\"margin-top:8px\"><i class=\"mdi mdi-clock-check-outline\"></i>Usa l'ora reale</button>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-weather-partly-rainy\"></i>Meteo ed effetti <small>si sovrappongono a qualsiasi mondo</small></h3>\n      <div class=\"fxgrid\" id=\"fxgrid\"></div>\n      <div class=\"row\" style=\"margin-top:10px\"><span class=\"grow\">Anche sullo sfondo della pagina<small>Particelle dietro a tutte le card</small></span><button class=\"toggle\" id=\"fx-page-toggle\" type=\"button\" aria-pressed=\"false\" aria-label=\"Effetto su tutta la pagina\"></button></div>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-shuffle-variant\"></i>Sorpresa</h3>\n      <div class=\"row\"><span class=\"grow\">Cambia mondo ogni 30 secondi<small>Una playlist di paesaggi</small></span><button class=\"toggle\" id=\"cycle-toggle\" type=\"button\" aria-pressed=\"false\" aria-label=\"Cambia mondo automaticamente\"></button></div>\n    </section>\n    <section class=\"dr-sec\"><h3><i class=\"mdi mdi-gesture-tap-button\"></i>Pulsanti</h3>\n      <div class=\"segm\" id=\"btn-style\"><button type=\"button\" data-v=\"img\" aria-pressed=\"true\">Immagini e GIF</button><button type=\"button\" data-v=\"compact\" aria-pressed=\"false\">Compatti</button></div>\n      <button class=\"btn wide\" id=\"edit-start\" type=\"button\" style=\"margin-top:10px\"><i class=\"mdi mdi-image-edit\"></i>Modifica le immagini dei pulsanti</button>\n    </section>\n    <section class=\"dr-sec\"><button class=\"btn ghost wide\" id=\"reset-all\" type=\"button\"><i class=\"mdi mdi-restore\"></i>Ripristina tutto</button></section>\n  </div>\n</aside>\n\n<!-- ===================== EDITOR IMMAGINI ===================== -->\n<div class=\"modal\" id=\"editor\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"ed-title\" aria-hidden=\"true\">\n  <div class=\"mcard\">\n    <div class=\"mhead\"><h2><span id=\"ed-title\">Modifica immagine</span><small id=\"ed-sub\"></small></h2><button class=\"icon-btn\" id=\"ed-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n    <div class=\"slots\" id=\"ed-slots\"></div>\n    <div>\n      <div class=\"libtabs\" id=\"lib-tabs\" role=\"group\" aria-label=\"Libreria\"></div>\n      <div class=\"lib\" id=\"lib\" style=\"margin-top:10px\"></div>\n    </div>\n    <p class=\"note-sm\">Puoi anche trascinare un file (PNG, JPG, GIF animata, WebP) sopra un riquadro. Le immagini scelte restano salvate in questo browser.</p>\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"ed-reset\" type=\"button\"><i class=\"mdi mdi-restore\"></i>Ripristina originale</button><button class=\"btn\" id=\"ed-done\" type=\"button\"><i class=\"mdi mdi-check\"></i>Fatto</button></div>\n  </div>\n</div>\n\n<div class=\"modal\" id=\"codebox\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"code-title\" aria-hidden=\"true\">\n  <div class=\"mcard\" style=\"width:min(360px,100%)\">\n    <div class=\"mhead\"><h2><span id=\"code-title\">Inserisci il codice</span><small id=\"code-sub\"></small></h2></div>\n    <input class=\"code-in\" id=\"code-in\" type=\"password\" inputmode=\"numeric\" autocomplete=\"off\" aria-label=\"Codice allarme\">\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"code-cancel\" type=\"button\">Annulla</button><button class=\"btn\" id=\"code-ok\" type=\"button\">Conferma</button></div>\n  </div>\n</div>\n<div class=\"modal\" id=\"pricebox\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"pr-title\" aria-hidden=\"true\">\n  <div class=\"mcard\" style=\"width:min(440px,100%)\">\n    <div class=\"mhead\"><h2><span id=\"pr-title\">Costo dell'energia</span><small>Quanto paghi un kWh in bolletta</small></h2><button class=\"icon-btn\" id=\"pr-close\" type=\"button\" aria-label=\"Chiudi\"><i class=\"mdi mdi-close\"></i></button></div>\n    <div class=\"pr-field\">\n      <button class=\"icon-btn\" id=\"pr-minus\" type=\"button\" aria-label=\"Diminuisci\"><i class=\"mdi mdi-minus\"></i></button>\n      <label class=\"pr-box\"><input id=\"pr-in\" type=\"number\" inputmode=\"decimal\" step=\"0.001\" min=\"0\" max=\"5\" aria-label=\"Prezzo in euro per kWh\"><span>\u20ac / kWh</span></label>\n      <button class=\"icon-btn\" id=\"pr-plus\" type=\"button\" aria-label=\"Aumenta\"><i class=\"mdi mdi-plus\"></i></button>\n    </div>\n    <div class=\"pr-pre\" id=\"pr-pre\"></div>\n    <p class=\"pr-hint\" id=\"pr-hint\" hidden></p>\n    <details class=\"pr-calc\" id=\"pr-calc\">\n      <summary><i class=\"mdi mdi-calculator-variant\"></i>Non lo so: calcolalo dalla bolletta</summary>\n      <div class=\"pr-calc-in\">\n        <label>Totale da pagare<span><input id=\"pr-bill\" type=\"number\" inputmode=\"decimal\" step=\"0.01\" min=\"0\" placeholder=\"es. 84,50\"> \u20ac</span></label>\n        <label>kWh consumati<span><input id=\"pr-kwh\" type=\"number\" inputmode=\"decimal\" step=\"1\" min=\"0\" placeholder=\"es. 210\"> kWh</span></label>\n      </div>\n      <p class=\"pr-calc-out\" id=\"pr-calc-out\"></p>\n      <p class=\"note-sm\">Dividere il totale per i kWh include anche quota fissa, trasporto e imposte: \u00e8 il costo reale di ogni kWh che consumi.</p>\n    </details>\n    <p class=\"note-sm\" id=\"pr-where\"></p>\n    <div class=\"mfoot\"><button class=\"btn ghost\" id=\"pr-cancel\" type=\"button\">Annulla</button><button class=\"btn\" id=\"pr-ok\" type=\"button\"><i class=\"mdi mdi-check\"></i>Salva tariffa</button></div>\n  </div>\n</div>\n</div><!-- /shell -->";
   var PROPS = "@property --b1 { syntax: '<color>'; inherits: true; initial-value: #7C5CFF; }\n@property --b2 { syntax: '<color>'; inherits: true; initial-value: #3B82F6; }\n@property --b3 { syntax: '<color>'; inherits: true; initial-value: #22D3EE; }\n@property --a1 { syntax: '<color>'; inherits: true; initial-value: #7C5CFF; }\n@property --a2 { syntax: '<color>'; inherits: true; initial-value: #D946EF; }\n@property --win { syntax: '<color>'; inherits: true; initial-value: #FFD27A; }";
   var OVERRIDES = [
     ":host { display: block; position: relative; --lp: absolute; --sp: absolute; --so: hidden auto; height: var(--aurora-height, calc(100vh - var(--header-height, 56px))); min-height: 520px; overflow: hidden; }",
@@ -2147,8 +6369,14 @@
     disconnectedCallback() { if (this._app) this._app.stop(); }
     static getStubConfig() { return {}; }
   }
-  if (!customElements.get("aurora-v3-card")) customElements.define("aurora-v3-card", AuroraV3Card);
+  if (!customElements.get("luma-home-card")) {
+  customElements.define("luma-home-card", AuroraV3Card);
+}
   window.customCards = window.customCards || [];
-  window.customCards.push({ type: "aurora-v3-card", name: "Aurora Glass v3", description: "Dashboard animata: mondi, effetti meteo e pulsanti fatti di immagini e GIF." });
-  console.info("%c AURORA GLASS v3 %c scheda caricata ", "background:#7C5CFF;color:#fff;border-radius:4px 0 0 4px;padding:2px 6px", "background:#1b1740;color:#fff;border-radius:0 4px 4px 0;padding:2px 6px");
+    window.customCards.push({
+    type: "luma-home-card",
+    name: "Luma Home",
+    description: "Tableau de bord animé · Animated dashboard · Dashboard animata — Images, GIF & effets / effects / effetti."
+  });
+  console.info("%c LUMA HOME %c scheda caricata ", "background:#7C5CFF;color:#fff;border-radius:4px 0 0 4px;padding:2px 6px", "background:#1b1740;color:#fff;border-radius:0 4px 4px 0;padding:2px 6px");
 })();
