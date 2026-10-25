@@ -1193,9 +1193,31 @@
     }
     function motionLabel(k) { return MOTION.filter(function (m) { return m[0] === k; })[0][1]; }
     function hasMotion(k) { return !LIVE || (ENT.motion[k] && ENT.motion[k].length); }
+    function motionImageLabel(name) {
+      var prefixes = {
+        it: "Movimento ",
+        fr: "Détecteur de mouvement — ",
+        en: "Motion detector — "
+      };
+
+      return (prefixes[LANG] || prefixes.it) + name;
+    }
     function sensChip(k) {
       var label = motionLabel(k);
-      return '<span class="sens" data-sensor="' + k + '" data-img="sensore_movimento" data-ov="mov_' + k + '" data-label="Movimento ' + label + '" data-on="0"><span class="s-ph"><img class="s-img" alt="" draggable="false"></span><i class="mdi mdi-motion-sensor"></i>' + label + PEN + "</span>";
+
+      return (
+        '<span class="sens" data-sensor="' + k +
+        '" data-img="sensore_movimento" data-ov="mov_' + k +
+        '" data-label="' + motionImageLabel(label) +
+        '" data-on="0">' +
+          '<span class="s-ph">' +
+            '<img class="s-img" alt="" draggable="false">' +
+          "</span>" +
+          '<i class="mdi mdi-motion-sensor"></i>' +
+          label +
+          PEN +
+        "</span>"
+      );
     }
     function openChip(id) {
       if (LIVE && !ENT.opens[id]) return "";
@@ -1281,7 +1303,7 @@
     function buildSecurity() {
       var mt = $("#motion-tiles");
       MOTION.filter(function (m) { return hasMotion(m[0]); }).forEach(function (m) {
-        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">Nessun movimento</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": "Movimento " + m[1], "data-on": "0" });
+        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">Nessun movimento</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
         b.addEventListener("click", function () { if (LIVE) moreInfo(availId(ENT.motion[m[0]])); else motion(m[0]); });
         mt.appendChild(b);
       });
@@ -5820,7 +5842,7 @@
     }
 
     translateClimateControlLabels();
-    
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
