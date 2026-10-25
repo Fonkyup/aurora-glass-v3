@@ -1162,10 +1162,28 @@
     }
 
     /* ------------------------------------------------------------------ costruzione interfaccia */
+    function sceneCommandLabels() {
+      var translations = {
+        it: {
+          prefix: "Scena ",
+          sending: ": invio i comandi…"
+        },
+        fr: {
+          prefix: "Scène ",
+          sending: " : envoi des commandes…"
+        },
+        en: {
+          prefix: "Scene ",
+          sending: ": sending commands…"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function buildScenes() {
       var box = $("#scenes");
       SCENES.forEach(function (sc) {
-        var b = el("button", "scene", '<img class="s-img" alt="" draggable="false"><span class="s-ico"><i class="mdi ' + sc.ic + '"></i></span><span><b>' + sc.n + "</b><small>" + sc.sub + "</small></span>" + PEN, { type: "button", "data-scene": sc.id, "data-img": sc.img, "data-label": "Scena " + sc.n, "data-on": "0" });
+        var b = el("button", "scene", '<img class="s-img" alt="" draggable="false"><span class="s-ico"><i class="mdi ' + sc.ic + '"></i></span><span><b>' + sc.n + "</b><small>" + sc.sub + "</small></span>" + PEN, { type: "button", "data-scene": sc.id, "data-img": sc.img, "data-label": sceneCommandLabels().prefix + sc.n, "data-on": "0" });
         b.style.setProperty("--s1", sc.s1); b.style.setProperty("--s2", sc.s2);
         b.addEventListener("mouseenter", function () { b.dataset.on = "1"; refreshImg(b); });
         b.addEventListener("mouseleave", function () { b.dataset.on = state.scene === sc.id ? "1" : "0"; refreshImg(b); });
@@ -1315,7 +1333,7 @@
       var r = $(".s-img", b).getBoundingClientRect();
       burst(r.left + r.width / 2, r.top + r.height / 2, sc.s1, sc.s2);
       if (!LIVE) toast(sc.msg, sc.ic, sc.s1);
-      else { toast("Scena " + sc.n + ": invio i comandi…", sc.ic, sc.s1); later(function () { sceneReport(sc, onIds, offIds, skipped); }, 3200); }
+      else { toast(sceneCommandLabels().prefix + sc.n + sceneCommandLabels().sending, sc.ic, sc.s1); later(function () { sceneReport(sc, onIds, offIds, skipped); }, 3200); }
       render();
     }
     /* il messaggio finale descrive lo stato letto da Home Assistant, non quello che speravamo */
