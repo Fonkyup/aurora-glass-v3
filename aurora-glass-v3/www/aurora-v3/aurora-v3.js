@@ -2357,21 +2357,86 @@
       t.im.onerror = function () { t.im.hidden = true; t.na.hidden = false; camMeta(t); };
       t.im.src = ep + (ep.indexOf("?") > -1 ? "&" : "?") + "_t=" + Date.now();
     }
+    function cameraMetaLabels() {
+      var translations = {
+        it: {
+          today: "oggi ",
+          lastMotion: "Ultimo movimento ",
+          loadedAt: "Immagine caricata alle ",
+          offline: "Telecamera offline",
+          unreachable: "HA non la raggiunge in questo momento",
+          noPreview: "Anteprima non disponibile",
+          openHint: "tocca per aprire la telecamera"
+        },
+        fr: {
+          today: "aujourd’hui ",
+          lastMotion: "Dernier mouvement : ",
+          loadedAt: "Image chargée à ",
+          offline: "Caméra hors ligne",
+          unreachable: "Home Assistant ne peut pas la joindre actuellement",
+          noPreview: "Aperçu indisponible",
+          openHint: "Toucher pour ouvrir la caméra"
+        },
+        en: {
+          today: "today ",
+          lastMotion: "Last motion: ",
+          loadedAt: "Image loaded at ",
+          offline: "Camera offline",
+          unreachable: "Home Assistant cannot reach it right now",
+          noPreview: "Preview unavailable",
+          openHint: "Tap to open the camera"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function camWhen(iso) {
       var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso || "");
       if (!m) return "";
       var now = new Date(), same = now.getFullYear() == m[1] && (now.getMonth() + 1) == +m[2] && now.getDate() == +m[3];
-      return (same ? "oggi " : m[3] + "/" + m[2] + " ") + m[4] + ":" + m[5];
+      return (
+        same
+          ? cameraMetaLabels().today
+          : m[3] + "/" + m[2] + " "
+      ) + m[4] + ":" + m[5];
     }
     function camOffline(t) { return !!t.c.cam && isUnavail(sv(t.c.cam)); }
     function camMeta(t) {
-      var off = camOffline(t), ok = !t.im.hidden, d = new Date(), parts = [];
-      if (t.c.kind === "motion") { var s = sv(t.c.img), w = s && camWhen(s.state); if (w) parts.push("Ultimo movimento " + w); }
-      else if (ok) parts.push("Immagine caricata alle " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()));
+      var labels = cameraMetaLabels();
+      var off = camOffline(t);
+      var ok = !t.im.hidden;
+      var d = new Date();
+      var parts = [];
+
+      if (t.c.kind === "motion") {
+        var s = sv(t.c.img);
+        var w = s && camWhen(s.state);
+
+        if (w) {
+          parts.push(labels.lastMotion + w);
+        }
+      } else if (ok) {
+        parts.push(
+          labels.loadedAt +
+          pad(d.getHours()) + ":" +
+          pad(d.getMinutes()) + ":" +
+          pad(d.getSeconds())
+        );
+      }
+
       t.meta.textContent = parts.join(" · ");
-      if (t.off) t.off.hidden = !off;
+
+      if (t.off) {
+        t.off.hidden = !off;
+      }
+
       var msg = t.na.querySelector("span");
-      if (msg) msg.innerHTML = off ? "Telecamera offline<br>HA non la raggiunge in questo momento" : "Anteprima non disponibile<br>tocca per aprire la telecamera";
+
+      if (msg) {
+        msg.innerHTML = off
+          ? labels.offline + "<br>" + labels.unreachable
+          : labels.noPreview + "<br>" + labels.openHint;
+      }
     }
     function camsStatus() { camTiles.forEach(camMeta); }
     function camLive(t, onOff) {
