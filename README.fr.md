@@ -105,7 +105,7 @@ Titre suggéré : `Luma Home`.
 
 Ouvrez le tableau de bord → crayon → menu ⋮ → Éditeur de configuration brute.
 
-Sur un nouveau tableau de bord, collez le contenu de [dashboard-esempio.yaml](aurora-glass-v3/dashboard-esempio.yaml), puis enregistrez. Sauvegardez la configuration avant de remplacer celle d’un tableau de bord existant.
+Sur un nouveau tableau de bord, collez le contenu de [Exemple de tableau de bord](luma-home/dashboard-example.fr.yaml), puis enregistrez. Sauvegardez la configuration avant de remplacer celle d’un tableau de bord existant.
 
 Les lumières restent grisées tant que vos entités ne sont pas renseignées.
 
@@ -121,13 +121,13 @@ language: fr
 
 Valeurs possibles : `fr` pour le français, `en` pour l’anglais, `it` pour l’italien. Sans option de langue, le code actuel utilise l’italien.
 
-Outils de développement → États : trouvez vos identifiants d’entités et renseignez `entities:` conformément à [scheda-esempio.yaml](aurora-glass-v3/scheda-esempio.yaml).
+Outils de développement → États : trouvez vos identifiants d’entités et renseignez `entities:` conformément à [Options de la carte](luma-home/card-example.fr.yaml).
 
 ### 6. Configurer l’énergie — facultatif
 
 Renseignez votre capteur de puissance en watts dans `energy.power`.
 
-Pour les compteurs de consommation en kWh, consultez [aurora-energia.yaml](aurora-glass-v3/aurora-energia.yaml).
+Pour les compteurs de consommation en kWh, consultez [Compteurs d’énergie](luma-home/aurora-energia.fr.yaml).
 
 Dans la vue Énergie, ouvrez le réglage du tarif et indiquez votre prix par kWh. Les coûts affichés sont des estimations calculées à partir de la consommation et du tarif renseignés.
 

@@ -105,7 +105,7 @@ Suggested title: `Luma Home`.
 
 Open the dashboard → pencil → menu ⋮ → Raw configuration editor.
 
-On a new dashboard, paste the contents of [dashboard-esempio.yaml](aurora-glass-v3/dashboard-esempio.yaml) and save. Back up the configuration before replacing an existing dashboard's contents.
+On a new dashboard, paste the contents of [Dashboard example](luma-home/dashboard-example.en.yaml) and save. Back up the configuration before replacing an existing dashboard's contents.
 
 Lights remain greyed out until you configure your own entities.
 
@@ -121,13 +121,13 @@ language: en
 
 Supported values: `fr` for French, `en` for English, and `it` for Italian. Without a language option, the current code defaults to Italian.
 
-Developer tools → States: find your entity IDs and configure `entities:` as shown in [scheda-esempio.yaml](aurora-glass-v3/scheda-esempio.yaml).
+Developer tools → States: find your entity IDs and configure `entities:` as shown in [Card options](luma-home/card-example.en.yaml).
 
 ### 6. Configure energy — optional
 
 Set your power sensor, in watts, in `energy.power`.
 
-For energy-consumption meters in kWh, see [aurora-energia.yaml](aurora-glass-v3/aurora-energia.yaml).
+For energy-consumption meters in kWh, see [Energy meters](luma-home/aurora-energia.en.yaml).
 
 In the Energy view, open the rate settings and enter your price per kWh. Displayed costs are estimates calculated from the configured consumption readings and rate.
 

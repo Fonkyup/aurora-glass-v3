@@ -1,0 +1,41 @@
+# Luma Home — unofficial derivative of Aurora Glass v3.
+# Original project: © 2026 DomotikPro.it (Luca Pinelli).
+# Translation and adaptation: Fonkyup — 2026-10-25.
+# GNU GPL version 3; see LICENSE. Original notices remain applicable.
+# Optional energy meters: daily, monthly, yearly, yesterday, previous month.
+# USE ONLY ONE VERSION of this file (IT, FR, or EN), never all three.
+# Original sensor identifiers and names are intentionally preserved.
+# Replace sensor.SENSORE_ENERGIA_KWH in all three places with your cumulative
+# total-energy sensor in kWh (not a power sensor in W).
+# Option A: copy this version to /config/packages/aurora-energia.yaml.
+# In configuration.yaml, merge this configuration into your existing section:
+# homeassistant:
+#   packages: !include_dir_named packages
+# Option B: merge utility_meter and template into configuration.yaml.
+# Do not duplicate mapping keys or create the same meters twice.
+# Check the configuration in Home Assistant before restarting.
+# These meters do not automatically reconstruct earlier history.
+
+utility_meter:
+  aurora_energia_oggi:
+    source: sensor.SENSORE_ENERGIA_KWH
+    cycle: daily
+  aurora_energia_mese:
+    source: sensor.SENSORE_ENERGIA_KWH
+    cycle: monthly
+  aurora_energia_anno:
+    source: sensor.SENSORE_ENERGIA_KWH
+    cycle: yearly
+
+template:
+  - sensor:
+      - name: Aurora energia ieri
+        unique_id: aurora_energia_ieri
+        unit_of_measurement: kWh
+        device_class: energy
+        state: "{{ state_attr('sensor.aurora_energia_oggi', 'last_period') | float(0) }}"
+      - name: Aurora energia mese scorso
+        unique_id: aurora_energia_mese_scorso
+        unit_of_measurement: kWh
+        device_class: energy
+        state: "{{ state_attr('sensor.aurora_energia_mese', 'last_period') | float(0) }}"

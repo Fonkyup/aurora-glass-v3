@@ -1,0 +1,85 @@
+# Luma Home — unofficial derivative of Aurora Glass v3.
+# Original project: © 2026 DomotikPro.it (Luca Pinelli).
+# Translation and adaptation: Fonkyup — 2026-10-25.
+# GNU GPL version 3; see LICENSE. Original notices remain applicable.
+# Full card example. Replace the example entities with your own.
+# Paste into the card YAML editor, not the dashboard root.
+# Italian keys and room: Cucina are preserved for compatibility.
+# assets below assumes a manual installation; adapt it to your installation.
+# energy belongs under entities, not at the configuration root.
+
+type: custom:aurora-v3-card
+language: en
+assets: /local/aurora-v3/btn/        # Button image folder
+
+entities:
+  # --- LIGHTS (11 rooms). light.*, switch.*, or other entities supporting on/off commands.
+  lights:
+    salotto: light.salotto
+    ingresso: light.ingresso
+    corridoio: light.corridoio
+    cucina: light.cucina
+    balcone: light.balcone
+    camera: light.camera
+    cameretta: light.cameretta
+    bagno_piccolo: light.bagno_piccolo
+    bagno_doccia: light.bagno_doccia
+    lavanderia: light.lavanderia
+    sgabuzzino: light.sgabuzzino
+
+  # --- EXTRA LIGHTS: displayed in the specified room and included in “Turn all off”.
+  extraLights:
+    - { k: strip_led, n: LED strip, id: light.strip_led, room: Cucina, ic: mdi-led-strip-variant }
+
+  # --- MOTION: one list per room; the first available sensor is used.
+  motion:
+    salotto: [binary_sensor.salotto_movimento]
+    ingresso: [binary_sensor.ingresso_movimento]
+    cucina: [binary_sensor.cucina_movimento]
+    corridoio: [binary_sensor.corridoio_movimento]
+    cameretta: [binary_sensor.cameretta_movimento]
+    lavanderia: [binary_sensor.lavanderia_movimento]
+    sgabuzzino: [binary_sensor.sgabuzzino_movimento]
+    camera: [binary_sensor.camera_movimento]
+
+  # --- DOORS AND WINDOWS (binary_sensor), lock (lock). Remove equipment you do not have.
+  opens:
+    ingresso: binary_sensor.porta_ingresso
+    balcone_salotto: binary_sensor.balcone_salotto
+    balcone_cucina: binary_sensor.balcone_cucina
+    cameretta: binary_sensor.finestra_cameretta
+    balcone_camera: binary_sensor.balcone_camera
+    bagno: binary_sensor.finestra_bagno
+    lavanderia: binary_sensor.finestra_lavanderia
+    cancello: lock.serratura_ingresso
+
+  alarm: alarm_control_panel.allarme      # Alarm control panel
+  weather: weather.forecast_home          # Outdoor temperature and weather
+  power: sensor.potenza_casa              # Instantaneous power shown on the Home page (W)
+  climate: climate.salotto                # Climate device
+
+  # --- CAMERAS (Security view), optional.
+  cameras:
+    - { n: Entrance, img: camera.ingresso_snapshot, live: camera.ingresso_live, poll: 20 }      # Preview and live view
+    - { n: Garden, kind: motion, img: image.giardino_ultimo_movimento, cam: camera.giardino, poll: 60 }  # Latest image only
+
+  # --- ENERGY (Energy view)
+  energy:
+    power: sensor.potenza_casa            # Instantaneous power in W, required for this view
+    voltage: sensor.tensione_casa         # Voltage in V, optional
+    energyTotal: sensor.energia_totale    # Total energy in kWh; state_class: total_increasing (14-day history)
+    today: sensor.aurora_energia_oggi     # Today’s energy in kWh
+    yesterday: sensor.aurora_energia_ieri
+    month: sensor.aurora_energia_mese
+    lastMonth: sensor.aurora_energia_mese_scorso
+    year: sensor.aurora_energia_anno
+    price: input_number.prezzo_energia    # Price per kWh: configurable from the card; check that this helper is available in Home Assistant.
+    priceDefault: 0.30                    # Example rate until you set your own
+    base: sensor.consumo_di_fondo         # Optional
+    avg3: sensor.potenza_media_3_ore      # Optional
+    limit: input_number.soglia_potenza    # Optional: gauge limit
+    limitDefault: 3000                    # W, used if the limit entity above is absent
+    liveRefresh: 3                        # Refresh interval in seconds; 0 disables explicit refresh requests. Useful with Shelly and similar devices.
+    appliances:                           # Optional appliances: power in W and today’s energy in kWh
+      - { n: Washing machine, p: sensor.lavatrice_potenza, e: sensor.lavatrice_energia_oggi, ic: mdi-washing-machine, c: "#38BDF8" }
+      - { n: Refrigerator, p: sensor.frigo_potenza, e: null, ic: mdi-fridge, c: "#34D399" }
