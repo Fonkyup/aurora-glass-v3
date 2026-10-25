@@ -1089,10 +1089,55 @@
     function sv(id) { return HASS && id && HASS.states[id] ? HASS.states[id] : null; }
     function availId(ids) { ids = Array.isArray(ids) ? ids : [ids]; for (var i = 0; i < ids.length; i++) { var s = sv(ids[i]); if (s && s.state !== "unavailable" && s.state !== "unknown") return ids[i]; } return ids[0]; }
     function isUnavail(s) { return !s || s.state === "unavailable" || s.state === "unknown"; }
+    function homeAssistantErrorText(error) {
+      var translations = {
+        it: {
+          prefix: "Non riuscito: ",
+          fallback: "errore di Home Assistant"
+        },
+        fr: {
+          prefix: "Échec de la commande : ",
+          fallback: "erreur de Home Assistant"
+        },
+        en: {
+          prefix: "Command failed: ",
+          fallback: "Home Assistant error"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var detail = error && error.message
+        ? error.message
+        : labels.fallback;
+
+      return labels.prefix + detail;
+    }
+
     function call(domain, service, data) {
-      if (!ctx.call) return Promise.resolve();
-      try { return Promise.resolve(ctx.call(domain, service, data)).catch(function (e) { toast("Non riuscito: " + ((e && e.message) || "errore di Home Assistant"), "mdi-alert-circle", "var(--warn)"); }); }
-      catch (e) { toast("Non riuscito: " + e.message, "mdi-alert-circle", "var(--warn)"); return Promise.resolve(); }
+      if (!ctx.call) {
+        return Promise.resolve();
+      }
+
+      try {
+        return Promise.resolve(
+          ctx.call(domain, service, data)
+        ).catch(function (e) {
+          toast(
+            homeAssistantErrorText(e),
+            "mdi-alert-circle",
+            "var(--warn)"
+          );
+        });
+      } catch (e) {
+        toast(
+          homeAssistantErrorText(e),
+          "mdi-alert-circle",
+          "var(--warn)"
+        );
+
+        return Promise.resolve();
+      }
     }
     function moreInfo(id) { if (!id) return; if (ctx.moreInfo) ctx.moreInfo(id); }
 
