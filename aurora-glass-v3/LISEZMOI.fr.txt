@@ -1,0 +1,74 @@
+AURORA GLASS v3 pour Home Assistant
+====================================
+Le tableau de bord animé : un ciel qui change selon l’heure, 10 univers, 11 effets météo,
+des boutons composés d’images et de GIF, une alarme, le climat, des caméras et le suivi de l’énergie avec des coûts en euros.
+
+GUIDE COMPLET AVEC CAPTURES D’ÉCRAN : sur la page « Guide » du site (et dans la vidéo YouTube).
+Voici un résumé en 6 étapes (environ 10 minutes).
+
+CONTENU
+  LISEZMOI.fr.txt              ce fichier, traduit en français
+  dashboard-esempio.yaml       le tableau de bord prêt à copier-coller
+  scheda-esempio.yaml          TOUTES les options de la carte, commentées
+  aurora-energia.yaml          compteurs de kWh par jour/mois/année (facultatif)
+  www/aurora-v3/aurora-v3.js    la carte (un seul fichier)
+  www/aurora-v3/btn/            50 images et GIF pour les boutons
+
+ÉTAPES
+1) COPIER LES FICHIERS
+   Place le dossier www/aurora-v3 dans le dossier www de Home Assistant
+   (avec File editor, Samba ou Studio Code Server). Résultat :
+       www/aurora-v3/aurora-v3.js
+       www/aurora-v3/btn/...
+   Dans le module File editor, le dossier de configuration s’appelle /homeassistant :
+   il s’agit du même dossier. Si le dossier www vient d’être créé, redémarre Home Assistant une fois.
+   Test : ouvre <adresse de Home Assistant>/local/aurora-v3/aurora-v3.js dans le navigateur.
+   Si du texte s’affiche, tout est en place.
+
+2) AJOUTER LA RESSOURCE
+   Profil -> activer « Mode avancé ».
+   Paramètres -> Tableaux de bord -> menu (trois points) -> Ressources -> Ajouter une ressource
+       URL :   /local/aurora-v3/aurora-v3.js?v=1
+       Type :  Module JavaScript
+   (Lors d’une mise à jour de la carte, augmente le nombre après ?v=.)
+
+3) CRÉER LE TABLEAU DE BORD
+   Paramètres -> Tableaux de bord -> Ajouter un tableau de bord -> Créer un nouveau tableau de bord à partir de zéro
+   Titre : « Aurora » ; icône : mdi:home-heart ; activer « Afficher dans la barre latérale ».
+
+4) COLLER LA CONFIGURATION DE LA CARTE
+   Ouvre le tableau de bord -> crayon -> menu -> « Éditeur de configuration brute ».
+   Efface tout et colle le contenu de dashboard-esempio.yaml -> Enregistrer.
+   Les lumières seront grisées : les noms utilisés sont des exemples.
+
+5) ASSOCIER TES ENTITÉS
+   Outils de développement -> États : recherche les noms (light., binary_sensor., ...).
+   Ajoute sous « assets: » la section « entities: » contenant tes noms d’entités
+   (consulte scheda-esempio.yaml : il contient toutes les options).
+
+6) ÉNERGIE ET TARIF (facultatif)
+   Indique ton capteur de puissance (W) dans energy.power : la vue Énergie apparaît.
+   Pour les kWh d’aujourd’hui, d’hier, du mois et de l’année, utilise aurora-energia.yaml.
+   Dans la vue Énergie, touche la barre « Tarif » et indique le prix que tu paies pour un kWh
+   (ou calcule-le à partir de la facture : montant total à payer / kWh).
+   Dès lors, chaque coût est calculé ainsi : kWh × tarif.
+
+EN CAS DE PROBLÈME
+ - Carte rouge « Custom element doesn't exist » : vérifie la ressource et recharge avec Ctrl+F5.
+ - Images vides : « assets » doit être /local/aurora-v3/btn/ (avec la barre oblique finale).
+ - Lumières grisées : le nom de l’entité n’existe pas ou l’appareil est hors ligne.
+ - Coûts à zéro : touche la barre Tarif.
+
+CONFIDENTIALITÉ
+ Tout fonctionne localement. Les seules requêtes externes concernent les polices Google (Manrope, Sora).
+ Aucune donnée n’est collectée ni envoyée.
+
+DÉSINSTALLATION
+ Supprime le tableau de bord « Aurora », la ressource et le dossier www/aurora-v3.
+ Rien d’autre n’est modifié.
+
+Aurora Glass v3 — gratuit pour un usage personnel, à utiliser sans modification
+(les fichiers YAML d’exemple peuvent être modifiés).
+Licence GPL-3.0 : tu peux utiliser, modifier et partager la carte, y compris à des fins
+commerciales, à condition que les versions modifiées restent sous GPL-3.0, avec le code
+source et un nom différent de « Aurora Glass ». Voir LICENSE.
