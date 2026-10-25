@@ -1,134 +1,177 @@
+# Luma Home — Tableau de bord multilingue pour Home Assistant
 
-# Aurora Glass v3 — Tableau de bord animé pour Home Assistant
+[English](README.md) | [Français](README.fr.md) | [Italiano](README.it.md)
 
-🇬🇧 [Read in english](README.md) · 🇮🇹 [Leggi in italiano](README.it.md)
+Version dérivée non officielle d’Aurora Glass v3, adaptée par Fonkyup avec une interface en français, en anglais et en italien.
 
-![Aurora Glass v3](docs/dashboard-casa-notte-intera.webp)
+> État du renommage : Luma Home est le nom public retenu pour cette documentation. Les instructions ci-dessous conservent les noms techniques actuels (`aurora-v3.js`, `custom:aurora-v3-card` et les dossiers existants). Ne les remplacez pas par `luma-home.js` ou `custom:luma-home-card` tant que le code et les fichiers distribués n’ont pas été migrés ensemble.
 
-Une seule carte personnalisée qui transforme le tableau de bord de Home Assistant en une scène vivante : le ciel, le soleil, la lune et les fenêtres de la petite maison suivent l’heure réelle. Dix univers animés, onze effets météo, des boutons utilisant des images et des GIF, une alarme, le contrôle de la climatisation et du chauffage, des caméras et un suivi de l’énergie avec les coûts en euros calculés selon votre tarif.
+![Interface héritée d’Aurora Glass v3, projet d’origine](docs/dashboard-casa-notte-intera.webp)
 
-- Démonstration en ligne, sans rien installer (en italien) : https://domotikpro.it/aurora-glass-v3-demo/index.html
-- Guide complet avec captures d’écran (en italien) : https://domotikpro.it/progetti/aurora-glass-v3
-- Vidéos pas à pas (en italien): https://www.youtube.com/@domotikproit
+Une carte personnalisée qui transforme le tableau de bord de Home Assistant en une scène vivante : le ciel, le soleil, la lune et les fenêtres de la petite maison suivent l’heure réelle. Dix univers animés, onze effets météo, des boutons composés d’images et de GIF, une alarme, le contrôle du climat, des caméras et une vue Énergie calculant les coûts selon votre tarif.
+
+## Origine et contributions
+
+Cette version repose sur Aurora Glass v3, créé par DomotikPro.it (Luca Pinelli).
+
+Mention originale conservée : © 2026 DomotikPro.it (Luca Pinelli).
+
+Adaptation et traductions : Fonkyup.
+
+Travail réalisé jusqu’au 25 octobre 2026 :
+- ajout des traductions française et anglaise de l’interface ;
+- adaptation des textes et messages dynamiques ;
+- traduction française et anglaise du guide d’installation ;
+- ajout de cette documentation et clarification de la provenance de la version dérivée.
+
+L’italien du projet original est conservé. Cette version n’est ni une publication officielle ni une version présentée comme approuvée par DomotikPro.it ou Luca Pinelli.
+
+Les captures ci-dessous proviennent du projet d’origine ; elles ne constituent pas une validation visuelle de toutes les traductions.
 
 | Tablette | Énergie | Téléphone |
 |---|---|---|
 | ![Tablette](docs/tablet-casa-tramonto.webp) | ![Énergie](docs/energia-vista.webp) | ![Téléphone](docs/mobile-casa-notte-sm.webp) |
 
+## Ressources du projet original
+
+Ces liens concernent Aurora Glass v3, pas nécessairement la version traduite :
+- Démonstration originale, en italien : https://domotikpro.it/aurora-glass-v3-demo/index.html
+- Guide illustré original, en italien : https://domotikpro.it/progetti/aurora-glass-v3
+- Vidéos de l’auteur original, en italien : https://www.youtube.com/@domotikproit
+- Dépôt original : https://github.com/lucalux00/aurora-glass-v3
+
 ## Fonctionnalités
 
-- 10 univers animés et 11 effets météo : pluie, neige, orage, lucioles, pétales, feux…
-- Un ciel qui suit l’heure réelle.
-- 50 images et GIF prêts à utiliser pour les boutons : éclairage, scènes, capteurs, alarme et contrôle de la climatisation et du chauffage.
-- Panneau d’alarme, contrôle de la climatisation et du chauffage, caméras.
-- Vue Énergie : puissance, consommation en kWh pour aujourd’hui, hier, le mois et l’année, avec un coût calculé ainsi : kWh × votre tarif.
-- Un seul fichier JavaScript, aucune compilation et aucun service cloud.
-- **Confidentialité :** tout fonctionne localement. Les seules requêtes externes concernent les polices Google Fonts, Manrope et Sora. Aucune donnée n’est collectée ni transmise.
+Fonctionnalités héritées du projet original :
+- 10 univers animés et 11 effets météo : pluie, neige, orage, lucioles, pétales, feux d’artifice…
+- Ciel suivant l’heure réelle.
+- 50 images et GIF prêts à utiliser pour les boutons : éclairage, scènes, capteurs, alarme et climat.
+- Panneau d’alarme, contrôle du climat et caméras.
+- Vue Énergie : puissance, consommation en kWh d’aujourd’hui, d’hier, du mois et de l’année ; coût calculé par kWh × tarif.
+- Carte distribuée sous la forme d’un fichier JavaScript, sans compilation nécessaire pour l’installation.
 
-## Installation — environ 10 minutes
+Ajout de cette version : sélection de la langue de l’interface par `language: fr`, `language: en` ou `language: it`.
 
-Les instructions commentées se trouvent dans [`aurora-glass-v3/LEGGIMI.txt`](aurora-glass-v3/LEGGIMI.txt).
+## Confidentialité et connexions
 
-Voici les étapes principales.
+Selon la documentation originale, la carte fonctionne localement et charge les polices Google Fonts Manrope et Sora par une requête externe. L’auteur indique qu’aucune donnée n’est collectée ni envoyée par la carte.
 
-### Avec HACS
+Cette description n’est pas un audit de sécurité ou du trafic réseau. Les intégrations Home Assistant utilisées pour vos appareils peuvent avoir leurs propres connexions externes.
 
-HACS copie la carte et les images, puis ajoute automatiquement la ressource.
+## Installation de cette version
 
-HACS → ⋮ → Dépôts personnalisés → ajoutez `https://github.com/lucalux00/aurora-glass-v3`, de type Tableau de bord → recherchez Aurora Glass v3 → Télécharger → rechargez le navigateur, puis passez à l’étape 3.
+Les chemins ci-dessous correspondent à l’organisation actuelle des fichiers, avant leur éventuel renommage technique.
 
-Sans HACS, commencez par les étapes 1 et 2.
+Le guide d’origine se trouve dans [LEGGIMI.txt](aurora-glass-v3/LEGGIMI.txt). Les commentaires des exemples YAML peuvent rester en italien.
 
-### Étapes d’installation
+### À propos de HACS
 
-1. Copiez les fichiers.
+La procédure HACS du projet original utilise `lucalux00/aurora-glass-v3` : elle installe la version originale, pas cette adaptation.
 
-   Placez le dossier `aurora-glass-v3/www/aurora-v3` dans le dossier `www` de Home Assistant à l’aide de File editor, Samba ou Studio Code Server.
+La procédure HACS propre à cette version dérivée reste à valider. En attendant, utilisez l’installation manuelle ci-dessous et les fichiers de la branche contenant les traductions.
 
-   Vous devez obtenir :
+### 1. Copier les fichiers
 
-   - `www/aurora-v3/aurora-v3.js`
-   - `www/aurora-v3/btn/…`
+Copiez le dossier `aurora-glass-v3/www/aurora-v3` dans le dossier `www` de votre configuration Home Assistant avec File editor, Samba ou Studio Code Server.
 
-   Dans l’application File editor, le dossier de configuration porte le nom `/homeassistant` : il s’agit du même dossier.
+Vous devez obtenir :
 
-   Si vous venez de créer le dossier `www`, redémarrez Home Assistant une fois.
+```text
+www/aurora-v3/aurora-v3.js
+www/aurora-v3/btn/…
+```
 
-   Pour vérifier, ouvrez `/local/aurora-v3/aurora-v3.js` dans le navigateur de votre instance Home Assistant : si du texte s’affiche, les fichiers sont accessibles.
+Si vous venez de créer le dossier `www`, redémarrez Home Assistant une fois.
 
-2. Ajoutez la ressource.
+Ouvrez `<adresse de Home Assistant>/local/aurora-v3/aurora-v3.js` dans le navigateur : du texte JavaScript doit s’afficher.
 
-   Dans votre profil, activez le Mode avancé.
+### 2. Ajouter la ressource
 
-   Paramètres → Tableaux de bord → ⋮ → Ressources → Ajouter une ressource :
+Dans votre profil, activez le Mode avancé.
 
-   - URL : `/local/aurora-v3/aurora-v3.js?v=1`
-   - Type : Module JavaScript
+Paramètres → Tableaux de bord → menu ⋮ → Ressources → Ajouter une ressource :
+- URL : `/local/aurora-v3/aurora-v3.js?v=1`
+- Type : Module JavaScript.
 
-   Lorsque vous mettez la carte à jour, augmentez le nombre après `?v=`.
+Augmentez le nombre après `?v=` lors des mises à jour. Si une ancienne installation existe, vérifiez les ressources avant d’en ajouter une autre pour éviter de charger deux versions de la même carte.
 
-3. Créez le tableau de bord.
+### 3. Créer le tableau de bord
 
-   Paramètres → Tableaux de bord → Ajouter un tableau de bord → Nouveau tableau de bord à partir de zéro.
+Paramètres → Tableaux de bord → Ajouter un tableau de bord → Nouveau tableau de bord à partir de zéro.
 
-4. Collez la configuration du tableau de bord.
+Titre suggéré : `Luma Home`.
 
-   Ouvrez le tableau de bord → icône de crayon → ⋮ → Éditeur de configuration brute.
+### 4. Coller la configuration
 
-   Supprimez le contenu existant, puis collez le contenu de [`dashboard-esempio.yaml`](aurora-glass-v3/dashboard-esempio.yaml) et enregistrez.
+Ouvrez le tableau de bord → crayon → menu ⋮ → Éditeur de configuration brute.
 
-   Les lumières resteront grises tant que vous n’aurez pas indiqué vos propres entités.
+Sur un nouveau tableau de bord, collez le contenu de [dashboard-esempio.yaml](aurora-glass-v3/dashboard-esempio.yaml), puis enregistrez. Sauvegardez la configuration avant de remplacer celle d’un tableau de bord existant.
 
-5. Associez vos entités.
+Les lumières restent grisées tant que vos entités ne sont pas renseignées.
 
-   Dans Outils de développement → États, recherchez les noms de vos entités, par exemple `light.` ou `binary_sensor.`.
+### 5. Choisir la langue et associer les entités
 
-   Ajoutez-les sous `entities:`, comme dans [`scheda-esempio.yaml`](aurora-glass-v3/scheda-esempio.yaml), qui présente toutes les options avec des commentaires.
+Dans la configuration de la carte, conservez ses autres options et ajoutez la langue au même niveau que `type` et `assets` :
 
-6. Configurez l’énergie et le tarif — facultatif.
+```yaml
+type: custom:aurora-v3-card
+assets: /local/aurora-v3/btn/
+language: fr
+```
 
-   Indiquez votre capteur de puissance, en watts, dans `energy.power`.
+Valeurs possibles : `fr` pour le français, `en` pour l’anglais, `it` pour l’italien. Sans option de langue, le code actuel utilise l’italien.
 
-   Pour la consommation en kWh d’aujourd’hui, du mois et de l’année, utilisez [`aurora-energia.yaml`](aurora-glass-v3/aurora-energia.yaml).
+Outils de développement → États : trouvez vos identifiants d’entités et renseignez `entities:` conformément à [scheda-esempio.yaml](aurora-glass-v3/scheda-esempio.yaml).
 
-   Dans la vue Énergie, appuyez sur la barre Tarif, puis saisissez le prix que vous payez pour un kWh.
+### 6. Configurer l’énergie — facultatif
 
-   Vous pouvez aussi le calculer à partir de votre facture :
+Renseignez votre capteur de puissance en watts dans `energy.power`.
 
-   Prix par kWh = montant total à payer ÷ consommation en kWh.
+Pour les compteurs de consommation en kWh, consultez [aurora-energia.yaml](aurora-glass-v3/aurora-energia.yaml).
 
-L’identifiant de la carte est `custom:aurora-v3-card`.
+Dans la vue Énergie, ouvrez le réglage du tarif et indiquez votre prix par kWh. Les coûts affichés sont des estimations calculées à partir de la consommation et du tarif renseignés.
 
 ## Dépannage
 
-- Carte rouge avec le message « Custom element doesn't exist » : vérifiez la ressource et rechargez la page avec Ctrl+F5.
-- Images absentes : la valeur de `assets` doit être `/local/aurora-v3/btn/`, avec la barre oblique finale.
-- Lumières grises : le nom de l’entité n’existe pas ou l’appareil est hors ligne.
-- Coûts à zéro : appuyez sur la barre Tarif et définissez le prix par kWh.
+- Message « Custom element doesn't exist » : vérifiez l’URL de la ressource et le type `custom:aurora-v3-card`, puis rechargez complètement la page.
+- Images absentes : vérifiez que `assets` vaut `/local/aurora-v3/btn/`, avec la barre oblique finale.
+- Lumières grisées : vérifiez l’identifiant de l’entité et sa disponibilité dans Home Assistant.
+- Coûts à zéro : définissez le tarif et vérifiez les capteurs de consommation.
+- Langue incorrecte : vérifiez `language: fr`, `language: en` ou `language: it`, ainsi que la version du JavaScript réellement chargée.
+- Textes anciens après mise à jour : augmentez le paramètre `?v=` de la ressource et rechargez le navigateur.
 
 ## Désinstallation
 
-Supprimez le tableau de bord, la ressource et le dossier `www/aurora-v3`.
+Supprimez le tableau de bord concerné, sa ressource si elle n’est pas utilisée ailleurs, puis le dossier `www/aurora-v3` si aucune autre installation ne l’utilise.
 
-Aucun autre élément n’est modifié.
+Cette suppression ne décrit pas l’effacement des préférences stockées dans le navigateur ni le retrait des capteurs d’énergie ajoutés séparément.
 
-## État du projet
+## État et limites
 
-Version 3, testée par l’auteur sur Home Assistant 2026.9.
+L’interface française et anglaise a été vérifiée visuellement par le mainteneur. Tous les messages rares et tous les parcours ne sont pas nécessairement validés.
 
-Les signalements et les suggestions sont les bienvenus : ouvrez une issue.
+Le README d’origine indique qu’Aurora Glass v3 a été testé par son auteur sur Home Assistant 2026.9. Cette indication ne constitue pas une certification de cette version dérivée.
 
-## Licence
+Pour un signalement sur cette adaptation, ouvrez une issue dans le dépôt où cette version est publiée, en précisant la langue, la version chargée et les étapes de reproduction.
 
-[GPL-3.0](LICENSE).
+## Licence et attribution
 
-Vous pouvez utiliser, étudier, modifier et partager la carte, y compris à des fins commerciales, à condition que toute version modifiée que vous distribuez reste sous licence GPL-3.0, soit accompagnée de son code source et conserve la mention originale :
+Le logiciel dérivé est distribué sous [GNU GPL version 3](LICENSE).
 
-© 2026 DomotikPro.it (Luca Pinelli).
+Vous pouvez utiliser, étudier, modifier et redistribuer le logiciel, y compris à des fins commerciales, sous réserve des conditions de la licence. Les versions dérivées distribuées doivent notamment conserver les notices applicables, identifier les modifications et leur date, et respecter les obligations de licence et de fourniture du code source correspondant.
 
-Le nom « Aurora Glass » et la marque DomotikPro.it ne sont pas couverts par la licence : une version modifiée doit utiliser un nom différent.
+Mention originale conservée : © 2026 DomotikPro.it (Luca Pinelli).
+
+Les contributions de Fonkyup ne remplacent pas les droits et les crédits du projet d’origine. Les éventuelles conditions propres aux composants tiers restent applicables.
+
+Le nom Aurora Glass et la marque DomotikPro.it sont cités pour identifier le projet d’origine. Aucun droit de marque ni aucune approbation n’est revendiqué. Le nom public de cette version dérivée est Luma Home.
+
+Le logiciel est fourni sans garantie, dans les limites de la licence et du droit applicable. Le texte intégral de LICENSE fait référence ; cette section n’en est qu’un résumé.
+
+Le texte du fichier LICENSE doit être conservé sans modification. Les notices de projet et de contribution figurent dans la documentation et les fichiers source, pas à l’intérieur du texte de la GPL.
 
 ---
 
-Réalisé par [DomotikPro.it](https://domotikpro.it) — des guides pratiques pour une maison connectée fiable.
-```
+Projet d’origine : [DomotikPro.it](https://domotikpro.it) — Luca Pinelli.
+
+Adaptation multilingue non officielle : Fonkyup.
