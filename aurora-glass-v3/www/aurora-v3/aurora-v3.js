@@ -1787,7 +1787,53 @@
       var labels = translations[LANG] || translations.it;
 
       return labels[group[1]] || group[0];
-    }    
+    }
+    function imageLibraryName(key) {
+      var names = {
+        lucesalotto: ["Salon", "Living room"],
+        luceingresso: ["Entrée", "Entrance"],
+        lucecorridoio: ["Couloir", "Hallway"],
+        lucecucina: ["Cuisine", "Kitchen"],
+        lucebalcone: ["Balcon", "Balcony"],
+        lucecamera: ["Chambre", "Bedroom"],
+        lucecameretta: ["Chambre d’enfant", "Child’s bedroom"],
+        lucebagnopiccolo: ["Petite salle de bain", "Small bathroom"],
+        lucebagnodoccia: ["Douche", "Shower"],
+        lucelavanderia: ["Salle de lavage", "Laundry room"],
+        lucesgabuzzino: ["Rangement", "Storage"],
+
+        scenabuongiorno: ["Bonjour", "Good morning"],
+        scenacinema: ["Cinéma", "Cinema"],
+        scenacena: ["Repas", "Dinner"],
+        scenanotte: ["Bonne nuit", "Good night"],
+        scenaesco: ["Départ", "Leaving"],
+
+        sensoremovimento: ["Mouvement", "Motion"],
+        sensoreporta: ["Porte", "Door"],
+        sensorefinestra: ["Fenêtre", "Window"],
+        sensorecancello: ["Serrure", "Lock"],
+
+        allarmeoff: ["Désactivée", "Disarmed"],
+        allarmenotte: ["Nuit", "Night"],
+        allarmefuori: ["Absence", "Away"],
+        allarmescattato: ["Déclenchée", "Triggered"],
+
+        climaoff: ["Arrêt", "Off"],
+        climacool: ["Climatisation", "Cooling"],
+        climaheat: ["Chauffage", "Heating"],
+        climadry: ["Déshumidification", "Dehumidification"],
+        climafan: ["Ventilation", "Fan"],
+        climaauto: ["Automatique", "Automatic"]
+      };
+
+      var index = LANG === "fr" ? 0 : LANG === "en" ? 1 : -1;
+
+      if (index !== -1 && names[key]) {
+        return names[key][index];
+      }
+
+      return LIBNAMES[key] || key;
+    }        
     function renderEditor() {
       var slotLabels = imageSlotLabels();
       var b = IMG[edBase], slots = $("#ed-slots");
@@ -1804,7 +1850,7 @@
       LIBGROUPS.forEach(function (g2, i) { var t = el("button", "", imageLibraryGroupLabel(g2), { type: "button", "aria-pressed": i === edTab ? "true" : "false" }); t.addEventListener("click", function () { edTab = i; renderEditor(); }); tabs.appendChild(t); });
       var lib = $("#lib"); lib.innerHTML = "";
       Object.keys(IMG).filter(function (k) { return k.indexOf(LIBGROUPS[edTab][1]) === 0; }).forEach(function (k) {
-        var it = IMG[k], c = el("button", "", '<img alt="" src="' + (it.kind === "pair" ? it.off : it.src) + '"><span>' + LIBNAMES[k] + "</span>", { type: "button", title: LIBNAMES[k] });
+        var it = IMG[k], c = el("button", "", '<img alt="" src="' + (it.kind === "pair" ? it.off : it.src) + '"><span>' + imageLibraryName(k) + "</span>", { type: "button", title: imageLibraryName(k) });
         if (it.kind === "pair") { c.addEventListener("mouseenter", function () { $("img", c).src = it.on; }); c.addEventListener("mouseleave", function () { $("img", c).src = it.off; }); }
         c.addEventListener("click", function () { applyLib(k); });
         lib.appendChild(c);
@@ -1847,7 +1893,7 @@
     function applyLib(k) {
       var it = IMG[k], b = IMG[edBase];
       if (b.kind === "pair") OV[edOv] = { off: it.off || it.src, on: it.on || it.src }; else OV[edOv] = { src: it.on || it.src };
-      saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().appliedBefore + LIBNAMES[k] + imageSaveLabels().appliedAfter, "mdi-image-check", "var(--ok)");
+      saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().appliedBefore + imageLibraryName(k) + imageSaveLabels().appliedAfter, "mdi-image-check", "var(--ok)");
     }
     $("#ed-reset").addEventListener("click", function () { delete OV[edOv]; saveOV(); refreshAll(); renderEditor(); toast(imageSaveLabels().restored,"mdi-restore","var(--acc-text)"); });
     $("#ed-done").addEventListener("click", closeEditor); $("#ed-close").addEventListener("click", closeEditor);
