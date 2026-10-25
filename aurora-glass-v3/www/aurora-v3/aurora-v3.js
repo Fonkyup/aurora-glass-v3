@@ -5931,6 +5931,65 @@
 
     translateViewAccessibilityLabels();
 
+    function translateDemoCameraLabels() {
+      if (LIVE) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          names: {
+            Ingresso: "Ingresso",
+            Giardino: "Giardino"
+          },
+          badge: "DEMO",
+          badgeHint: "Anteprima simulata: nessun flusso video reale"
+        },
+        fr: {
+          names: {
+            Ingresso: "Entrée",
+            Giardino: "Jardin"
+          },
+          badge: "DÉMO",
+          badgeHint: "Aperçu simulé : aucun flux vidéo réel"
+        },
+        en: {
+          names: {
+            Ingresso: "Entrance",
+            Giardino: "Garden"
+          },
+          badge: "DEMO",
+          badgeHint: "Simulated preview: no real video stream"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var headings = ROOT.querySelectorAll("#cams .cam > h4");
+
+      Array.prototype.forEach.call(headings, function (heading) {
+        var originalName = heading.textContent.trim();
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            labels.names,
+            originalName
+          )
+        ) {
+          heading.textContent = labels.names[originalName];
+        }
+      });
+
+      var badges = ROOT.querySelectorAll("#cams .feed .live");
+
+      Array.prototype.forEach.call(badges, function (badge) {
+        badge.textContent = labels.badge;
+        badge.setAttribute("title", labels.badgeHint);
+        badge.setAttribute("aria-label", labels.badgeHint);
+      });
+    }
+
+    translateDemoCameraLabels();    
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
