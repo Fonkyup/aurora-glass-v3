@@ -1759,6 +1759,35 @@
         "</div>"
       );
     }
+    function imageLibraryGroupLabel(group) {
+      var translations = {
+        it: {
+          luce: "Luci",
+          scena: "Scene",
+          sensore: "Sensori",
+          allarme: "Allarme",
+          clima: "Clima"
+        },
+        fr: {
+          luce: "Éclairage",
+          scena: "Scènes",
+          sensore: "Capteurs",
+          allarme: "Alarme",
+          clima: "Climat"
+        },
+        en: {
+          luce: "Lights",
+          scena: "Scenes",
+          sensore: "Sensors",
+          allarme: "Alarm",
+          clima: "Climate"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      return labels[group[1]] || group[0];
+    }    
     function renderEditor() {
       var slotLabels = imageSlotLabels();
       var b = IMG[edBase], slots = $("#ed-slots");
@@ -1772,7 +1801,7 @@
         d.addEventListener("drop", function (e) { e.preventDefault(); d.classList.remove("over"); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0], slot); });
       });
       var tabs = $("#lib-tabs"); tabs.innerHTML = "";
-      LIBGROUPS.forEach(function (g2, i) { var t = el("button", "", g2[0], { type: "button", "aria-pressed": i === edTab ? "true" : "false" }); t.addEventListener("click", function () { edTab = i; renderEditor(); }); tabs.appendChild(t); });
+      LIBGROUPS.forEach(function (g2, i) { var t = el("button", "", imageLibraryGroupLabel(g2), { type: "button", "aria-pressed": i === edTab ? "true" : "false" }); t.addEventListener("click", function () { edTab = i; renderEditor(); }); tabs.appendChild(t); });
       var lib = $("#lib"); lib.innerHTML = "";
       Object.keys(IMG).filter(function (k) { return k.indexOf(LIBGROUPS[edTab][1]) === 0; }).forEach(function (k) {
         var it = IMG[k], c = el("button", "", '<img alt="" src="' + (it.kind === "pair" ? it.off : it.src) + '"><span>' + LIBNAMES[k] + "</span>", { type: "button", title: LIBNAMES[k] });
