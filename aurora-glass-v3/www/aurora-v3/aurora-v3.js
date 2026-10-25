@@ -5095,7 +5095,47 @@
     }
 
     translateImageEditorStaticLabels();
-    
+
+    function translateEditBannerLabels() {
+      var translations = {
+        it: {
+          instruction: "Modalità modifica: tocca un pulsante per cambiargli immagine o GIF",
+          done: "Fine",
+          exit: "Esci dalla modalità modifica"
+        },
+        fr: {
+          instruction: "Mode modification : touche un élément pour changer son image ou son GIF",
+          done: "Terminer",
+          exit: "Quitter le mode modification"
+        },
+        en: {
+          instruction: "Edit mode: tap an item to change its image or GIF",
+          done: "Done",
+          exit: "Exit edit mode"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var instruction = ROOT.querySelector(
+        "#edit-banner .in > span"
+      );
+
+      if (instruction) {
+        instruction.textContent = labels.instruction;
+      }
+
+      var doneButton = ROOT.querySelector("#edit-done");
+
+      if (doneButton) {
+        doneButton.textContent = labels.done;
+        doneButton.setAttribute("aria-label", labels.exit);
+        doneButton.setAttribute("title", labels.exit);
+      }
+    }
+
+    translateEditBannerLabels();
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
