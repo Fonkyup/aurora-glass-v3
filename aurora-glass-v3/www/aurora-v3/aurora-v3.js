@@ -1707,8 +1707,39 @@
 
       return translations[LANG] || translations.it;
     }
+    function allLightsOffWarningLabels() {
+      var translations = {
+        it: {
+          stillOnOne: " luce è ancora accesa",
+          stillOnMany: " luci sono ancora accese",
+          unreachableOne: " non raggiungibile",
+          unreachableMany: " non raggiungibili",
+          unknownOne: " luce non risponde: non so se sia spenta",
+          unknownMany: " luci non rispondono: non so se siano spente"
+        },
+        fr: {
+          stillOnOne: " lumière est encore allumée",
+          stillOnMany: " lumières sont encore allumées",
+          unreachableOne: " lumière injoignable",
+          unreachableMany: " lumières injoignables",
+          unknownOne: " lumière injoignable : extinction non confirmée",
+          unknownMany: " lumières injoignables : extinction non confirmée"
+        },
+        en: {
+          stillOnOne: " light is still on",
+          stillOnMany: " lights are still on",
+          unreachableOne: " light unreachable",
+          unreachableMany: " lights unreachable",
+          unknownOne: " light unreachable: turn-off not confirmed",
+          unknownMany: " lights unreachable: turn-off not confirmed"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     $("#dock-off").addEventListener("click", function (e) {
-      var offLabels = allLightsOffLabels();      
+      var offLabels = allLightsOffLabels();
+      var offWarningLabels = allLightsOffWarningLabels();      
       var r = e.currentTarget.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + 10, "#A5B4FC", "#67E8F9");
       Object.keys(state.lights).forEach(function (k) { state.lights[k] = false; }); state.scene = null;
       if (!LIVE) { toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--acc-text)"); render(); return; }
@@ -1734,9 +1765,44 @@
         later(function () {
           syncLights(); render();
           var on = ids.filter(function (id) { var s = sv(id); return s && s.state === "on"; }).length, na = ids.filter(function (id) { return isUnavail(sv(id)); }).length;
-          if (on) toast(on + (on === 1 ? " luce è ancora accesa" : " luci sono ancora accese") + (na ? " · " + na + (na === 1 ? " non raggiungibile" : " non raggiungibili") : ""), "mdi-alert-circle", "var(--warn)");
-          else if (na) toast(na + (na === 1 ? " luce non risponde: non so se sia spenta" : " luci non rispondono: non so se siano spente"), "mdi-alert-circle", "var(--warn)");
-          else toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--ok)");
+          if (on) {
+            var warningText =
+              on +
+              (
+                on === 1
+                  ? offWarningLabels.stillOnOne
+                  : offWarningLabels.stillOnMany
+              );
+
+            if (na) {
+              warningText +=
+                " · " +
+                na +
+                (
+                  na === 1
+                    ? offWarningLabels.unreachableOne
+                    : offWarningLabels.unreachableMany
+                );
+            }
+
+            toast(
+              warningText,
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+          } else if (na) {
+            toast(
+              na +
+              (
+                na === 1
+                  ? offWarningLabels.unknownOne
+                  : offWarningLabels.unknownMany
+              ),
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+          }
+          else toast("offLabels.complete", "mdi-lightbulb-off-outline", "var(--ok)");
         }, 3500);
       }, 3000);
       render();
