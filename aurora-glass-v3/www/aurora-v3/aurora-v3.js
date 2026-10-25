@@ -2375,18 +2375,102 @@
     }
     function camsStatus() { camTiles.forEach(camMeta); }
     function camLive(t, onOff) {
-      if (!t.c.live || !window.loadCardHelpers) return;
+      if (!t.c.live || !window.loadCardHelpers) {
+        return;
+      }
+
+      var translations = {
+        it: {
+          live: "Diretta",
+          start: "Avvia la diretta",
+          stop: "Stop",
+          stopAction: "Interrompi la diretta",
+          unavailable: "Diretta non disponibile"
+        },
+        fr: {
+          live: "Direct",
+          start: "Ouvrir le direct",
+          stop: "Arrêter",
+          stopAction: "Arrêter le direct",
+          unavailable: "Direct indisponible"
+        },
+        en: {
+          live: "Live",
+          start: "Open live view",
+          stop: "Stop",
+          stopAction: "Stop live view",
+          unavailable: "Live view unavailable"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      function updateLiveButton(active) {
+        var text = t.bLive.querySelector("span");
+        var actionLabel = active
+          ? labels.stopAction
+          : labels.start;
+
+        if (text) {
+          text.textContent = active
+            ? labels.stop
+            : labels.live;
+        }
+
+        t.bLive.setAttribute("title", actionLabel);
+        t.bLive.setAttribute("aria-label", actionLabel);
+      }
+
       clearTimeout(t.timer);
+
       if (onOff) {
         window.loadCardHelpers().then(function (h) {
-          try { var e = h.createCardElement({ type: "picture-entity", entity: t.c.live, camera_view: "live", show_name: false, show_state: false }); e.hass = HASS; t.liveBox.innerHTML = ""; t.liveBox.appendChild(e); t.liveEl = e; }
-          catch (err) { toast("Diretta non disponibile", "mdi-alert-circle", "var(--warn)"); return; }
-          t.liveBox.hidden = false; t.im.hidden = true; t.na.hidden = true; t.bLive.classList.add("on"); t.bLive.querySelector("span").textContent = "Stop";
-          t.timer = setTimeout(function () { camLive(t, false); }, 120000);
+          try {
+            var e = h.createCardElement({
+              type: "picture-entity",
+              entity: t.c.live,
+              camera_view: "live",
+              show_name: false,
+              show_state: false
+            });
+
+            e.hass = HASS;
+            t.liveBox.innerHTML = "";
+            t.liveBox.appendChild(e);
+            t.liveEl = e;
+          } catch (err) {
+            toast(
+              labels.unavailable,
+              "mdi-alert-circle",
+              "var(--warn)"
+            );
+            return;
+          }
+
+          t.liveBox.hidden = false;
+          t.im.hidden = true;
+          t.na.hidden = true;
+          t.bLive.classList.add("on");
+
+          updateLiveButton(true);
+
+          t.timer = setTimeout(function () {
+            camLive(t, false);
+          }, 120000);
         });
       } else {
-        if (t.liveEl) { t.liveBox.innerHTML = ""; t.liveEl = null; }
-        t.liveBox.hidden = true; t.bLive.classList.remove("on"); t.bLive.querySelector("span").textContent = "Diretta"; t.im.hidden = false; camRefresh(t);
+        if (t.liveEl) {
+          t.liveBox.innerHTML = "";
+          t.liveEl = null;
+        }
+
+        t.liveBox.hidden = true;
+        t.bLive.classList.remove("on");
+
+        updateLiveButton(false);
+
+        t.im.hidden = false;
+        camRefresh(t);
       }
     }
     function camsStopAll() { camTiles.forEach(function (t) { if (t.liveEl) camLive(t, false); }); }
@@ -2441,6 +2525,17 @@
         if (liveText) {
           liveText.textContent = labels.live;
         }
+
+        var startLabels = {
+          it: "Avvia la diretta",
+          fr: "Ouvrir le direct",
+          en: "Open live view"
+        };
+
+        var startLabel = startLabels[LANG] || startLabels.it;
+
+        liveButton.setAttribute("title", startLabel);
+        liveButton.setAttribute("aria-label", startLabel);
       }
 
       var offlineLabel = card.querySelector(".cam-off");
