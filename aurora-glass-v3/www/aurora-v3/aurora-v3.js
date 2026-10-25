@@ -4919,7 +4919,7 @@
 
 
 
-    function translateEnergyStaticLabels() {
+    function translateEnergyStaticOverrides() {
       var translations = {
         it: {
           power: "Potenza adesso",
@@ -5017,7 +5017,7 @@
       });
     }
 
-    translateEnergyStaticLabels();
+    translateEnergyStaticOverrides();
     function translateImageEditorStaticLabels() {
       var translations = {
         it: {
@@ -5135,7 +5135,7 @@
     }
 
     translateEditBannerLabels();
-        
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
