@@ -6247,6 +6247,10 @@
   }
   if (!customElements.get("aurora-v3-card")) customElements.define("aurora-v3-card", AuroraV3Card);
   window.customCards = window.customCards || [];
-  window.customCards.push({ type: "aurora-v3-card", name: "Aurora Glass v3", description: "Dashboard animata: mondi, effetti meteo e pulsanti fatti di immagini e GIF." });
+    window.customCards.push({
+    type: "aurora-v3-card",
+    name: "Aurora Glass v3",
+    description: "Tableau de bord animé · Animated dashboard · Dashboard animata — Images, GIF & effets / effects / effetti."
+  });
   console.info("%c AURORA GLASS v3 %c scheda caricata ", "background:#7C5CFF;color:#fff;border-radius:4px 0 0 4px;padding:2px 6px", "background:#1b1740;color:#fff;border-radius:0 4px 4px 0;padding:2px 6px");
 })();
