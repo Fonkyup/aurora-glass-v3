@@ -2712,7 +2712,16 @@
     var CL_STATUS = { off: "Spento", cool: "Raffrescamento", heat: "Riscaldamento", dry: "Deumidificazione", fan_only: "Solo ventola", heat_cool: "Automatico" };
     var CL_IT = { Auto: "Auto", Low: "Minima", LowMid: "Bassa", Mid: "Media", HighMid: "Alta", High: "Massima", Up: "Alto", UpMid: "Medio-alto", DownMid: "Medio-basso", Down: "Basso", Left: "Sinistra", LeftMid: "Centro-sx", RightMid: "Centro-dx", Right: "Destra", none: "Normale", quiet: "Silenzioso", powerful: "Potente", eco: "Eco", boost: "Boost", comfort: "Comfort", sleep: "Notte", away: "Assente" };
     function it(k) { return CL_IT[k] || k; }
-    var clima = { avail: true, name: "Aria salone", mode: "off", action: "off", cur: 23, tgt: 25, min: 16, max: 30, step: .5, modes: ["off", "heat_cool", "cool", "dry", "fan_only", "heat"],
+    function defaultClimateName() {
+      var names = {
+        it: "Aria salone",
+        fr: "Climat du salon",
+        en: "Living room climate"
+      };
+
+      return names[LANG] || names.it;
+    }
+    var clima = { avail: true, name: defaultClimateName(), mode: "off", action: "off", cur: 23, tgt: 25, min: 16, max: 30, step: .5, modes: ["off", "heat_cool", "cool", "dry", "fan_only", "heat"],
       fan: "Auto", fans: ["Auto", "Low", "LowMid", "Mid", "HighMid", "High"], swing: "Up", swings: ["Auto", "Up", "UpMid", "Mid", "DownMid", "Down"], hswing: "Auto", hswings: ["Auto", "Left", "LeftMid", "Mid", "RightMid", "Right"], preset: "none", presets: ["none", "quiet", "powerful"] };
     var clTimer = 0;
     function climaFromHass() {
@@ -5922,7 +5931,7 @@
     }
 
     translateViewAccessibilityLabels();
-        
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
