@@ -1337,17 +1337,122 @@
       render();
     }
     /* il messaggio finale descrive lo stato letto da Home Assistant, non quello che speravamo */
+    function sceneReportLabels() {
+      var translations = {
+        it: {
+          prefix: "Scena ",
+          separator: ": ",
+          unexpectedOne: " luce non ha risposto",
+          unexpectedMany: " luci non hanno risposto",
+          expected: "luci come previsto",
+          unavailableOne: " non raggiungibile",
+          unavailableMany: " non raggiungibili",
+          codeRequired: "allarme: serve il codice",
+          alarmMissing: "allarme non trovato"
+        },
+        fr: {
+          prefix: "Scène ",
+          separator: " : ",
+          unexpectedOne: " lumière dans un état différent de celui attendu",
+          unexpectedMany: " lumières dans un état différent de celui attendu",
+          expected: "états des lumières vérifiées conformes",
+          unavailableOne: " appareil injoignable",
+          unavailableMany: " appareils injoignables",
+          codeRequired: "alarme : code requis",
+          alarmMissing: "alarme introuvable"
+        },
+        en: {
+          prefix: "Scene ",
+          separator: ": ",
+          unexpectedOne: " light in a different state than expected",
+          unexpectedMany: " lights in a different state than expected",
+          expected: "checked light states match expectations",
+          unavailableOne: " device unreachable",
+          unavailableMany: " devices unreachable",
+          codeRequired: "alarm: code required",
+          alarmMissing: "alarm not found"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
     function sceneReport(sc, onIds, offIds, skipped) {
-      var bad = 0, na = skipped, parts = [];
+      var labels = sceneReportLabels();
+      var bad = 0;
+      var na = skipped;
+      var parts = [];
+
       syncLights();
-      onIds.forEach(function (id) { var s = sv(id); if (isUnavail(s)) na++; else if (s.state !== "on") bad++; });
-      offIds.forEach(function (id) { var s = sv(id); if (isUnavail(s)) na++; else if (s.state === "on") bad++; });
-      parts.push(bad ? bad + (bad === 1 ? " luce non ha risposto" : " luci non hanno risposto") : "luci come previsto");
-      if (na) parts.push(na + (na === 1 ? " non raggiungibile" : " non raggiungibili"));
-      if (sc.alarm) { var al = sv(ENT.alarm); parts.push($("#codebox").classList.contains("open") ? "allarme: serve il codice" : (al ? ALARM[mapAlarm(al.state)].short.toLowerCase() : "allarme non trovato")); }
-      if (bad && state.scene === sc.id) state.scene = null;
+
+      onIds.forEach(function (id) {
+        var s = sv(id);
+
+        if (isUnavail(s)) {
+          na++;
+        } else if (s.state !== "on") {
+          bad++;
+        }
+      });
+
+      offIds.forEach(function (id) {
+        var s = sv(id);
+
+        if (isUnavail(s)) {
+          na++;
+        } else if (s.state === "on") {
+          bad++;
+        }
+      });
+
+      parts.push(
+        bad
+          ? bad + (
+              bad === 1
+                ? labels.unexpectedOne
+                : labels.unexpectedMany
+            )
+          : labels.expected
+      );
+
+      if (na) {
+        parts.push(
+          na + (
+            na === 1
+              ? labels.unavailableOne
+              : labels.unavailableMany
+          )
+        );
+      }
+
+      if (sc.alarm) {
+        var al = sv(ENT.alarm);
+
+        parts.push(
+          $("#codebox").classList.contains("open")
+            ? labels.codeRequired
+            : (
+                al
+                  ? ALARM[mapAlarm(al.state)].short.toLowerCase()
+                  : labels.alarmMissing
+              )
+        );
+      }
+
+      if (bad && state.scene === sc.id) {
+        state.scene = null;
+      }
+
       render();
-      toast("Scena " + sc.n + ": " + parts.join(" · "), sc.ic, (bad || na) ? "var(--warn)" : sc.s1);
+
+      toast(
+        labels.prefix +
+        sc.n +
+        labels.separator +
+        parts.join(" · "),
+        sc.ic,
+        (bad || na) ? "var(--warn)" : sc.s1
+      );
     }
 
     /* ------------------------------------------------------------------ allarme */
