@@ -1481,9 +1481,37 @@
       later(function () { $("#code-in").focus(); }, 200);
     }
     function closeCode() { $("#codebox").classList.remove("open"); $("#codebox").setAttribute("aria-hidden", "true"); codeCb = null; }
+    function alarmCommandLabels() {
+      var translations = {
+        it: {
+          missing: "Centrale allarme non trovata",
+          unconfirmed: "Allarme: la centrale non ha eseguito il comando (codice errato o non disponibile)",
+          alarm: "Allarme",
+          codeRequired: "Serve il codice per: ",
+          sending: "Invio: "
+        },
+        fr: {
+          missing: "Centrale d’alarme introuvable",
+          unconfirmed: "Alarme : le résultat attendu de la commande n’a pas été confirmé",
+          alarm: "Alarme",
+          codeRequired: "Code requis pour : ",
+          sending: "Envoi de la commande : "
+        },
+        en: {
+          missing: "Alarm control panel not found",
+          unconfirmed: "Alarm: the expected command result was not confirmed",
+          alarm: "Alarm",
+          codeRequired: "Code required for: ",
+          sending: "Sending command: "
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     function armAlarm(mode, fromScene) {
+      var commandLabels = alarmCommandLabels()      
       var s = sv(ENT.alarm);
-      if (!s) { toast("Centrale allarme non trovata", "mdi-alert-circle", "var(--warn)"); return; }
+      if (!s) { toast(commandLabels.missing, "mdi-alert-circle", "var(--warn)"); return; }
       var feat = s.attributes.supported_features || 0, svc, needCode;
       if (mode === "disarmed") { svc = "alarm_disarm"; needCode = !!s.attributes.code_format; }
       else if (mode === "armed_away") { svc = "alarm_arm_away"; needCode = !!s.attributes.code_format && s.attributes.code_arm_required !== false; }
@@ -1493,11 +1521,28 @@
         if (!fromScene) later(function () {
           var a2 = sv(ENT.alarm), k2 = a2 ? mapAlarm(a2.state) : null;
           if (k2 === mode || (mode !== "disarmed" && (k2 === "arming" || k2 === "triggered"))) toast(ALARM[k2].t, k2 === "disarmed" ? "mdi-shield-off" : "mdi-shield-check", k2 === "disarmed" ? "var(--ok)" : "var(--warn)");
-          else toast("Allarme: la centrale non ha eseguito il comando (codice errato o non disponibile)", "mdi-alert-circle", "var(--warn)");
+          else toast(commandLabels.unconfirmed, "mdi-alert-circle", "var(--warn)");
         }, 3500);
       };
-      if (needCode) askCode((s.attributes.friendly_name || "Allarme") + " · " + ALARM[mode].t, run); else run();
-      if (!fromScene) toast(needCode ? "Serve il codice per: " + ALARM[mode].t : "Invio: " + ALARM[mode].t + "…", "mdi-shield-sync", "var(--warn)");
+      if (needCode) {
+        askCode(
+          (s.attributes.friendly_name || commandLabels.alarm) +
+          " · " +
+          ALARM[mode].t,
+          run
+        );
+      } else {
+        run();
+      }
+      if (!fromScene) {
+        toast(
+          needCode
+            ? commandLabels.codeRequired + ALARM[mode].t
+            : commandLabels.sending + ALARM[mode].t + "…",
+          "mdi-shield-sync",
+          "var(--warn)"
+        );
+      }
     }
     function mapAlarm(st) {
       if (st === "triggered") return "triggered";
