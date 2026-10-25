@@ -5768,7 +5768,59 @@
     }
 
     translateEditBannerLabels();
+    function translateClimateControlLabels() {
+      var translations = {
+        it: {
+          decrease: "Abbassa la temperatura desiderata",
+          increase: "Alza la temperatura desiderata",
+          target: "Temperatura desiderata",
+          image: "Immagine del climatizzatore"
+        },
+        fr: {
+          decrease: "Diminuer la température cible",
+          increase: "Augmenter la température cible",
+          target: "Température cible",
+          image: "Image du climatiseur"
+        },
+        en: {
+          decrease: "Decrease the target temperature",
+          increase: "Increase the target temperature",
+          target: "Target temperature",
+          image: "Climate device image"
+        }
+      };
 
+      var labels = translations[LANG] || translations.it;
+
+      var buttons = [
+        ["#cl-minus", labels.decrease],
+        ["#cl-plus", labels.increase]
+      ];
+
+      buttons.forEach(function (item) {
+        var button = ROOT.querySelector(item[0]);
+
+        if (button) {
+          button.setAttribute("aria-label", item[1]);
+          button.setAttribute("title", item[1]);
+        }
+      });
+
+      var targetGroup = ROOT.querySelector("#clima .tctl");
+
+      if (targetGroup) {
+        targetGroup.setAttribute("aria-label", labels.target);
+      }
+
+      var image = ROOT.querySelector("#cl-art");
+
+      if (image) {
+        image.setAttribute("data-label", labels.image);
+      }
+    }
+
+    translateClimateControlLabels();
+    
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
