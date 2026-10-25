@@ -2395,6 +2395,60 @@
       if (!LIVE || !camTiles.length || $("#view-sic").hidden || document.hidden) return;
       camTiles.forEach(function (t) { if (!t.liveEl && t.c.poll && Date.now() - t.last > t.c.poll * 1000) camRefresh(t); });
     }
+    function translateCameraControls(card) {
+      var translations = {
+        it: {
+          refresh: "Aggiorna anteprima",
+          open: "Apri",
+          live: "Diretta",
+          offline: "Offline"
+        },
+        fr: {
+          refresh: "Actualiser l’aperçu",
+          open: "Ouvrir la caméra",
+          live: "Direct",
+          offline: "Hors ligne"
+        },
+        en: {
+          refresh: "Refresh preview",
+          open: "Open camera",
+          live: "Live",
+          offline: "Offline"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var refreshButton = card.querySelector('[data-a="refresh"]');
+
+      if (refreshButton) {
+        refreshButton.setAttribute("title", labels.refresh);
+        refreshButton.setAttribute("aria-label", labels.refresh);
+      }
+
+      var openButton = card.querySelector('[data-a="open"]');
+
+      if (openButton) {
+        openButton.setAttribute("title", labels.open);
+        openButton.setAttribute("aria-label", labels.open);
+      }
+
+      var liveButton = card.querySelector('[data-a="live"]');
+
+      if (liveButton) {
+        var liveText = liveButton.querySelector("span");
+
+        if (liveText) {
+          liveText.textContent = labels.live;
+        }
+      }
+
+      var offlineLabel = card.querySelector(".cam-off");
+
+      if (offlineLabel) {
+        offlineLabel.textContent = labels.offline;
+      }
+    }
     function buildCams() {
       var box = $("#cams");
       if (!box) return;
@@ -2411,6 +2465,9 @@
           '<div class="cam-na" hidden><i class="mdi mdi-video-off-outline"></i><span>Anteprima non disponibile<br>tocca per aprire la telecamera</span></div></div>');
         box.appendChild(card);
         hydrate(card);
+        box.appendChild(card);
+        hydrate(card);
+        translateCameraControls(card);        
         var t = { c: c, last: 0, im: $(".cam-img", card), na: $(".cam-na", card), liveBox: $(".live-box", card), meta: $(".cam-meta", card), off: $(".cam-off", card), bLive: $('[data-a="live"]', card), liveEl: null, timer: 0 };
         camTiles.push(t);
         $('[data-a="refresh"]', card).addEventListener("click", function () { camRefresh(t); });
