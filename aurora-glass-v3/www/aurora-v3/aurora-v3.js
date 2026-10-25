@@ -1760,7 +1760,7 @@
       );
       later(function () {
         var rest = ids.filter(function (id) { var s = sv(id); return s && (s.state === "on" || isUnavail(s)); });
-        if (!rest.length) { syncLights(); render(); toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--ok)"); return; }
+        if (!rest.length) { syncLights(); render(); toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--ok)"); return; }
         call("homeassistant", "turn_off", { entity_id: rest });   /* secondo tentativo per chi non ha risposto */
         later(function () {
           syncLights(); render();
