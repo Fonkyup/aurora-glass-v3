@@ -1575,7 +1575,46 @@
     }
 
     /* ------------------------------------------------------------------ tema + stile pulsanti */
-    function setTheme(t) { HOST.dataset.theme = t; setIco($("#theme-ico"), t === "dark" ? "mdi-weather-night" : "mdi-white-balance-sunny"); store("theme", t); }
+    function setTheme(t) {
+      HOST.dataset.theme = t;
+
+      setIco(
+        $("#theme-ico"),
+        t === "dark"
+          ? "mdi-weather-night"
+          : "mdi-white-balance-sunny"
+      );
+
+      store("theme", t);
+
+      var translations = {
+        it: {
+          switchToLight: "Passa al tema chiaro",
+          switchToDark: "Passa al tema scuro"
+        },
+        fr: {
+          switchToLight: "Passer au thème clair",
+          switchToDark: "Passer au thème sombre"
+        },
+        en: {
+          switchToLight: "Switch to light theme",
+          switchToDark: "Switch to dark theme"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var button = $("#theme-btn");
+
+      if (button) {
+        var actionLabel = t === "dark"
+          ? labels.switchToLight
+          : labels.switchToDark;
+
+        button.setAttribute("aria-label", actionLabel);
+        button.setAttribute("title", actionLabel);
+      }
+    }
     $("#theme-btn").addEventListener("click", function () { setTheme(HOST.dataset.theme === "dark" ? "light" : "dark"); });
     function setBtn(v) { S.btn = v; HOST.dataset.btn = v; store("btn", v); $$("#btn-style button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.v === v ? "true" : "false"); }); }
 
