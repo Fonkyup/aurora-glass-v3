@@ -3057,11 +3057,42 @@
       if (l > 0) return { v: l, src: "local" };
       return { v: 0, src: LIVE ? "none" : "demo" };
     }
+    function demoApplianceName(name) {
+      var translations = {
+        fr: {
+          Lavatrice: "Laveuse",
+          Asciugatrice: "Sécheuse",
+          Lavastoviglie: "Lave-vaisselle",
+          Forno: "Four",
+          Multipresa: "Multiprise",
+          Frigorifero: "Réfrigérateur"
+        },
+        en: {
+          Lavatrice: "Washer",
+          Asciugatrice: "Dryer",
+          Lavastoviglie: "Dishwasher",
+          Forno: "Oven",
+          Multipresa: "Power strip",
+          Frigorifero: "Refrigerator"
+        }
+      };
+
+      var names = translations[LANG];
+
+      if (
+        names &&
+        Object.prototype.hasOwnProperty.call(names, name)
+      ) {
+        return names[name];
+      }
+
+      return name;
+    }
     function enModel() {
       var E = ENT.energy, m, sc = {};
       if (!LIVE) {
         m = { power: demoPower(), volt: 229.8, base: 98, avg3: 204, limit: 3400, today: 3.4, yest: 10.3, month: 71.4, lmonth: 211.3, year: 2043.9, na: false,
-          apps: [{ n: "Lavatrice", w: 460, e: .42, ic: "mdi-washing-machine", c: "#38BDF8" }, { n: "Asciugatrice", w: 0, e: .01, ic: "mdi-tumble-dryer", c: "#F472B6" }, { n: "Lavastoviglie", w: 1080, e: .55, ic: "mdi-dishwasher", c: "#22D3EE" }, { n: "Forno", w: 0, e: 0, ic: "mdi-stove", c: "#FB923C" }, { n: "Multipresa", w: 12, e: .14, ic: "mdi-power-socket-eu", c: "#A78BFA" }, { n: "Frigorifero", w: 74, e: .62, ic: "mdi-fridge", c: "#34D399" }] };
+          apps: [{ n: demoApplianceName("Lavatrice"), w: 460, e: .42, ic: "mdi-washing-machine", c: "#38BDF8" }, { n: demoApplianceName("Asciugatrice"), w: 0, e: .01, ic: "mdi-tumble-dryer", c: "#F472B6" }, { n: demoApplianceName("Lavastoviglie"), w: 1080, e: .55, ic: "mdi-dishwasher", c: "#22D3EE" }, { 	n: demoApplianceName("Forno"), w: 0, e: 0, ic: "mdi-stove", c: "#FB923C" }, { n: demoApplianceName("Multipresa"), w: 12, e: .14, ic: "mdi-power-socket-eu", c: "#A78BFA" }, { n: demoApplianceName("Frigorifero"), w: 74, e: .62, ic: "mdi-fridge", c: "#34D399" }] };
       } else {
         var lim = enNum(E.limit) || E.limitDefault;
         m = { power: enNum(E.power) !== null ? enNum(E.power) : enNum(ENT.power), volt: enNum(E.voltage), base: enNum(E.base), avg3: enNum(E.avg3), limit: lim,
