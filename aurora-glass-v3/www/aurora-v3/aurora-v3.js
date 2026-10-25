@@ -1190,6 +1190,27 @@
       ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { node.addEventListener(ev, function () { clearTimeout(t); }); });
       node.addEventListener("click", function (e) { if (fired) { e.stopImmediatePropagation(); e.preventDefault(); fired = false; } }, true);
     }
+    function lightCommandLabels() {
+      var translations = {
+        it: {
+          unavailable: "dispositivo non disponibile",
+          noResponse: "non risponde, non so se il comando è arrivato",
+          unexpectedState: "il comando non ha avuto effetto"
+        },
+        fr: {
+          unavailable: "appareil indisponible",
+          noResponse: "aucune réponse; réception de la commande non confirmée",
+          unexpectedState: "l’état attendu n’a pas été observé après la commande"
+        },
+        en: {
+          unavailable: "device unavailable",
+          noResponse: "no response; command receipt not confirmed",
+          unexpectedState: "the expected state was not observed after the command"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function buildRooms() {
       var box = $("#rooms");
       ROOMS.forEach(function (r) {
@@ -1211,15 +1232,20 @@
       $$(".orb").forEach(function (o) {
         o.addEventListener("click", function () {
           var k = o.dataset.light;
+          var commandLabels = lightCommandLabels();
+          var nameNode = $(".o-name", o);
+          var lightName = nameNode
+          ? nameNode.textContent.trim()
+          : LIGHTS[k][0];          
           if (LIVE) {
             var s = sv(ENT.lights[k]);
-            if (isUnavail(s)) { toast(LIGHTS[k][0] + ": dispositivo non disponibile", "mdi-alert-circle", "var(--warn)"); return; }
+            if (isUnavail(s)) { toast(lightName + ": " + commandLabels.unavailable, "mdi-alert-circle", "var(--warn)"); return; }
             var want = !state.lights[k];
             call("homeassistant", "toggle", { entity_id: ENT.lights[k] });
             later(function () {
               var s2 = sv(ENT.lights[k]);
-              if (isUnavail(s2)) toast(LIGHTS[k][0] + ": non risponde, non so se il comando è arrivato", "mdi-alert-circle", "var(--warn)");
-              else if ((s2.state === "on") !== want) toast(LIGHTS[k][0] + ": il comando non ha avuto effetto", "mdi-alert-circle", "var(--warn)");
+              if (isUnavail(s2)) toast(lightName + ": " + commandLabels.noResponse, "mdi-alert-circle", "var(--warn)");
+              else if ((s2.state === "on") !== want) toast(lightName + ": " + commandLabels.unexpectedState, "mdi-alert-circle", "var(--warn)");
               syncLights(); render();
             }, 3000);
           }
