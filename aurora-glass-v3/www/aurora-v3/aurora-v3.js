@@ -1680,15 +1680,53 @@
     }
     $$(".dock [data-view]").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.view); }); });
     $("#dock-scenes").addEventListener("click", function () { show("home"); later(function () { $("#scenes").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); }, 60); });
+    function allLightsOffLabels() {
+      var translations = {
+        it: {
+          complete: "Tutte le luci spente",
+          noneFound: "Nessuna luce trovata: controlla le entità nella configurazione",
+          sendingBefore: "Invio del comando di spegnimento per ",
+          sendingOne: " luce…",
+          sendingMany: " luci…"
+        },
+        fr: {
+          complete: "Toutes les lumières vérifiées sont éteintes",
+          noneFound: "Aucune lumière trouvée : vérifie les entités dans la configuration",
+          sendingBefore: "Envoi de la commande d’extinction pour ",
+          sendingOne: " lumière…",
+          sendingMany: " lumières…"
+        },
+        en: {
+          complete: "All checked lights are off",
+          noneFound: "No lights found: check the entities in the configuration",
+          sendingBefore: "Sending the turn-off command for ",
+          sendingOne: " light…",
+          sendingMany: " lights…"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
     $("#dock-off").addEventListener("click", function (e) {
+      var offLabels = allLightsOffLabels();      
       var r = e.currentTarget.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + 10, "#A5B4FC", "#67E8F9");
       Object.keys(state.lights).forEach(function (k) { state.lights[k] = false; }); state.scene = null;
-      if (!LIVE) { toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--acc-text)"); render(); return; }
+      if (!LIVE) { toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--acc-text)"); render(); return; }
       /* il comando va a TUTTE le luci configurate, senza fidarsi dello stato letto: ogni tanto un dispositivo risulta "non disponibile" o con lo stato in ritardo */
       var ids = Object.keys(ENT.lights).map(function (k) { return ENT.lights[k]; }).filter(function (id) { return !!sv(id); });
-      if (!ids.length) { toast("Nessuna luce trovata: controlla le entità nella configurazione", "mdi-alert-circle", "var(--warn)"); render(); return; }
+      if (!ids.length) { toast(offLabels.noneFound, "mdi-alert-circle", "var(--warn)"); render(); return; }
       call("homeassistant", "turn_off", { entity_id: ids });
-      toast("Spengo " + ids.length + " luci…", "mdi-lightbulb-off-outline", "var(--acc-text)");
+      toast(
+        offLabels.sendingBefore +
+        ids.length +
+        (
+          ids.length === 1
+            ? offLabels.sendingOne
+            : offLabels.sendingMany
+        ),
+        "mdi-lightbulb-off-outline",
+        "var(--acc-text)"
+      );
       later(function () {
         var rest = ids.filter(function (id) { var s = sv(id); return s && (s.state === "on" || isUnavail(s)); });
         if (!rest.length) { syncLights(); render(); toast("Tutte le luci spente", "mdi-lightbulb-off-outline", "var(--ok)"); return; }
