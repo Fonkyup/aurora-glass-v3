@@ -1824,7 +1824,7 @@
               "var(--warn)"
             );
           }
-          else toast("offLabels.complete", "mdi-lightbulb-off-outline", "var(--ok)");
+          else toast(offLabels.complete, "mdi-lightbulb-off-outline", "var(--ok)");
         }, 3500);
       }, 3000);
       render();
