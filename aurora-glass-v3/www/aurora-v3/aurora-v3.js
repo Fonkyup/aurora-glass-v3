@@ -1808,7 +1808,41 @@
       render();
     });
     $$("#seg button").forEach(function (b) { b.addEventListener("click", function () { if (LIVE) armAlarm(b.dataset.mode); else setAlarm(b.dataset.mode); }); });
-    $("#sim-alarm").addEventListener("click", function () { show("sic"); setAlarm("triggered", true); render(); toast("Allarme attivo!", "mdi-alarm-light", "var(--danger)"); });
+    function alarmAlertLabels() {
+      var translations = {
+        it: {
+          banner: "ALLARME ATTIVO — controlla i sensori e le telecamere",
+          simulation: "Simulazione: allarme attivo"
+        },
+        fr: {
+          banner: "ALARME DÉCLENCHÉE — vérifier les capteurs et les caméras",
+          simulation: "Simulation : alarme déclenchée"
+        },
+        en: {
+          banner: "ALARM TRIGGERED — check the sensors and cameras",
+          simulation: "Simulation: alarm triggered"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+
+    var alarmAlertText = ROOT.querySelector("#alert > span");
+
+    if (alarmAlertText) {
+      alarmAlertText.textContent = alarmAlertLabels().banner;
+    }
+    $("#sim-alarm").addEventListener("click", function () {
+      show("sic");
+      setAlarm("triggered", true);
+      render();
+
+      toast(
+        alarmAlertLabels().simulation,
+        "mdi-alarm-light",
+        "var(--danger)"
+      );
+    });
     $("#alert-off").addEventListener("click", function () { if (LIVE) armAlarm("disarmed"); else setAlarm("disarmed"); });
     $("#code-cancel").addEventListener("click", closeCode);
     $("#code-ok").addEventListener("click", function () { var c = $("#code-in").value, cb = codeCb; closeCode(); if (cb && c) cb(c); });
