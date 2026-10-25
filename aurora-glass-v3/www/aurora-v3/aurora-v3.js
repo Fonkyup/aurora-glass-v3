@@ -5874,6 +5874,55 @@
 
     translateClimateControlLabels();
 
+    function translateViewAccessibilityLabels() {
+      var translations = {
+        it: {
+          home: "Casa",
+          security: "Sicurezza",
+          energy: "Energia",
+          alarmPanel: "Centrale allarme"
+        },
+        fr: {
+          home: "Maison",
+          security: "Sécurité",
+          energy: "Énergie",
+          alarmPanel: "Centrale d’alarme"
+        },
+        en: {
+          home: "Home",
+          security: "Security",
+          energy: "Energy",
+          alarmPanel: "Alarm control panel"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+
+      var views = [
+        ["#view-home", labels.home],
+        ["#view-sic", labels.security],
+        ["#view-en", labels.energy]
+      ];
+
+      views.forEach(function (item) {
+        var view = ROOT.querySelector(item[0]);
+
+        if (view) {
+          view.setAttribute("aria-label", item[1]);
+        }
+      });
+
+      var alarmHeading = ROOT.querySelector(
+        "#alarm .alarm-txt .eyebrow"
+      );
+
+      if (alarmHeading) {
+        alarmHeading.textContent = labels.alarmPanel;
+      }
+    }
+
+    translateViewAccessibilityLabels();
+        
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
