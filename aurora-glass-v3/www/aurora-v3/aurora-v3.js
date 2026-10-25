@@ -1618,6 +1618,60 @@
       $("#open-sub").textContent = openingSummaryLabel(n, nn);
     }
     function onOpenTap(id) { if (LIVE) moreInfo(ENT.opens[id]); else setOpenUI(id, !OP[id], false); }
+    function motionSummaryLabel(activeName, total, unavailable) {
+      var translations = {
+        it: {
+          active: "Movimento: ",
+          quiet: "Casa tranquilla",
+          noSensors: "Nessun sensore di movimento configurato",
+          allUnavailable: "Sensori di movimento non disponibili",
+          offlineOne: " sensore non disponibile",
+          offlineMany: " sensori non disponibili"
+        },
+        fr: {
+          active: "Mouvement : ",
+          quiet: "Aucun mouvement détecté",
+          noSensors: "Aucun détecteur de mouvement configuré",
+          allUnavailable: "Détecteurs de mouvement indisponibles",
+          offlineOne: " détecteur indisponible",
+          offlineMany: " détecteurs indisponibles"
+        },
+        en: {
+          active: "Motion: ",
+          quiet: "No motion detected",
+          noSensors: "No motion detectors configured",
+          allUnavailable: "Motion detectors unavailable",
+          offlineOne: " detector unavailable",
+          offlineMany: " detectors unavailable"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var text;
+
+      if (activeName) {
+        text = labels.active + activeName;
+      } else if (LIVE && total === 0) {
+        return labels.noSensors;
+      } else if (total > 0 && unavailable >= total) {
+        return labels.allUnavailable;
+      } else {
+        text = labels.quiet;
+      }
+
+      if (unavailable > 0) {
+        text +=
+          " · " +
+          unavailable +
+          (
+            unavailable === 1
+              ? labels.offlineOne
+              : labels.offlineMany
+          );
+      }
+
+      return text;
+    }
     function motionHistoryLabels() {
       var translations = {
         it: {
@@ -2671,6 +2725,7 @@
       box.innerHTML = ""; camTiles = [];
       var list = (ENT.cameras || []).filter(function (c) { return sv(c.img) || sv(c.live) || sv(c.cam); });
       if (!list.length) { box.hidden = true; return; }
+      box.hidden = false;
       list.forEach(function (c) {
         var card = el("article", "card cam",
           '<div class="cam-head"><h4>' + c.n + '</h4><span class="cam-off" hidden>Offline</span><span class="cam-meta"></span>' +
@@ -2679,8 +2734,6 @@
           '<button class="cbtn" type="button" data-a="open" title="Apri"><i class="mdi mdi-arrow-expand"></i></button></div>' +
           '<div class="feed-live"><img class="cam-img" alt="" draggable="false"><div class="live-box" hidden></div>' +
           '<div class="cam-na" hidden><i class="mdi mdi-video-off-outline"></i><span>Anteprima non disponibile<br>tocca per aprire la telecamera</span></div></div>');
-        box.appendChild(card);
-        hydrate(card);
         box.appendChild(card);
         hydrate(card);
         translateCameraControls(card);        
@@ -5933,6 +5986,13 @@
 
     function translateDemoCameraLabels() {
       if (LIVE) {
+        var cameraBox = ROOT.querySelector("#cams");
+
+        if (cameraBox) {
+          cameraBox.innerHTML = "";
+          cameraBox.hidden = true;
+        }
+
         return;
       }
 
@@ -5989,7 +6049,51 @@
       });
     }
 
-    translateDemoCameraLabels();    
+    translateDemoCameraLabels();
+    function initializeSecuritySummaryLabels() {
+      var translations = {
+        it: {
+          pendingMotion: "In attesa dello stato dei sensori",
+          pendingOpenings: "In attesa dello stato delle aperture"
+        },
+        fr: {
+          pendingMotion: "En attente de l’état des détecteurs",
+          pendingOpenings: "En attente de l’état des ouvertures"
+        },
+        en: {
+          pendingMotion: "Waiting for detector states",
+          pendingOpenings: "Waiting for opening states"
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var heroMotion = ROOT.querySelector("#hero-motion");
+
+      if (heroMotion) {
+        heroMotion.textContent = LIVE
+          ? labels.pendingMotion
+          : motionSummaryLabel(null, 0, 0);
+      }      
+
+      var motionSummary = ROOT.querySelector("#last-motion");
+
+      if (motionSummary) {
+        motionSummary.textContent = LIVE
+          ? labels.pendingMotion
+          : motionHistoryLabels().noRecent;
+      }
+
+      var openingsSummary = ROOT.querySelector("#open-sub");
+
+      if (openingsSummary) {
+        openingsSummary.textContent = LIVE
+          ? labels.pendingOpenings
+          : openingSummaryLabel(0, 0);
+      }
+    }
+
+    initializeSecuritySummaryLabels();
+
     hydrate(ROOT);
     buildScenes(); buildRooms(); buildSecurity(); buildDrawer(); buildClima(); buildEnergy(); refreshAll();
         // Translate effect buttons after they have been created.
