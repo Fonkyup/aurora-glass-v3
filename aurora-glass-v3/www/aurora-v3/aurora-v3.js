@@ -1303,7 +1303,7 @@
     function buildSecurity() {
       var mt = $("#motion-tiles");
       MOTION.filter(function (m) { return hasMotion(m[0]); }).forEach(function (m) {
-        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">Nessun movimento</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
+        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">' + motionStateLabel(false, false) + '</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
         b.addEventListener("click", function () { if (LIVE) moreInfo(availId(ENT.motion[m[0]])); else motion(m[0]); });
         mt.appendChild(b);
       });
@@ -3675,7 +3675,6 @@
     function savePrice() {
       var labels = priceSaveLabels();
       var v = prNum("#pr-in");      
-      var v = prNum("#pr-in");
       if (v === null || v < 0.001 || v > 5) { toast(labels.invalid, "mdi-alert-circle", "var(--warn)"); return; }
       v = Math.round(v * 10000) / 10000;
       if (!LIVE) { store("price", String(v)); prDone(labels.saved + fmtP(v) + " €/kWh"); return; }
