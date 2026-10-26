@@ -3,16 +3,23 @@
 # Versione derivata non ufficiale di Aurora Glass v3.
 # Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
 # Adattamento: Fonkyup.
-#  Collez le contenu dans l'éditeur YAML de la fiche, ou utilisez
-#  dashboard-exemple.yaml qui le contient déjà dans une vue en panneau.
+# Documentazione aggiornata il 26 ottobre 2026.
+# GNU GPL versione 3; vedere LICENSE alla radice del repository.
 #
-#  Tout est FACULTATIF : ce que vous ne saisissez pas utilisera les noms d'exemple ci-dessous.
-#  Modifiez uniquement les entités qui portent un nom différent chez vous.
-#  (Où trouver les noms : Outils pour les développeurs -> États -> filtrez sur « light. »)
+# Incolla questa configurazione nell'editor YAML di una singola scheda.
+# Per una plancia completa, usa dashboard-esempio.yaml.
+# Sostituisci gli identificatori di esempio con quelli delle tue entità.
+# Dove trovarli: Strumenti per sviluppatori -> Stati.
+#
+# Le chiavi tecniche italiane e room: Cucina sono mantenute.
+# Il percorso assets seguente riguarda l'installazione manuale.
+# La sezione energy deve restare all'interno di entities.
 # ============================================================================
+
 type: custom:luma-home-card
+language: it
 assets: /local/luma-home/btn/
-        # cartella delle immagini dei pulsanti
+
 
 entities:
   # --- LUCI (le 11 stanze). Puoi usare light.*, switch.* o qualsiasi entità accendibile
@@ -75,7 +82,7 @@ entities:
     month: sensor.aurora_energia_mese
     lastMonth: sensor.aurora_energia_mese_scorso
     year: sensor.aurora_energia_anno
-    price: input_number.prezzo_energia    # costo del kWh: si imposta dalla scheda (viene creato da solo)
+    price: input_number.prezzo_energia    # Tariffa per kWh: configurabile dalla scheda; verifica la disponibilità dell'helper.
     priceDefault: 0.30                    # prezzo di esempio finché non imposti il tuo
     base: sensor.consumo_di_fondo         # facoltativo
     avg3: sensor.potenza_media_3_ore      # facoltativo
