@@ -114,7 +114,7 @@ Les lumières restent grisées tant que vos entités ne sont pas renseignées.
 Dans la configuration de la carte, conservez ses autres options et ajoutez la langue au même niveau que `type` et `assets` :
 
 ```yaml
-type: custom:aurora-v3-card
+type: custom:luma-home-card
 assets: /local/aurora-v3/btn/
 language: fr
 ```

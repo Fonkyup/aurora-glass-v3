@@ -11,7 +11,7 @@ views:
     icon: mdi:home-heart
     panel: true
     cards:
-      - type: custom:aurora-v3-card
+      - type: custom:luma-home-card
         language: en
         assets: /local/aurora-v3/btn/
         # Add entities here at the same level as assets and language; see card-example.en.yaml.

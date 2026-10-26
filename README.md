@@ -114,7 +114,7 @@ Lights remain greyed out until you configure your own entities.
 Keep your other card options and add the language at the same level as `type` and `assets`:
 
 ```yaml
-type: custom:aurora-v3-card
+type: custom:luma-home-card
 assets: /local/aurora-v3/btn/
 language: en
 ```

@@ -1,5 +1,8 @@
 # ============================================================================
-#  AURORA GLASS v3 - dashboard completa in YAML
+# Luma Home - configurazione della scheda
+# Versione derivata non ufficiale di Aurora Glass v3.
+# Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
+# Adattamento: Fonkyup.
 #  Come usarla: Impostazioni -> Plance -> (la tua plancia) -> ⋮ -> "Modifica
 #  plancia" -> ⋮ -> "Editor di configurazione testuale" -> sostituisci tutto
 #  con questo testo -> Salva.
@@ -12,6 +15,8 @@ views:
     icon: mdi:home-heart
     panel: true            # la scheda occupa tutta la pagina
     cards:
-      - type: custom:aurora-v3-card
+      - type: custom:luma-home-card
+        language: it
         assets: /local/aurora-v3/btn/
-        # entities: ...   <- aggiungi qui le tue entità (vedi scheda-esempio.yaml)
+        # Aggiungi entities qui, allo stesso livello di assets.
+        # Vedi scheda-esempio.yaml per tutte le opzioni.

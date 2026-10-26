@@ -1,5 +1,8 @@
 # ============================================================================
-#  AURORA GLASS v3 - configurazione della scheda (tutte le opzioni)
+# Luma Home - configurazione della scheda
+# Versione derivata non ufficiale di Aurora Glass v3.
+# Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
+# Adattamento: Fonkyup.
 #  Incolla il contenuto nell'editor YAML della scheda, oppure usa
 #  dashboard-esempio.yaml che la contiene già dentro una vista a pannello.
 #
@@ -7,7 +10,7 @@
 #  Cambia solo le entità che nella tua casa hanno un nome diverso.
 #  (Dove trovi i nomi: Strumenti per sviluppatori -> Stati -> filtra "light.")
 # ============================================================================
-type: custom:aurora-v3-card
+type: custom:luma-home-card
 assets: /local/aurora-v3/btn/        # cartella delle immagini dei pulsanti
 
 entities:
