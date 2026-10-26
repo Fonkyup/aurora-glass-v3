@@ -3164,21 +3164,134 @@
         return "—";
       }
 
-      return MONEY_FORMATTER.format(amount);
+      return MONEY_FORMATTER
+        .formatToParts(amount)
+        .map(function (part) {
+          return part.type === "currency"
+            ? currencyLabel()
+            : part.value;
+        })
+        .join("");
     }
     function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString(LOCALE), u: "W" }; }
     var demoE = { p: 180, t0: Date.now() };
     function demoPower() { var m = (Date.now() - demoE.t0) / 1000; return Math.max(60, 190 + 90 * Math.sin(m / 9) + 60 * Math.sin(m / 3.1) + (Math.sin(m / 47) > .8 ? 1400 : 0)); }
     /* tariffa €/kWh: helper di Home Assistant (vale su tutti i dispositivi) → copia locale → valore di esempio */
     var PEND = null;
+    function priceStorageKey() {
+      return "price-v2:" +
+        CURRENCY + ":" +
+        String(ENT.energy.price || "no-helper");
+    }
+
+    function priceHelperCompatible(state) {
+      if (!state || !state.attributes) return false;
+
+      var unit = String(
+        state.attributes.unit_of_measurement || ""
+      )
+        .replace(/\s+/g, "")
+        .toUpperCase();
+
+      var accepted = [
+        CURRENCY + "/KWH"
+      ];
+
+      if (CURRENCY === "CAD") {
+        accepted.push("$CAD/KWH");
+      } else if (CURRENCY === "USD") {
+        accepted.push("$USD/KWH");
+      } else if (CURRENCY === "EUR") {
+        accepted.push("€/KWH", "€EUR/KWH");
+      }
+
+      return accepted.indexOf(unit) !== -1;
+    }
+
+    function priceSafetyLabels() {
+      var translations = {
+        fr: {
+          missing:
+            "Aucun assistant de tarif disponible",
+          incompatible:
+            "Unité de l’assistant absente, ambiguë ou incompatible",
+          unavailable:
+            "Assistant de tarif indisponible",
+          failed:
+            "Échec de l’enregistrement dans Home Assistant"
+        },
+        en: {
+          missing:
+            "No rate helper available",
+          incompatible:
+            "Helper unit missing, ambiguous or incompatible",
+          unavailable:
+            "Rate helper unavailable",
+          failed:
+            "Could not save the rate in Home Assistant"
+        },
+        it: {
+          missing:
+            "Nessun helper tariffa disponibile",
+          incompatible:
+            "Unità dell’helper assente, ambigua o incompatibile",
+          unavailable:
+            "Helper tariffa non disponibile",
+          failed:
+            "Salvataggio in Home Assistant non riuscito"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }    
     function priceInfo() {
-      var v = enNum(ENT.energy.price);
-      if (PEND && (Date.now() > PEND.until || (v !== null && Math.abs(v - PEND.v) < 1e-6))) PEND = null;
-      if (PEND) return { v: PEND.v, src: "ha" };
-      if (v !== null && v > 0) return { v: v, src: "ha" };
-      var l = parseFloat(store("price"));
-      if (l > 0) return { v: l, src: "local" };
-      return { v: 0, src: LIVE ? "none" : "demo" };
+      var id = ENT.energy.price;
+      var state = id ? sv(id) : null;
+
+      var compatible =
+        LIVE && priceHelperCompatible(state);
+
+      var v = compatible ? enNum(id) : null;
+
+      if (
+        PEND &&
+        (
+          PEND.currency !== CURRENCY ||
+          PEND.id !== id ||
+          !compatible ||
+          Date.now() > PEND.until ||
+          (
+            v !== null &&
+            Math.abs(v - PEND.v) < 1e-6
+          )
+        )
+      ) {
+        PEND = null;
+      }
+
+      if (PEND) {
+        return { v: PEND.v, src: "ha" };
+      }
+
+      if (v !== null && Number.isFinite(v) && v > 0) {
+        return { v: v, src: "ha" };
+      }
+
+      var localValue = Number(
+        store(priceStorageKey())
+      );
+
+      if (
+        Number.isFinite(localValue) &&
+        localValue > 0
+      ) {
+        return { v: localValue, src: "local" };
+      }
+
+      return {
+        v: 0,
+        src: LIVE ? "none" : "demo"
+      };
     }
     function demoApplianceName(name) {
       var translations = {
@@ -3224,6 +3337,121 @@
           apps: E.appliances.map(function (x) { var s = sv(x.p); return { n: x.n, w: enNum(x.p), e: x.e ? enNum(x.e) : null, ic: x.ic, c: x.c, na: !s || isUnavail(s) }; }) };
         sc = { today: enNum(E.costToday), yest: enNum(E.costYesterday), month: enNum(E.costMonth), lmonth: enNum(E.costLastMonth), year: enNum(E.costYear) };
       }
+      // Optional dynamic pricing.
+      // Without this mode, the existing model below is unchanged.
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        var sourceCurrency = String(
+          pricing.currency || ""
+        ).trim().toUpperCase();
+
+        var currencyMatches =
+          sourceCurrency === CURRENCY;
+
+        var normalizeUnit = function (unit) {
+          return String(unit || "")
+            .replace(/\s+/g, "")
+            .toUpperCase();
+        };
+
+        var rateId = pricing.currentRate;
+        var rateState = rateId ? sv(rateId) : null;
+
+        var rateUnit = normalizeUnit(
+          rateState &&
+          rateState.attributes &&
+          rateState.attributes.unit_of_measurement
+        );
+
+        // "$/kWh" is accepted only because the source currency
+        // is explicitly configured and matches the card.
+        var rateUnitMatches = currencyMatches && (
+          rateUnit === sourceCurrency + "/KWH" ||
+          (
+            (
+              sourceCurrency === "CAD" ||
+              sourceCurrency === "USD"
+            ) &&
+            (
+              rateUnit === "$/KWH" ||
+              rateUnit === "$" + sourceCurrency + "/KWH"
+            )
+          ) ||
+          (
+            sourceCurrency === "EUR" &&
+            (
+              rateUnit === "€/KWH" ||
+              rateUnit === "€EUR/KWH"
+            )
+          )
+        );
+
+        var currentRate =
+          rateUnitMatches ? enNum(rateId) : null;
+
+        var rateAvailable =
+          currentRate !== null &&
+          Number.isFinite(currentRate) &&
+          currentRate >= 0;
+
+        var readPeriodCost = function (id) {
+          if (!currencyMatches || !id) return null;
+
+          var state = sv(id);
+
+          if (!state || !state.attributes) return null;
+
+          var unit = normalizeUnit(
+            state.attributes.unit_of_measurement
+          );
+
+          var expectedLabel = normalizeUnit(
+            currencyLabel()
+          );
+
+          // Period cost sensors must identify their currency.
+          // A bare "$" is deliberately not enough here.
+          if (
+            unit !== sourceCurrency &&
+            unit !== expectedLabel
+          ) {
+            return null;
+          }
+
+          var value = enNum(id);
+
+          return value !== null &&
+            Number.isFinite(value)
+              ? value
+              : null;
+        };
+
+        m.pricingMode = "dynamic";
+
+        m.price = {
+          v: rateAvailable ? currentRate : 0,
+          src: rateAvailable ? "sensor" : "none"
+        };
+
+        m.rateAvailable = rateAvailable;
+        m.implied = null;
+
+        // Zero is a technical fallback, not a known free tariff.
+        // Rendering must use rateAvailable to distinguish them.
+        m.pEff = rateAvailable ? currentRate : 0;
+
+        // Keep compatibility with the existing sensor-cost branch.
+        m.src = "sensori";
+
+        m.cToday = readPeriodCost(E.costToday);
+        m.cYest = readPeriodCost(E.costYesterday);
+        m.cMonth = readPeriodCost(E.costMonth);
+        m.cLmonth = readPeriodCost(E.costLastMonth);
+        m.cYear = readPeriodCost(E.costYear);
+
+        return m;
+      }      
       var pi = priceInfo(), implied = null;
       var hasSens = [sc.today, sc.yest, sc.month, sc.lmonth, sc.year].some(function (x) { return x !== undefined && x !== null; });
       if (pi.v <= 0) {
@@ -3428,14 +3656,16 @@
         };
 
         var rateLabels = rateTranslations[LANG] || rateTranslations.it;
+        rateLabels.sensorsAfter =
+          rateLabels.sensorsAfter.replace(/€/g, currencyLabel());        
 
         pb.classList.toggle("unset", P.v <= 0);
 
         $("#pb-main").textContent = P.v > 0
-          ? rateLabels.rate + fmtP(P.v) + " €/kWh"
+          ? rateLabels.rate + fmtP(P.v) + " " + priceUnit()
           : m.src === "sensori"
             ? rateLabels.unset
-            : rateLabels.example + fmtP(m.pEff) + " €/kWh";
+            : rateLabels.example + fmtP(m.pEff) + " " + priceUnit();
 
         $("#pb-sub").textContent = P.src === "ha"
           ? rateLabels.savedHA
@@ -3586,6 +3816,19 @@
       if (ap.dataset.sig !== ah) { ap.dataset.sig = ah; ap.innerHTML = ah; hydrate(ap); $$(".app", ap).forEach(function (b) { b.addEventListener("click", function () { if (LIVE) moreInfo(ENT.energy.appliances[+b.dataset.app].p); }); }); }
     }
     /* ---- tariffa: finestra per impostare il costo del kWh ---- */
+    function currencyLabel() {
+      switch (CURRENCY) {
+        case "CAD":
+          return "$ CAD";
+        case "USD":
+          return "$ USD";
+        default:
+          return "€ EUR";
+      }
+    }    
+    function priceUnit() {
+      return currencyLabel() + "/kWh";
+    }
     function fmtP(v) { return Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function prNum(sel) { var v = parseFloat(String($(sel).value).replace(",", ".")); return isNaN(v) ? null : v; }
     function prSet(v) { $("#pr-in").value = (Math.round(v * 1000) / 1000).toFixed(3); prMark(); }
@@ -3620,7 +3863,7 @@
 
         output.innerHTML =
           labels.result +
-          "<b>" + fmtP(value) + " €/kWh</b>";
+          "<b>" + fmtP(value) + " " + priceUnit() + "</b>";
 
         var useButton = el(
           "button",
@@ -3711,7 +3954,7 @@
 
         hint.innerHTML =
           labels.sensorsBefore +
-          "<b>" + fmtP(m.implied) + " €/kWh</b>" +
+          "<b>" + fmtP(m.implied) + " " + priceUnit() + "</b>" +
           labels.sensorsAfter;
 
         var useButton = el(
@@ -3788,17 +4031,104 @@
     }
     function savePrice() {
       var labels = priceSaveLabels();
-      var v = prNum("#pr-in");      
-      if (v === null || v < 0.001 || v > 5) { toast(labels.invalid, "mdi-alert-circle", "var(--warn)"); return; }
+      var safety = priceSafetyLabels();
+      var v = prNum("#pr-in");
+
+      if (
+        v === null ||
+        !Number.isFinite(v) ||
+        v < 0.001 ||
+        v > 5
+      ) {
+        toast(
+          labels.invalid.replace(
+            /€\/kWh/g,
+            priceUnit()
+          ),
+          "mdi-alert-circle",
+          "var(--warn)"
+        );
+        return;
+      }
+
       v = Math.round(v * 10000) / 10000;
-      if (!LIVE) { store("price", String(v)); prDone(labels.saved + fmtP(v) + " €/kWh"); return; }
-      var id = ENT.energy.price, btn = $("#pr-ok"); btn.disabled = true;
-      var local = function (why) { store("price", String(v)); prDone(labels.local + (why ? " (" + why + ")" : "")); };
-      var name = id.split(".")[1].replace(/_/g, " ").replace(/\bkwh\b/i, "kWh"); name = name.charAt(0).toUpperCase() + name.slice(1);
-      var req = sv(id) ? Promise.resolve(ctx.call("input_number", "set_value", { entity_id: id, value: v }))
-        : HASS.callWS({ type: "input_number/create", name: name, icon: "mdi:cash-multiple", min: 0, max: 5, step: 0.001, mode: "box", unit_of_measurement: "€/kWh", initial: v });
-      req.then(function () { PEND = { v: v, src: "ha", until: Date.now() + 8000 }; prDone(labels.homeAssistant + fmtP(v) + " €/kWh"); })
-        .catch(function (e) { local(/unauthor|admin|permission/i.test((e && e.message) || (e && e.code) || "") ? labels.admin : labels.failed); });
+
+      var amount = fmtP(v) + " " + priceUnit();
+
+      var saveLocal = function (reason) {
+        store(priceStorageKey(), String(v));
+        PEND = null;
+
+        prDone(
+          labels.local + " : " + amount +
+          (reason ? " (" + reason + ")" : "")
+        );
+      };
+
+      if (!LIVE) {
+        saveLocal("");
+        return;
+      }
+
+      var id = ENT.energy.price;
+      var state = id ? sv(id) : null;
+
+      if (!state) {
+        saveLocal(safety.missing);
+        return;
+      }
+
+      if (
+        id.indexOf("input_number.") !== 0 ||
+        !priceHelperCompatible(state)
+      ) {
+        saveLocal(safety.incompatible);
+        return;
+      }
+
+      if (
+        state.state === "unknown" ||
+        state.state === "unavailable"
+      ) {
+        saveLocal(safety.unavailable);
+        return;
+      }
+
+      var btn = $("#pr-ok");
+      btn.disabled = true;
+
+      Promise.resolve()
+        .then(function () {
+          return ctx.call(
+            "input_number",
+            "set_value",
+            {
+              entity_id: id,
+              value: v
+            }
+          );
+        })
+        .then(function () {
+          PEND = {
+            v: v,
+            currency: CURRENCY,
+            id: id,
+            until: Date.now() + 8000
+          };
+
+          prDone(
+            labels.homeAssistant + amount
+          );
+        })
+        .catch(function () {
+          btn.disabled = false;
+
+          toast(
+            safety.failed,
+            "mdi-alert-circle",
+            "var(--warn)"
+          );
+        });
     }
     function buildPrice() {
       var open = function () { openPrice(); };
@@ -4093,7 +4423,7 @@
           '<span class="echip">' +
             '<i class="mdi mdi-information-outline"></i>' +
             labels.calculatedWith +
-            fmtP(EN.pEff) + " €/kWh" +
+            fmtP(EN.pEff) + " " + priceUnit() +
           "</span>";
 
         hydrate(sum);
