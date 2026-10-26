@@ -3681,6 +3681,7 @@
           ? rateLabels.edit
           : rateLabels.set;
       }
+      renderDynamicRateBar(m);      
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
       // Energy KPI labels.
       var kpiTranslations = {
@@ -4427,6 +4428,84 @@
         EN.days = (r[ENT.energy.energyTotal] || []).map(function (x) { return { d: new Date(tms(x.start)), v: x.change }; }).filter(function (x) { return x.v !== null && x.v !== undefined; }); drawDays();
       }).catch(function () { EN.days = []; drawDays(); });
     }
+    function dynamicRateLabels() {
+      var translations = {
+        fr: {
+          rate: "Tarif automatique ",
+          unavailable: "Tarif automatique indisponible",
+          source: "Source : ",
+          periodCosts:
+            "Coûts des périodes fournis par leurs capteurs ; " +
+            "les coûts manquants ne sont pas estimés.",
+          view: "Consulter"
+        },
+        en: {
+          rate: "Automatic rate ",
+          unavailable: "Automatic rate unavailable",
+          source: "Source: ",
+          periodCosts:
+            "Period costs come from their sensors; " +
+            "missing costs are not estimated.",
+          view: "View"
+        },
+        it: {
+          rate: "Tariffa automatica ",
+          unavailable: "Tariffa automatica non disponibile",
+          source: "Fonte: ",
+          periodCosts:
+            "I costi dei periodi provengono dai relativi sensori; " +
+            "i costi mancanti non vengono stimati.",
+          view: "Visualizza"
+        }
+      };
+
+      return translations[LANG] || translations.it;
+    }
+    function renderDynamicRateBar(m) {
+      if (!isDynamicPricing()) return;
+
+      var bar = $("#en-price");
+
+      if (!bar) return;
+
+      var labels = dynamicRateLabels();
+      var pricing = CFG.energyPricing || {};
+
+      var available =
+        m.rateAvailable === true &&
+        Number.isFinite(m.price.v);
+
+      bar.classList.toggle("unset", !available);
+
+      var main = $("#pb-main");
+
+      if (main) {
+        main.textContent = available
+          ? labels.rate +
+            Number(m.price.v).toLocaleString(LOCALE, {
+              minimumFractionDigits: 3,
+              maximumFractionDigits: 5
+            }) +
+            " " + priceUnit()
+          : labels.unavailable;
+      }
+
+      var sub = $("#pb-sub");
+
+      if (sub) {
+        sub.textContent =
+          labels.source +
+          String(pricing.currentRate || "—") +
+          " · " +
+          labels.periodCosts;
+      }
+
+      var button = $("#pb-cta");
+
+      if (button) {
+        button.textContent = labels.view;
+      }
+    }        
     function isDynamicPricing() {
       return LIVE &&
         CFG.energyPricing &&
