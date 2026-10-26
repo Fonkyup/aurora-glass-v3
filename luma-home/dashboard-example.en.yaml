@@ -1,9 +1,14 @@
-# Luma Home — unofficial derivative of Aurora Glass v3.
+# Luma Home — complete dashboard in English.
+# Unofficial derivative of Aurora Glass v3.
 # Original project: © 2026 DomotikPro.it (Luca Pinelli).
-# Translation and adaptation: Fonkyup — 2026-10-25.
-# GNU GPL version 3; see LICENSE. Original notices remain applicable.
-# Complete dashboard: paste into the raw configuration editor.
-# Back up your existing configuration before replacing it.
+# Adaptation and translation: Fonkyup.
+# Documentation updated October 26, 2026.
+# GNU GPL version 3; see LICENSE at the repository root.
+#
+# Paste into the dashboard's raw configuration editor.
+# Back up the existing configuration before replacing it.
+# The assets path applies to manual installation.
+
 title: Luma Home
 views:
   - title: Home
@@ -14,4 +19,5 @@ views:
       - type: custom:luma-home-card
         language: en
         assets: /local/luma-home/btn/
-        # Add entities here at the same level as assets and language; see card-example.en.yaml.
+        # Add entities here, at the same level as assets and language.
+        # See card-example.en.yaml for all options.

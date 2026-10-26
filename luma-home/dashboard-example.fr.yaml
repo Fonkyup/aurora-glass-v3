@@ -1,9 +1,14 @@
-# Luma Home — unofficial derivative of Aurora Glass v3.
-# Original project: © 2026 DomotikPro.it (Luca Pinelli).
-# Translation and adaptation: Fonkyup — 2026-10-25.
-# GNU GPL version 3; see LICENSE. Original notices remain applicable.
-# Tableau de bord complet : collez dans l’éditeur de configuration brute.
-# Sauvegardez votre configuration existante avant de la remplacer.
+# Luma Home — tableau de bord complet en français.
+# Version dérivée non officielle d’Aurora Glass v3.
+# Projet original : © 2026 DomotikPro.it (Luca Pinelli).
+# Adaptation et traduction : Fonkyup.
+# Documentation mise à jour le 26 octobre 2026.
+# GNU GPL version 3 ; voir LICENSE à la racine du dépôt.
+#
+# Collez dans l’éditeur de configuration brute du tableau de bord.
+# Sauvegardez la configuration existante avant de la remplacer.
+# Le chemin assets concerne l’installation manuelle.
+
 title: Luma Home
 views:
   - title: Maison
@@ -14,4 +19,5 @@ views:
       - type: custom:luma-home-card
         language: fr
         assets: /local/luma-home/btn/
-        # Ajoutez entities ici au même niveau que assets et language ; voir card-example.fr.yaml.
+        # Ajoutez entities ici, au même niveau que assets et language.
+        # Consultez card-example.fr.yaml pour toutes les options.

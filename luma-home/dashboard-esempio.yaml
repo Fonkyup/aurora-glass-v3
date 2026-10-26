@@ -1,22 +1,23 @@
-# ============================================================================
-# Luma Home - configurazione della scheda
+# Luma Home — plancia completa in italiano.
 # Versione derivata non ufficiale di Aurora Glass v3.
 # Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
 # Adattamento: Fonkyup.
-#  Come usarla: Impostazioni -> Plance -> (la tua plancia) -> ⋮ -> "Modifica
-#  plancia" -> ⋮ -> "Editor di configurazione testuale" -> sostituisci tutto
-#  con questo testo -> Salva.
-#  Poi apri scheda-esempio.yaml per cambiare i nomi delle tue entità.
-# ============================================================================
-title: Aurora
+# Documentazione aggiornata il 26 ottobre 2026.
+# GNU GPL versione 3; vedere LICENSE alla radice del repository.
+#
+# Incolla nell'Editor di configurazione testuale della plancia.
+# Salva una copia della configurazione esistente prima di sostituirla.
+# Il percorso assets riguarda l'installazione manuale.
+
+title: Luma Home
 views:
   - title: Casa
     path: casa
     icon: mdi:home-heart
-    panel: true            # la scheda occupa tutta la pagina
+    panel: true
     cards:
       - type: custom:luma-home-card
         language: it
         assets: /local/luma-home/btn/
-        # Aggiungi entities qui, allo stesso livello di assets.
+        # Aggiungi entities qui, allo stesso livello di assets e language.
         # Vedi scheda-esempio.yaml per tutte le opzioni.
