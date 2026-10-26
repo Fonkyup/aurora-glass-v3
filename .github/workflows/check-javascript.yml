@@ -1,0 +1,57 @@
+name: Check JavaScript copies
+
+on:
+  push:
+    branches:
+      - bilingual
+    paths:
+      - "luma-home/www/aurora-v3/luma-home.js"
+      - "dist/aurora-v3.js"
+      - ".github/workflows/check-javascript.yml"
+  pull_request:
+    paths:
+      - "luma-home/www/aurora-v3/luma-home.js"
+      - "dist/aurora-v3.js"
+      - ".github/workflows/check-javascript.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Syntax and distribution consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Read repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check luma-home/www/aurora-v3/luma-home.js
+          node --check dist/aurora-v3.js
+
+      - name: Compare reference and distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          reference="luma-home/www/aurora-v3/luma-home.js"
+          distribution="dist/aurora-v3.js"
+
+          echo "SHA-256:"
+          sha256sum "$reference" "$distribution"
+
+          if cmp -s "$reference" "$distribution"; then
+            echo "PASS: both JavaScript files are byte-for-byte identical."
+          else
+            echo "::error::Reference and distribution differ. Review before merging."
+            exit 1
+          fi
