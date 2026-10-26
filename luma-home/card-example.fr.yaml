@@ -7,10 +7,11 @@
 # Les clés italiennes et room: Cucina sont conservées pour compatibilité.
 # assets ci-dessous correspond à une installation manuelle ; adaptez-le à votre installation.
 # energy est une section de entities, et non une option à la racine.
+# Documentation mise à jour le 26 octobre 2026.
 
-type: custom:aurora-v3-card
+type: custom:luma-home-card
 language: fr
-assets: /local/aurora-v3/btn/        # Dossier des images des boutons
+assets: /local/luma-home/btn/        # Dossier des images des boutons
 
 entities:
   # --- ÉCLAIRAGE (11 pièces). Entités light.*, switch.* ou autres entités compatibles avec une commande marche/arrêt.
