@@ -13,5 +13,5 @@ views:
     cards:
       - type: custom:luma-home-card
         language: fr
-        assets: /local/aurora-v3/btn/
+        assets: /local/luma-home/btn/
         # Ajoutez entities ici au même niveau que assets et language ; voir card-example.fr.yaml.

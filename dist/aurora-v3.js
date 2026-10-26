@@ -6324,7 +6324,7 @@ function defaultAssets() {
     );
     return script
       ? script.src.replace(/(?:aurora-v3|luma-home)\.js.*$/, "btn/")
-      : "/local/aurora-v3/btn/";
+      : "/local/luma-home/btn/";
   }
 
   class AuroraV3Card extends HTMLElement {

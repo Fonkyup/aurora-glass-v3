@@ -3,15 +3,16 @@
 # Versione derivata non ufficiale di Aurora Glass v3.
 # Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
 # Adattamento: Fonkyup.
-#  Incolla il contenuto nell'editor YAML della scheda, oppure usa
-#  dashboard-esempio.yaml che la contiene già dentro una vista a pannello.
+#  Collez le contenu dans l'éditeur YAML de la fiche, ou utilisez
+#  dashboard-exemple.yaml qui le contient déjà dans une vue en panneau.
 #
-#  Tutto è FACOLTATIVO: ciò che non scrivi usa i nomi di esempio qui sotto.
-#  Cambia solo le entità che nella tua casa hanno un nome diverso.
-#  (Dove trovi i nomi: Strumenti per sviluppatori -> Stati -> filtra "light.")
+#  Tout est FACULTATIF : ce que vous ne saisissez pas utilisera les noms d'exemple ci-dessous.
+#  Modifiez uniquement les entités qui portent un nom différent chez vous.
+#  (Où trouver les noms : Outils pour les développeurs -> États -> filtrez sur « light. »)
 # ============================================================================
 type: custom:luma-home-card
-assets: /local/aurora-v3/btn/        # cartella delle immagini dei pulsanti
+assets: /local/luma-home/btn/
+        # cartella delle immagini dei pulsanti
 
 entities:
   # --- LUCI (le 11 stanze). Puoi usare light.*, switch.* o qualsiasi entità accendibile
