@@ -38,6 +38,36 @@ jobs:
           node --check luma-home/www/aurora-v3/aurora-v3.js
           node --check dist/aurora-v3.js
 
+      - name: Check required initialization blocks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files=(
+            "luma-home/www/aurora-v3/aurora-v3.js"
+            "dist/aurora-v3.js"
+          )
+
+          required=(
+            "function boot()"
+            "var PROPS ="
+            "var CSS ="
+            "var HTML ="
+            "var OVERRIDES ="
+            "class AuroraV3Card"
+            "function motionSummaryLabel"
+          )
+
+          for file in "${files[@]}"; do
+            for marker in "${required[@]}"; do
+              if ! grep -Fq "$marker" "$file"; then
+                echo "::error file=$file::Missing required marker: $marker"
+                exit 1
+              fi
+            done
+            echo "PASS: required initialization markers found in $file"
+          done          
+
       - name: Compare reference and distribution
         shell: bash
         run: |
