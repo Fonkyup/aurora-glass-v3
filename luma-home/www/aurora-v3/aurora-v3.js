@@ -912,11 +912,43 @@
       LANG = "it";
     }
 
-    var LOCALE = {
+    var DEFAULT_LOCALE = {
       it: "it-IT",
       fr: "fr-CA",
       en: "en-CA"
     }[LANG];
+
+    var CURRENCY = String(CFG.currency || "EUR")
+      .trim()
+      .toUpperCase();
+
+    if (["CAD", "USD", "EUR"].indexOf(CURRENCY) === -1) {
+      console.warn(
+        "Luma Home: unsupported currency; falling back to EUR."
+      );
+      CURRENCY = "EUR";
+    }
+
+    var LOCALE = String(CFG.locale || DEFAULT_LOCALE)
+      .trim()
+      .replace(/_/g, "-");
+
+    try {
+      new Intl.NumberFormat(LOCALE).format(0);
+    } catch (error) {
+      console.warn(
+        "Luma Home: invalid locale; using the language default."
+      );
+      LOCALE = DEFAULT_LOCALE;
+    }
+
+    var MONEY_FORMATTER = new Intl.NumberFormat(LOCALE, {
+      style: "currency",
+      currency: CURRENCY,
+      currencyDisplay: "code",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
     var I18N = {
       it: {
@@ -3121,7 +3153,19 @@
     var EN = { range: "24h", series: [], busy: false, last: 0, rangeKey: "", days: [], daysAt: 0, tipIdx: -1, dayUnit: "kwh", pEff: 0.3, pDrawn: 0 };
     function enNum(id) { var s = sv(id); if (!s || isUnavail(s)) return null; var v = parseFloat(s.state); return isNaN(v) ? null : v; }
     function fmtKwh(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: v >= 100 ? 0 : 1, maximumFractionDigits: v >= 100 ? 0 : 2 }); }
-    function fmtEur(v) { return v === null ? "—" : Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+    function fmtEur(v) {
+      if (v === null || v === undefined || v === "") {
+        return "—";
+      }
+
+      var amount = Number(v);
+
+      if (!Number.isFinite(amount)) {
+        return "—";
+      }
+
+      return MONEY_FORMATTER.format(amount);
+    }
     function fmtW(v) { return v >= 1000 ? { n: Number(v / 1000).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), u: "kW" } : { n: Math.round(v).toLocaleString(LOCALE), u: "W" }; }
     var demoE = { p: 180, t0: Date.now() };
     function demoPower() { var m = (Date.now() - demoE.t0) / 1000; return Math.max(60, 190 + 90 * Math.sin(m / 9) + 60 * Math.sin(m / 3.1) + (Math.sin(m / 47) > .8 ? 1400 : 0)); }
