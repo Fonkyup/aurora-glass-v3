@@ -3337,6 +3337,121 @@
           apps: E.appliances.map(function (x) { var s = sv(x.p); return { n: x.n, w: enNum(x.p), e: x.e ? enNum(x.e) : null, ic: x.ic, c: x.c, na: !s || isUnavail(s) }; }) };
         sc = { today: enNum(E.costToday), yest: enNum(E.costYesterday), month: enNum(E.costMonth), lmonth: enNum(E.costLastMonth), year: enNum(E.costYear) };
       }
+      // Optional dynamic pricing.
+      // Without this mode, the existing model below is unchanged.
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        var sourceCurrency = String(
+          pricing.currency || ""
+        ).trim().toUpperCase();
+
+        var currencyMatches =
+          sourceCurrency === CURRENCY;
+
+        var normalizeUnit = function (unit) {
+          return String(unit || "")
+            .replace(/\s+/g, "")
+            .toUpperCase();
+        };
+
+        var rateId = pricing.currentRate;
+        var rateState = rateId ? sv(rateId) : null;
+
+        var rateUnit = normalizeUnit(
+          rateState &&
+          rateState.attributes &&
+          rateState.attributes.unit_of_measurement
+        );
+
+        // "$/kWh" is accepted only because the source currency
+        // is explicitly configured and matches the card.
+        var rateUnitMatches = currencyMatches && (
+          rateUnit === sourceCurrency + "/KWH" ||
+          (
+            (
+              sourceCurrency === "CAD" ||
+              sourceCurrency === "USD"
+            ) &&
+            (
+              rateUnit === "$/KWH" ||
+              rateUnit === "$" + sourceCurrency + "/KWH"
+            )
+          ) ||
+          (
+            sourceCurrency === "EUR" &&
+            (
+              rateUnit === "€/KWH" ||
+              rateUnit === "€EUR/KWH"
+            )
+          )
+        );
+
+        var currentRate =
+          rateUnitMatches ? enNum(rateId) : null;
+
+        var rateAvailable =
+          currentRate !== null &&
+          Number.isFinite(currentRate) &&
+          currentRate >= 0;
+
+        var readPeriodCost = function (id) {
+          if (!currencyMatches || !id) return null;
+
+          var state = sv(id);
+
+          if (!state || !state.attributes) return null;
+
+          var unit = normalizeUnit(
+            state.attributes.unit_of_measurement
+          );
+
+          var expectedLabel = normalizeUnit(
+            currencyLabel()
+          );
+
+          // Period cost sensors must identify their currency.
+          // A bare "$" is deliberately not enough here.
+          if (
+            unit !== sourceCurrency &&
+            unit !== expectedLabel
+          ) {
+            return null;
+          }
+
+          var value = enNum(id);
+
+          return value !== null &&
+            Number.isFinite(value)
+              ? value
+              : null;
+        };
+
+        m.pricingMode = "dynamic";
+
+        m.price = {
+          v: rateAvailable ? currentRate : 0,
+          src: rateAvailable ? "sensor" : "none"
+        };
+
+        m.rateAvailable = rateAvailable;
+        m.implied = null;
+
+        // Zero is a technical fallback, not a known free tariff.
+        // Rendering must use rateAvailable to distinguish them.
+        m.pEff = rateAvailable ? currentRate : 0;
+
+        // Keep compatibility with the existing sensor-cost branch.
+        m.src = "sensori";
+
+        m.cToday = readPeriodCost(E.costToday);
+        m.cYest = readPeriodCost(E.costYesterday);
+        m.cMonth = readPeriodCost(E.costMonth);
+        m.cLmonth = readPeriodCost(E.costLastMonth);
+        m.cYear = readPeriodCost(E.costYear);
+
+        return m;
+      }      
       var pi = priceInfo(), implied = null;
       var hasSens = [sc.today, sc.yest, sc.month, sc.lmonth, sc.year].some(function (x) { return x !== undefined && x !== null; });
       if (pi.v <= 0) {
@@ -3766,7 +3881,137 @@
         output.textContent = "";
       }
     }
+    function openDynamicPrice() {
+      var translations = {
+        fr: {
+          title: "Tarif automatique",
+          source: "Source : ",
+          unavailable: "Tarif indisponible",
+          explanation:
+            "Tarif lu automatiquement depuis Home Assistant. " +
+            "La carte ne modifie pas ce capteur. " +
+            "Les coûts des périodes proviennent de leurs " +
+            "capteurs de coût, pas du tarif courant."
+        },
+        en: {
+          title: "Automatic rate",
+          source: "Source: ",
+          unavailable: "Rate unavailable",
+          explanation:
+            "Rate read automatically from Home Assistant. " +
+            "The card does not modify this sensor. " +
+            "Period costs come from their cost sensors, " +
+            "not from the current rate."
+        },
+        it: {
+          title: "Tariffa automatica",
+          source: "Fonte: ",
+          unavailable: "Tariffa non disponibile",
+          explanation:
+            "Tariffa letta automaticamente da Home Assistant. " +
+            "La scheda non modifica questo sensore. " +
+            "I costi dei periodi provengono dai relativi " +
+            "sensori di costo, non dalla tariffa attuale."
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var pricing = CFG.energyPricing || {};
+      var m = enModel();
+      var box = $("#pricebox");
+      var input = $("#pr-in");
+
+      input.readOnly = true;
+
+      // Preserve the precision of the Hilo rate.
+      input.value = m.rateAvailable
+        ? String(m.price.v)
+        : "";
+
+      input.placeholder = m.rateAvailable
+        ? ""
+        : labels.unavailable;
+
+      input.setAttribute(
+        "aria-label",
+        labels.title + " — " + priceUnit()
+      );
+
+      [
+        "#pr-pre",
+        "#pr-minus",
+        "#pr-plus",
+        "#pr-calc",
+        "#pr-ok"
+      ].forEach(function (selector) {
+        var node = $(selector);
+
+        if (node) {
+          node.hidden = true;
+        }
+      });
+
+      $("#pr-calc").open = false;
+      $("#pr-bill").value = "";
+      $("#pr-kwh").value = "";
+      $("#pr-calc-out").textContent = "";
+
+      var hint = $("#pr-hint");
+      hint.hidden = false;
+      hint.textContent = labels.explanation;
+
+      var rateText = m.rateAvailable
+        ? Number(m.price.v).toLocaleString(LOCALE, {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 5
+          }) + " " + priceUnit()
+        : labels.unavailable;
+
+      $("#pr-where").textContent =
+        labels.title + " : " + rateText +
+        " · " + labels.source +
+        String(pricing.currentRate || "—");
+
+      box.classList.add("open");
+      box.setAttribute("aria-hidden", "false");
+
+      later(function () {
+        var closeButton = $("#pr-close");
+
+        if (closeButton) {
+          closeButton.focus();
+        }
+      }, 220);
+    }    
     function openPrice() {
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        openDynamicPrice();
+        return;
+      }
+
+      // Restore the normal editable window in standard mode.
+      var input = $("#pr-in");
+
+      input.readOnly = false;
+      input.placeholder = "";
+      input.removeAttribute("aria-label");
+
+      [
+        "#pr-pre",
+        "#pr-minus",
+        "#pr-plus",
+        "#pr-calc",
+        "#pr-ok"
+      ].forEach(function (selector) {
+        var node = $(selector);
+
+        if (node) {
+          node.hidden = false;
+        }
+      });
+
       var translations = {
         it: {
           sensorsBefore: "I sensori che avevi già calcolano i costi a circa ",
@@ -3915,6 +4160,11 @@
       return translations[LANG] || translations.it;
     }
     function savePrice() {
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        return;
+      }      
       var labels = priceSaveLabels();
       var safety = priceSafetyLabels();
       var v = prNum("#pr-in");

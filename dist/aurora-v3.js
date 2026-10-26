@@ -3881,7 +3881,137 @@
         output.textContent = "";
       }
     }
+    function openDynamicPrice() {
+      var translations = {
+        fr: {
+          title: "Tarif automatique",
+          source: "Source : ",
+          unavailable: "Tarif indisponible",
+          explanation:
+            "Tarif lu automatiquement depuis Home Assistant. " +
+            "La carte ne modifie pas ce capteur. " +
+            "Les coûts des périodes proviennent de leurs " +
+            "capteurs de coût, pas du tarif courant."
+        },
+        en: {
+          title: "Automatic rate",
+          source: "Source: ",
+          unavailable: "Rate unavailable",
+          explanation:
+            "Rate read automatically from Home Assistant. " +
+            "The card does not modify this sensor. " +
+            "Period costs come from their cost sensors, " +
+            "not from the current rate."
+        },
+        it: {
+          title: "Tariffa automatica",
+          source: "Fonte: ",
+          unavailable: "Tariffa non disponibile",
+          explanation:
+            "Tariffa letta automaticamente da Home Assistant. " +
+            "La scheda non modifica questo sensore. " +
+            "I costi dei periodi provengono dai relativi " +
+            "sensori di costo, non dalla tariffa attuale."
+        }
+      };
+
+      var labels = translations[LANG] || translations.it;
+      var pricing = CFG.energyPricing || {};
+      var m = enModel();
+      var box = $("#pricebox");
+      var input = $("#pr-in");
+
+      input.readOnly = true;
+
+      // Preserve the precision of the Hilo rate.
+      input.value = m.rateAvailable
+        ? String(m.price.v)
+        : "";
+
+      input.placeholder = m.rateAvailable
+        ? ""
+        : labels.unavailable;
+
+      input.setAttribute(
+        "aria-label",
+        labels.title + " — " + priceUnit()
+      );
+
+      [
+        "#pr-pre",
+        "#pr-minus",
+        "#pr-plus",
+        "#pr-calc",
+        "#pr-ok"
+      ].forEach(function (selector) {
+        var node = $(selector);
+
+        if (node) {
+          node.hidden = true;
+        }
+      });
+
+      $("#pr-calc").open = false;
+      $("#pr-bill").value = "";
+      $("#pr-kwh").value = "";
+      $("#pr-calc-out").textContent = "";
+
+      var hint = $("#pr-hint");
+      hint.hidden = false;
+      hint.textContent = labels.explanation;
+
+      var rateText = m.rateAvailable
+        ? Number(m.price.v).toLocaleString(LOCALE, {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 5
+          }) + " " + priceUnit()
+        : labels.unavailable;
+
+      $("#pr-where").textContent =
+        labels.title + " : " + rateText +
+        " · " + labels.source +
+        String(pricing.currentRate || "—");
+
+      box.classList.add("open");
+      box.setAttribute("aria-hidden", "false");
+
+      later(function () {
+        var closeButton = $("#pr-close");
+
+        if (closeButton) {
+          closeButton.focus();
+        }
+      }, 220);
+    }    
     function openPrice() {
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        openDynamicPrice();
+        return;
+      }
+
+      // Restore the normal editable window in standard mode.
+      var input = $("#pr-in");
+
+      input.readOnly = false;
+      input.placeholder = "";
+      input.removeAttribute("aria-label");
+
+      [
+        "#pr-pre",
+        "#pr-minus",
+        "#pr-plus",
+        "#pr-calc",
+        "#pr-ok"
+      ].forEach(function (selector) {
+        var node = $(selector);
+
+        if (node) {
+          node.hidden = false;
+        }
+      });
+
       var translations = {
         it: {
           sensorsBefore: "I sensori che avevi già calcolano i costi a circa ",
@@ -4030,6 +4160,11 @@
       return translations[LANG] || translations.it;
     }
     function savePrice() {
+      var pricing = CFG.energyPricing || {};
+
+      if (LIVE && pricing.mode === "dynamic") {
+        return;
+      }      
       var labels = priceSaveLabels();
       var safety = priceSafetyLabels();
       var v = prNum("#pr-in");
