@@ -6,6 +6,8 @@ Versione derivata non ufficiale di Aurora Glass v3, adattata da Fonkyup con un�
 
 > Convenzione attuale: il tipo di scheda è `custom:luma-home-card`. Il file JavaScript mantiene il nome `aurora-v3.js`. Per l’installazione manuale descritta qui sotto, i file vengono copiati in `www/luma-home/`. La cartella sorgente del repository rimane `luma-home/www/aurora-v3/`: copia il suo contenuto nella cartella di destinazione, senza presumere che i due nomi debbano coincidere.
 
+![Interfaccia ereditata da Aurora Glass v3, progetto originale](docs/dashboard-casa-notte-intera.webp)
+
 ## Origine del progetto e contributi
 
 Luma Home si basa su Aurora Glass v3, creato da DomotikPro.it (Luca Pinelli).
