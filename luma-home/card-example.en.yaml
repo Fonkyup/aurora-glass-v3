@@ -7,10 +7,11 @@
 # Italian keys and room: Cucina are preserved for compatibility.
 # assets below assumes a manual installation; adapt it to your installation.
 # energy belongs under entities, not at the configuration root.
+# Documentation updated October 26, 2026.
 
-type: custom:aurora-v3-card
+type: custom:luma-home-card
 language: en
-assets: /local/aurora-v3/btn/        # Button image folder
+assets: /local/luma-home/btn/        # Button image folder
 
 entities:
   # --- LIGHTS (11 rooms). light.*, switch.*, or other entities supporting on/off commands.
