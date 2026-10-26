@@ -264,4 +264,26 @@ Changes to resource URLs, installation paths, or card identifiers require a new 
 
 The original README states that Aurora Glass v3 was tested by its author on Home Assistant 2026.9. This does not certify the derivative version.
 
-To report an issue with this adaptation, open an issue in the repository distributing
+To report an issue with this adaptation, open an issue in the repository distributing this version, including the language, loaded version, and reproduction steps.
+
+## License and attribution
+
+The derivative software is distributed under the [GNU GPL version 3](LICENSE).
+
+You may use, study, modify, and redistribute the software, including commercially, subject to the license conditions. Distributed derivatives must, among other requirements, preserve applicable notices, identify modifications and their dates, and meet the licensing and Corresponding Source obligations.
+
+Original notice preserved: © 2026 DomotikPro.it (Luca Pinelli).
+
+Fonkyup's contributions do not replace the original project's rights and credits. Any separate terms applying to third-party components remain applicable.
+
+The name Aurora Glass and the DomotikPro.it brand are mentioned to identify the original project. No trademark rights or endorsement are claimed. The public name of this derivative is Luma Home.
+
+The software is provided without warranty, to the extent stated in the license and permitted by applicable law. LICENSE contains the full terms; this section is only a summary.
+
+Preserve the LICENSE text without modification. Project and contribution notices belong in the documentation and source files, not inside the GPL text.
+
+---
+
+Original project: [DomotikPro.it](https://domotikpro.it) — Luca Pinelli.
+
+Unofficial multilingual adaptation: Fonkyup.
