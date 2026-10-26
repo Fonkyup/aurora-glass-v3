@@ -4,7 +4,7 @@
 
 Versione derivata non ufficiale di Aurora Glass v3, adattata da Fonkyup con un’interfaccia in italiano, francese e inglese.
 
-> Identificatore della scheda: questa versione usa `custom:luma-home-card`. Il file distribuito mantiene per ora il nome `aurora-v3.js`. Non confondere il nome del file con il tipo della scheda.
+> Convenzione attuale: il tipo di scheda è `custom:luma-home-card`. Il file JavaScript mantiene il nome `aurora-v3.js`. Per l’installazione manuale descritta qui sotto, i file vengono copiati in `www/luma-home/`. La cartella sorgente del repository rimane `luma-home/www/aurora-v3/`: copia il suo contenuto nella cartella di destinazione, senza presumere che i due nomi debbano coincidere.
 
 ## Origine del progetto e contributi
 
@@ -14,11 +14,13 @@ Avviso originale conservato: © 2026 DomotikPro.it (Luca Pinelli).
 
 Adattamento e traduzioni: Fonkyup.
 
-Modifiche effettuate fino al 25 ottobre 2026:
+I contributi comprendono:
 - aggiunta delle traduzioni francese e inglese dell’interfaccia;
 - adattamento dei testi e dei messaggi dinamici;
 - aggiunta della documentazione e degli esempi tradotti;
 - adozione del nome pubblico Luma Home e del tipo di scheda `custom:luma-home-card`.
+
+Documentazione aggiornata il 26 ottobre 2026. Le date delle modifiche sono riportate anche negli avvisi dei sorgenti e nella cronologia del repository.
 
 La lingua italiana del progetto originale è mantenuta. Questa versione non è una pubblicazione ufficiale del progetto originale e non viene presentata come approvata da DomotikPro.it o Luca Pinelli.
 
@@ -51,29 +53,54 @@ Secondo la documentazione originale, la scheda funziona localmente e carica i ca
 
 Questa descrizione non costituisce una verifica indipendente della sicurezza o del traffico di rete. Le integrazioni Home Assistant utilizzate dai dispositivi possono avere collegamenti esterni propri.
 
-## Installazione manuale
+## Guide ed esempi
 
-Le istruzioni seguenti presuppongono il mantenimento del file `aurora-v3.js` e della cartella delle immagini `aurora-v3/btn/`.
+Guide brevi:
+- [Italiano](luma-home/LEGGIMI.txt)
+- [Français](luma-home/LISEZMOI.fr.txt)
+- [English](luma-home/README.en.txt)
+
+Esempi in italiano:
+- [Plancia completa](luma-home/dashboard-esempio.yaml)
+- [Opzioni dettagliate della scheda](luma-home/scheda-esempio.yaml)
+- [Contatori di energia facoltativi](luma-home/aurora-energia.yaml)
+
+Gli esempi devono usare `custom:luma-home-card`. Per l’installazione manuale descritta qui sotto, il percorso delle immagini deve essere `/local/luma-home/btn/`.
+
+## Installazione manuale
 
 ### 1. Copiare i file
 
-Dal repository di questa versione, copia il contenuto della cartella `luma-home/www/aurora-v3` nella cartella `www/aurora-v3` della configurazione di Home Assistant. In alternativa usa il file JavaScript di `dist` e la relativa cartella `btn` della stessa versione.
+Dalla cartella `luma-home/www/aurora-v3/` del repository, copia il file `aurora-v3.js` e la cartella completa `btn` in una cartella chiamata `luma-home`, all’interno della cartella `www` della configurazione di Home Assistant.
 
 Il risultato deve essere:
 
 ```text
-www/aurora-v3/aurora-v3.js
-www/aurora-v3/btn/…
+www/
+└── luma-home/
+    ├── aurora-v3.js
+    └── btn/
+        └── immagini e GIF dei pulsanti
 ```
 
-Verifica la struttura effettiva della versione scaricata: il file JavaScript e le immagini devono appartenere alla stessa versione.
+Il percorso sorgente e quello di destinazione sono volutamente diversi:
+
+```text
+Sorgente nel repository:
+luma-home/www/aurora-v3/aurora-v3.js
+
+Destinazione in Home Assistant:
+www/luma-home/aurora-v3.js
+```
+
+Usa il JavaScript e le immagini della stessa versione. La cartella `dist` contiene la copia di distribuzione: non mescolare file provenienti da revisioni diverse.
 
 Se la cartella `www` è appena stata creata, riavvia Home Assistant una volta.
 
 Apri nel browser:
 
 ```text
-<indirizzo di Home Assistant>/local/aurora-v3/aurora-v3.js
+<indirizzo di Home Assistant>/local/luma-home/aurora-v3.js
 ```
 
 Dovrebbe comparire il testo JavaScript.
@@ -84,7 +111,7 @@ Attiva la Modalità avanzata nel tuo profilo.
 
 Impostazioni → Plance → menu ⋮ → Risorse → Aggiungi risorsa:
 
-- URL: `/local/aurora-v3/aurora-v3.js?v=1`
+- URL: `/local/luma-home/aurora-v3.js?v=1`
 - Tipo: Modulo JavaScript.
 
 Aumenta il numero dopo `?v=` a ogni aggiornamento. Se la risorsa esiste già, aggiornala invece di aggiungerne una seconda. Evita di caricare più versioni della stessa scheda.
@@ -99,7 +126,9 @@ Titolo suggerito: `Luma Home`.
 
 L’esempio completo originale è [dashboard-esempio.yaml](luma-home/dashboard-esempio.yaml). Le opzioni dettagliate sono descritte in [scheda-esempio.yaml](luma-home/scheda-esempio.yaml).
 
-Prima di utilizzare questi esempi, verifica che il tipo sia aggiornato a `custom:luma-home-card`. Gli esempi ereditati che contengono ancora `custom:aurora-v3-card` devono essere adattati.
+Gli esempi di questa versione devono utilizzare `custom:luma-home-card` e il percorso delle immagini previsto per l’installazione scelta.
+
+L’esempio dettagliato descrive una singola scheda, non un’intera plancia. Non incollarlo direttamente alla radice della configurazione della dashboard.
 
 Su una nuova plancia, apri l’Editor di configurazione testuale e usa una configurazione minima come questa:
 
@@ -113,7 +142,7 @@ views:
     cards:
       - type: custom:luma-home-card
         language: it
-        assets: /local/aurora-v3/btn/
+        assets: /local/luma-home/btn/
 ```
 
 Salva una copia della configurazione prima di sostituire una plancia esistente.
@@ -127,7 +156,7 @@ Aggiungi `entities` alla configurazione della scheda, allo stesso livello di `ty
 ```yaml
 type: custom:luma-home-card
 language: it
-assets: /local/aurora-v3/btn/
+assets: /local/luma-home/btn/
 entities:
   lights:
     salotto: light.salotto
@@ -149,7 +178,7 @@ La configurazione dell’energia appartiene a `entities.energy`:
 ```yaml
 type: custom:luma-home-card
 language: it
-assets: /local/aurora-v3/btn/
+assets: /local/luma-home/btn/
 entities:
   energy:
     power: sensor.potenza_casa
@@ -163,16 +192,36 @@ Installa una sola variante del file energia: italiana, francese oppure inglese. 
 
 Nella vista Energia imposta la tariffa per kWh. I costi sono stime basate sui consumi e sulla tariffa configurati.
 
+## Migrazione di un’installazione esistente
+
+Prima di abbandonare la vecchia struttura:
+
+1. Salva una copia del JavaScript funzionante e della configurazione YAML.
+2. Copia il JavaScript e le immagini in `www/luma-home/`.
+3. Aggiorna la risorsa esistente a `/local/luma-home/aurora-v3.js?v=…`.
+4. Usa il tipo `custom:luma-home-card`.
+5. Imposta `assets: /local/luma-home/btn/`.
+6. Ricarica il browser e verifica immagini, lingue e comandi.
+7. Elimina la vecchia risorsa o cartella soltanto quando non è più utilizzata altrove.
+
+Rinominare una cartella nel repository GitHub non sposta i file in Home Assistant.
+
+Non rinominare gli identificatori dei sensori di energia o le chiavi di archiviazione del browser durante questa migrazione dei percorsi.
+
 ## Installazione con HACS
 
 La procedura del progetto originale che indica `lucalux00/aurora-glass-v3` installa il progetto originale, non questa versione derivata.
 
 La validazione HACS riuscita di un commit non equivale alla pubblicazione automatica nel catalogo HACS né alla verifica completa di un’installazione. Prima di documentare una procedura HACS definitiva per Luma Home, occorre verificare la versione effettivamente distribuita e i file installati.
 
+I percorsi `/local/luma-home/` descrivono l’installazione manuale. Con HACS usa i percorsi effettivi dei file installati; non sostituire automaticamente gli URL `/hacsfiles/` con quelli dell’installazione manuale.
+
+Il JavaScript distribuito è `dist/aurora-v3.js`. Il campo `filename` di `hacs.json` rimane `aurora-v3.js` finché questo nome viene mantenuto.
+
 ## Risoluzione dei problemi
 
 - `Custom element doesn't exist`: verifica la risorsa, il file caricato e il tipo `custom:luma-home-card`, quindi ricarica completamente il browser.
-- Immagini assenti: per l’installazione manuale descritta, verifica `assets: /local/aurora-v3/btn/`, compresa la barra finale. Per altre installazioni, adatta il percorso alla posizione reale delle immagini.
+- Immagini assenti: per l’installazione manuale descritta, verifica `assets: /local/luma-home/btn/`, compresa la barra finale. Per altre installazioni, adatta il percorso alla posizione reale delle immagini.
 - Luci grigie: verifica l’identificatore e la disponibilità dell’entità.
 - Costi a zero: verifica tariffa e sensori di consumo.
 - Lingua errata: verifica `language` e la versione JavaScript caricata.
@@ -180,13 +229,15 @@ La validazione HACS riuscita di un commit non equivale alla pubblicazione automa
 
 ## Disinstallazione
 
-Elimina la plancia interessata e la risorsa solo se non sono utilizzate altrove. Rimuovi `www/aurora-v3` solo se nessun’altra installazione la usa.
+Elimina la plancia interessata e la risorsa solo se non sono utilizzate altrove. Rimuovi `www/luma-home` solo se nessun’altra installazione la usa.
 
 Questi passaggi non cancellano automaticamente le preferenze memorizzate nel browser né i contatori configurati separatamente.
 
 ## Stato e limiti delle verifiche
 
 Il manutentore ha confermato il funzionamento della versione provata in Home Assistant e la visualizzazione delle traduzioni francese e inglese. Questo non equivale alla verifica di ogni messaggio raro o di ogni percorso dell’interfaccia.
+
+I controlli automatici verificano i requisiti HACS, la sintassi JavaScript e l’identità tra il file di riferimento e quello di distribuzione nelle revisioni controllate. Non sostituiscono le prove funzionali dell’installazione finale. Le modifiche agli URL delle risorse, ai percorsi di installazione o al tipo di scheda richiedono una nuova prova.
 
 Il README originale indica test dell’autore su Home Assistant 2026.9; tale indicazione non certifica questa versione derivata.
 
