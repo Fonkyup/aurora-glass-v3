@@ -1,71 +1,149 @@
-AURORA GLASS v3 per Home Assistant
+LUMA HOME per Home Assistant
 ====================================
-La dashboard animata: cielo che cambia con l'ora, 10 mondi, 11 effetti meteo,
-pulsanti fatti di immagini e GIF, allarme, clima, telecamere ed energia con costi in euro.
+Versione derivata non ufficiale di Aurora Glass v3.
+Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
+Adattamento e traduzioni: Fonkyup.
+Guida aggiornata il 26 ottobre 2026.
 
-GUIDA COMPLETA CON SCHERMATE: nella pagina «Guida» del sito (e nel video su YouTube).
-Qui sotto il riassunto, in 6 passi (circa 10 minuti).
+Dashboard animata: cielo che segue l’ora, 10 mondi, 11 effetti meteo, pulsanti con
+immagini e GIF, allarme, clima, telecamere e monitoraggio dell’energia.
+Interfaccia disponibile in italiano, francese e inglese.
 
-CONTENUTO
-  LEGGIMI.txt                  questo file
-  dashboard-esempio.yaml       la plancia pronta da incollare
-  scheda-esempio.yaml          TUTTE le opzioni della scheda, commentate
-  aurora-energia.yaml          contatori kWh giorno/mese/anno (facoltativo)
-  www/aurora-v3/aurora-v3.js   la scheda (un solo file)
-  www/aurora-v3/btn/           50 immagini e GIF dei pulsanti
+CONVENZIONE PER L’INSTALLAZIONE MANUALE
+  Nome pubblico: Luma Home
+  Tipo di scheda: custom:luma-home-card
+  File JavaScript: aurora-v3.js (nome mantenuto)
+  Cartella in Home Assistant: www/luma-home/
+  Immagini: /local/luma-home/btn/
 
-PASSI
-1) COPIA I FILE
-   Metti la cartella  www/aurora-v3  dentro la cartella  www  di Home Assistant
-   (File editor, Samba o Studio Code Server). Risultato:
-       www/aurora-v3/aurora-v3.js
-       www/aurora-v3/btn/...
-   Nel componente File editor la cartella di configurazione si chiama /homeassistant:
-   e' la stessa cartella. Se www e' nuova, riavvia Home Assistant una volta.
-   Prova: apri  <indirizzo di Home Assistant>/local/aurora-v3/aurora-v3.js  nel browser:
-   se vedi del testo, e' tutto a posto.
+Queste istruzioni descrivono la struttura prevista dopo la migrazione a luma-home.
+Non modificare soltanto gli URL: copia prima i file nella nuova posizione.
+Rinominare una cartella su GitHub non sposta i file dentro Home Assistant.
 
-2) AGGIUNGI LA RISORSA
-   Profilo -> attiva "Modalita' avanzata".
-   Impostazioni -> Plance -> menu (tre puntini) -> Risorse -> Aggiungi risorsa
-       URL:   /local/aurora-v3/aurora-v3.js?v=1
-       Tipo:  Modulo JavaScript
-   (quando aggiorni la scheda, alza il numero dopo ?v=)
+DOCUMENTI ED ESEMPI
+  LEGGIMI.txt                  questa guida
+  dashboard-esempio.yaml       plancia completa in italiano
+  scheda-esempio.yaml          opzioni dettagliate della scheda in italiano
+  aurora-energia.yaml          contatori di energia facoltativi
+  LISEZMOI.fr.txt              guida francese
+  README.en.txt                guida inglese
 
-3) CREA LA PLANCIA
-   Impostazioni -> Plance -> Aggiungi plancia -> Nuova plancia da zero
-   Titolo "Aurora", icona mdi:home-heart, "Mostra nella barra laterale".
+Gli esempi devono usare custom:luma-home-card e /local/luma-home/btn/.
+Gli identificatori delle entità sono esempi da sostituire con quelli della tua casa.
+Le guide e le demo di DomotikPro.it riguardano il progetto originale e non
+necessariamente i percorsi e gli identificatori attuali di Luma Home.
 
-4) INCOLLA LA SCHEDA
-   Apri la plancia -> matita -> menu -> "Editor di configurazione testuale"
-   Cancella tutto e incolla il contenuto di  dashboard-esempio.yaml  -> Salva.
-   Le luci saranno grigie: i nomi sono di esempio.
+INSTALLAZIONE IN SEI PASSI
+1) COPIARE I FILE
+   Prendi aurora-v3.js e la cartella btn completa dalla versione tradotta.
+   dist contiene la copia destinata alla distribuzione: usa JavaScript e immagini
+   della stessa versione, senza mescolare file vecchi e nuovi.
+   Con File editor, Samba o Studio Code Server, crea:
+       www/luma-home/aurora-v3.js
+       www/luma-home/btn/...
+   www si trova nella cartella di configurazione di Home Assistant, che in
+   File editor può chiamarsi /homeassistant. Se www è nuova, riavvia una volta.
+   Prova: apri <indirizzo di Home Assistant>/local/luma-home/aurora-v3.js.
+   Deve comparire il testo JavaScript.
 
-5) COLLEGA LE TUE ENTITA'
-   Strumenti per sviluppatori -> Stati: cerca i nomi (light., binary_sensor., ...).
-   Aggiungi sotto "assets:" la sezione "entities:" con i tuoi nomi
-   (guarda scheda-esempio.yaml: contiene tutte le opzioni).
+2) AGGIUNGERE O AGGIORNARE LA RISORSA
+   Profilo -> attiva Modalità avanzata.
+   Impostazioni -> Plance -> menu ⋮ -> Risorse.
+       URL: /local/luma-home/aurora-v3.js?v=1
+       Tipo: Modulo JavaScript
+   Se la risorsa esiste già, aggiornala senza crearne una seconda.
+   Aumenta il numero dopo ?v= a ogni aggiornamento e ricarica il browser.
 
-6) ENERGIA E TARIFFA (facoltativo)
-   Indica il tuo sensore di potenza (W) in energy.power: compare la vista Energia.
-   Per i kWh di oggi/ieri/mese/anno usa aurora-energia.yaml.
-   Nella vista Energia tocca la barra "Tariffa" e scrivi quanto paghi un kWh
-   (o calcolalo dalla bolletta: totale da pagare / kWh). Da li' ogni costo e' kWh x tariffa.
+3) CREARE LA PLANCIA
+   Impostazioni -> Plance -> Aggiungi plancia -> nuova plancia da zero.
+   Titolo suggerito: Luma Home; icona: mdi:home-heart.
 
-SE QUALCOSA NON VA
- - Scheda rossa "Custom element doesn't exist": controlla la risorsa e ricarica con Ctrl+F5.
- - Immagini vuote: "assets" deve essere /local/aurora-v3/btn/  (con la barra finale).
- - Luci grigie: il nome dell'entita' non esiste o il dispositivo e' offline.
- - Costi a zero: tocca la barra Tariffa.
+4) INCOLLARE LA CONFIGURAZIONE
+   Apri la plancia -> modifica -> menu -> Editor di configurazione testuale.
+   Salva una copia della configurazione esistente prima di sostituirla.
+   Per una nuova plancia, usa dashboard-esempio.yaml e salva.
+   Non incollare scheda-esempio.yaml alla radice della plancia: descrive una scheda,
+   non una configurazione completa di dashboard.
+
+5) SCEGLIERE LA LINGUA E COLLEGARE LE ENTITÀ
+   Nell’editor YAML della scheda, la configurazione minima è:
+
+   type: custom:luma-home-card
+   language: it
+   assets: /local/luma-home/btn/
+
+   Valori di language: it, fr, en. Senza questa opzione il codice attuale usa l’italiano.
+   Strumenti per sviluppatori -> Stati: cerca gli identificatori delle tue entità.
+   Aggiungi entities allo stesso livello di type, language e assets:
+
+   entities:
+     lights:
+       salotto: light.salotto
+
+   Sostituisci light.salotto con la tua entità; conserva la chiave tecnica salotto.
+   Consulta scheda-esempio.yaml per le altre opzioni.
+
+6) ENERGIA E TARIFFA — FACOLTATIVO
+   Configura il sensore di potenza in entities.energy.power, in watt:
+
+   entities:
+     energy:
+       power: sensor.potenza_casa
+
+   Unisci queste righe alla sezione entities esistente, senza duplicarla.
+   Per i contatori kWh usa UNA SOLA variante di aurora-energia.yaml: italiana,
+   francese O inglese. Non installare le tre varianti insieme.
+   Sostituisci sensor.SENSORE_ENERGIA_KWH con il tuo sensore di energia cumulativa
+   in kWh, non con un sensore di potenza in W. Conserva gli identificatori dei contatori.
+   Verifica la configurazione Home Assistant prima di riavviare.
+   Nella vista Energia imposta il prezzo per kWh. Costo stimato = kWh × tariffa.
+   Dividere l’intera bolletta per i kWh produce un costo medio comprensivo di eventuali
+   quote fisse; non corrisponde necessariamente alla tariffa variabile effettiva.
+
+MIGRAZIONE DI UN’INSTALLAZIONE ESISTENTE
+ - Salva il JavaScript e lo YAML funzionanti.
+ - Copia i file in www/luma-home/ prima di modificare i riferimenti.
+ - Aggiorna insieme risorsa, tipo di scheda e assets.
+ - Verifica JavaScript, immagini, lingue e comandi prima di eliminare la vecchia cartella.
+ - Non eliminare risorse o cartelle ancora usate da altre plance.
+
+HACS
+ I percorsi /local/ descrivono l’installazione manuale. Con HACS usa i percorsi
+ effettivi dei file installati; non sostituire automaticamente gli URL /hacsfiles/.
+ In hacs.json, filename rimane aurora-v3.js finché il file conserva quel nome.
+ La validazione HACS riuscita non pubblica automaticamente il progetto nel catalogo.
+
+RISOLUZIONE DEI PROBLEMI
+ - “Custom element doesn't exist”: verifica il file caricato e custom:luma-home-card.
+ - Immagini assenti: verifica www/luma-home/btn/ e assets, inclusa la barra finale.
+ - Luci grigie: verifica identificatori e disponibilità delle entità.
+ - Costi a zero: verifica sensori e tariffa.
+ - Lingua o testi precedenti: controlla language, aumenta ?v= e ricarica.
 
 PRIVACY
- Funziona tutta in locale. L'unica richiesta esterna sono i font Google (Manrope, Sora).
- Nessun dato viene raccolto o inviato.
+ Secondo la documentazione originale, la scheda funziona localmente e carica i
+ caratteri Google Fonts Manrope e Sora. L’autore dichiara che non raccoglie né invia
+ dati. Questa descrizione non è una verifica indipendente del traffico di rete.
+ Le integrazioni dei dispositivi possono avere collegamenti esterni propri.
 
-RIMUOVERE
- Elimina la plancia "Aurora", la risorsa e la cartella www/aurora-v3. Nient'altro viene toccato.
+DISINSTALLAZIONE
+ Elimina la plancia interessata, la risorsa e www/luma-home/ soltanto se non sono
+ più utilizzate altrove. Questi passaggi non eliminano automaticamente le preferenze
+ del browser né i sensori di energia configurati separatamente.
 
-Aurora Glass v3 - gratuito per uso personale, da usare senza modifiche (i file YAML di esempio si possono modificare).
-Licenza GPL-3.0: puoi usare, modificare e condividere la scheda, anche a scopo
-commerciale, purche' le versioni modificate restino GPL-3.0, con il codice
-sorgente e un nome diverso da "Aurora Glass". Vedi LICENSE.
+LICENZA E ATTRIBUZIONE
+ Luma Home è una versione derivata non ufficiale; non viene rivendicata l’approvazione
+ dell’autore originale. Credito conservato: © 2026 DomotikPro.it (Luca Pinelli).
+ Adattamento e traduzioni: Fonkyup.
+
+ Il software derivato è distribuito con GNU GPL versione 3. Puoi usarlo, modificarlo
+ e ridistribuirlo, anche commercialmente, nel rispetto della licenza. Le versioni
+ distribuite devono, tra gli altri obblighi, conservare gli avvisi applicabili,
+ indicare modifiche e date e rispettare le condizioni relative alla licenza e al
+ codice sorgente corrispondente. Restano applicabili eventuali condizioni specifiche
+ dei componenti di terze parti. Aurora Glass e DomotikPro.it identificano il progetto
+ originale; non vengono rivendicati diritti sui marchi né un’approvazione.
+
+ Consulta LICENSE alla radice del repository per il testo completo. Non modificare
+ il testo della GPL. Questa guida non lo sostituisce. Software fornito senza garanzia,
+ nei limiti della licenza e della legge applicabile.

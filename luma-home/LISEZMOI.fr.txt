@@ -1,74 +1,151 @@
-AURORA GLASS v3 pour Home Assistant
+LUMA HOME pour Home Assistant
 ====================================
-Le tableau de bord animé : un ciel qui change selon l’heure, 10 univers, 11 effets météo,
-des boutons composés d’images et de GIF, une alarme, le climat, des caméras et le suivi de l’énergie avec des coûts en euros.
+Version dérivée non officielle d’Aurora Glass v3.
+Projet original : © 2026 DomotikPro.it (Luca Pinelli).
+Adaptation et traductions : Fonkyup.
+Guide mis à jour le 26 octobre 2026.
 
-GUIDE COMPLET AVEC CAPTURES D’ÉCRAN : sur la page « Guide » du site (et dans la vidéo YouTube).
-Voici un résumé en 6 étapes (environ 10 minutes).
+Un tableau de bord animé : ciel suivant l’heure, 10 univers, 11 effets météo,
+boutons composés d’images et de GIF, alarme, climat, caméras et suivi de l’énergie.
+Interface disponible en français, anglais et italien.
 
-CONTENU
-  LISEZMOI.fr.txt              ce fichier, traduit en français
-  dashboard-esempio.yaml       le tableau de bord prêt à copier-coller
-  scheda-esempio.yaml          TOUTES les options de la carte, commentées
-  aurora-energia.yaml          compteurs de kWh par jour/mois/année (facultatif)
-  www/aurora-v3/aurora-v3.js    la carte (un seul fichier)
-  www/aurora-v3/btn/            50 images et GIF pour les boutons
+CONVENTION D’INSTALLATION MANUELLE
+  Nom public : Luma Home
+  Type de carte : custom:luma-home-card
+  Fichier JavaScript : aurora-v3.js (nom conservé)
+  Dossier dans Home Assistant : www/luma-home/
+  Images : /local/luma-home/btn/
 
-ÉTAPES
+Ces instructions décrivent la configuration cible après migration vers le dossier
+luma-home. Ne change pas seulement les URL : les fichiers doivent être copiés au
+nouvel emplacement. Le nom du dossier GitHub ne déplace rien dans Home Assistant.
+
+DOCUMENTS ET EXEMPLES
+  LISEZMOI.fr.txt               ce guide
+  dashboard-example.fr.yaml     tableau de bord complet en français
+  card-example.fr.yaml          options détaillées de la carte, en français
+  aurora-energia.fr.yaml        compteurs d’énergie facultatifs, instructions françaises
+  LEGGIMI.txt                   guide italien
+  README.en.txt                 guide anglais
+
+Les exemples doivent utiliser custom:luma-home-card et /local/luma-home/btn/.
+Les identifiants des entités restent des exemples à adapter à ton installation.
+Les guides et démonstrations de DomotikPro.it concernent le projet original ;
+ils ne décrivent pas nécessairement les chemins et identifiants de Luma Home.
+
+INSTALLATION EN SIX ÉTAPES
 1) COPIER LES FICHIERS
-   Place le dossier www/aurora-v3 dans le dossier www de Home Assistant
-   (avec File editor, Samba ou Studio Code Server). Résultat :
-       www/aurora-v3/aurora-v3.js
-       www/aurora-v3/btn/...
-   Dans le module File editor, le dossier de configuration s’appelle /homeassistant :
-   il s’agit du même dossier. Si le dossier www vient d’être créé, redémarre Home Assistant une fois.
-   Test : ouvre <adresse de Home Assistant>/local/aurora-v3/aurora-v3.js dans le navigateur.
-   Si du texte s’affiche, tout est en place.
+   Dans la version traduite, prends aurora-v3.js et son dossier btn complet.
+   La distribution dist contient la copie à distribuer : utilise des fichiers
+   de la même version, sans mélanger un ancien JavaScript et de nouvelles images.
+   Avec File editor, Samba ou Studio Code Server, crée cette structure :
+       www/luma-home/aurora-v3.js
+       www/luma-home/btn/...
+   www est un sous-dossier du dossier de configuration de Home Assistant.
+   Dans File editor, ce dossier de configuration peut s’appeler /homeassistant.
+   Si www vient d’être créé, redémarre Home Assistant une fois.
+   Test : ouvre <adresse de Home Assistant>/local/luma-home/aurora-v3.js.
+   Du texte JavaScript doit apparaître.
 
-2) AJOUTER LA RESSOURCE
-   Profil -> activer « Mode avancé ».
-   Paramètres -> Tableaux de bord -> menu (trois points) -> Ressources -> Ajouter une ressource
-       URL :   /local/aurora-v3/aurora-v3.js?v=1
-       Type :  Module JavaScript
-   (Lors d’une mise à jour de la carte, augmente le nombre après ?v=.)
+2) AJOUTER OU MODIFIER LA RESSOURCE
+   Profil -> activer le Mode avancé.
+   Paramètres -> Tableaux de bord -> menu ⋮ -> Ressources.
+       URL : /local/luma-home/aurora-v3.js?v=1
+       Type : Module JavaScript
+   Si la ressource existe déjà, modifie-la au lieu d’en ajouter une deuxième.
+   Augmente le nombre après ?v= à chaque mise à jour, puis recharge le navigateur.
 
 3) CRÉER LE TABLEAU DE BORD
-   Paramètres -> Tableaux de bord -> Ajouter un tableau de bord -> Créer un nouveau tableau de bord à partir de zéro
-   Titre : « Aurora » ; icône : mdi:home-heart ; activer « Afficher dans la barre latérale ».
+   Paramètres -> Tableaux de bord -> Ajouter un tableau de bord -> partir de zéro.
+   Titre suggéré : Luma Home ; icône : mdi:home-heart.
 
-4) COLLER LA CONFIGURATION DE LA CARTE
-   Ouvre le tableau de bord -> crayon -> menu -> « Éditeur de configuration brute ».
-   Efface tout et colle le contenu de dashboard-esempio.yaml -> Enregistrer.
-   Les lumières seront grisées : les noms utilisés sont des exemples.
+4) COLLER LA CONFIGURATION
+   Ouvre le tableau de bord -> modification -> menu -> Éditeur de configuration brute.
+   Sauvegarde toute configuration existante avant de la remplacer.
+   Sur un nouveau tableau de bord, utilise dashboard-example.fr.yaml puis enregistre.
+   Ne colle pas card-example.fr.yaml à la racine : il décrit une carte, pas une
+   configuration complète de tableau de bord.
 
-5) ASSOCIER TES ENTITÉS
-   Outils de développement -> États : recherche les noms (light., binary_sensor., ...).
-   Ajoute sous « assets: » la section « entities: » contenant tes noms d’entités
-   (consulte scheda-esempio.yaml : il contient toutes les options).
+5) CHOISIR LA LANGUE ET ASSOCIER LES ENTITÉS
+   Dans l’éditeur YAML de la carte, la structure minimale est :
 
-6) ÉNERGIE ET TARIF (facultatif)
-   Indique ton capteur de puissance (W) dans energy.power : la vue Énergie apparaît.
-   Pour les kWh d’aujourd’hui, d’hier, du mois et de l’année, utilise aurora-energia.yaml.
-   Dans la vue Énergie, touche la barre « Tarif » et indique le prix que tu paies pour un kWh
-   (ou calcule-le à partir de la facture : montant total à payer / kWh).
-   Dès lors, chaque coût est calculé ainsi : kWh × tarif.
+   type: custom:luma-home-card
+   language: fr
+   assets: /local/luma-home/btn/
 
-EN CAS DE PROBLÈME
- - Carte rouge « Custom element doesn't exist » : vérifie la ressource et recharge avec Ctrl+F5.
- - Images vides : « assets » doit être /local/aurora-v3/btn/ (avec la barre oblique finale).
- - Lumières grisées : le nom de l’entité n’existe pas ou l’appareil est hors ligne.
- - Coûts à zéro : touche la barre Tarif.
+   Valeurs de language : fr, en, it. Sans option, le code actuel utilise l’italien.
+   Outils de développement -> États : retrouve tes identifiants d’entités.
+   Ajoute entities au même niveau que type, language et assets :
+
+   entities:
+     lights:
+       salotto: light.salotto
+
+   Remplace light.salotto par ton entité ; conserve la clé technique salotto.
+   Consulte card-example.fr.yaml pour les autres options.
+
+6) ÉNERGIE ET TARIF — FACULTATIF
+   Le capteur de puissance se configure dans entities.energy.power, en watts :
+
+   entities:
+     energy:
+       power: sensor.potenza_casa
+
+   Fusionne ces lignes avec ta section entities existante, sans la dupliquer.
+   Pour les compteurs en kWh, utilise une seule variante d’aurora-energia.yaml :
+   italienne, française OU anglaise. N’installe pas les trois en même temps.
+   Remplace sensor.SENSORE_ENERGIA_KWH par ton capteur d’énergie cumulée en kWh,
+   pas par un capteur de puissance en W. Conserve les identifiants des compteurs.
+   Vérifie la configuration Home Assistant avant tout redémarrage.
+   Dans la vue Énergie, renseigne ton tarif par kWh. Coût estimé = kWh × tarif.
+   Un montant de facture divisé par les kWh donne un coût moyen incluant aussi
+   les frais fixes éventuels ; ce n’est pas forcément ton tarif variable réel.
+
+MIGRATION DEPUIS UNE INSTALLATION EXISTANTE
+ - Sauvegarde le JavaScript et le YAML qui fonctionnent.
+ - Copie les fichiers dans www/luma-home/ avant de modifier les références.
+ - Mets à jour la ressource, le type de carte et assets ensemble.
+ - Teste JavaScript, images, langues et commandes avant de supprimer l’ancien dossier.
+ - Ne supprime pas un dossier ou une ressource encore utilisé par un autre tableau de bord.
+
+HACS
+ Ces chemins /local/ décrivent une installation manuelle. Pour HACS, adapte les
+ chemins aux fichiers réellement installés ; ne remplace pas aveuglément /hacsfiles/.
+ Dans hacs.json, filename reste aurora-v3.js tant que le fichier porte ce nom.
+ Une validation HACS réussie n’équivaut pas à une publication automatique au catalogue.
+
+DÉPANNAGE
+ - « Custom element doesn't exist » : vérifie le fichier chargé et custom:luma-home-card.
+ - Images absentes : vérifie www/luma-home/btn/ et assets avec la barre finale.
+ - Lumières grisées : vérifie les identifiants et la disponibilité des entités.
+ - Coûts à zéro : vérifie les capteurs et le tarif.
+ - Ancienne langue ou anciens textes : vérifie language, augmente ?v= et recharge.
 
 CONFIDENTIALITÉ
- Tout fonctionne localement. Les seules requêtes externes concernent les polices Google (Manrope, Sora).
- Aucune donnée n’est collectée ni envoyée.
+ Selon la documentation originale, la carte fonctionne localement et charge les
+ polices Google Fonts Manrope et Sora. L’auteur déclare qu’elle ne collecte ni
+ n’envoie de données. Ceci n’est pas un audit indépendant du trafic réseau.
+ Les intégrations de tes appareils peuvent avoir leurs propres connexions externes.
 
 DÉSINSTALLATION
- Supprime le tableau de bord « Aurora », la ressource et le dossier www/aurora-v3.
- Rien d’autre n’est modifié.
+ Supprime le tableau de bord concerné, sa ressource et www/luma-home/ uniquement
+ s’ils ne sont plus utilisés ailleurs. Les préférences du navigateur et les capteurs
+ d’énergie configurés séparément ne sont pas automatiquement supprimés par ces étapes.
 
-Aurora Glass v3 — gratuit pour un usage personnel, à utiliser sans modification
-(les fichiers YAML d’exemple peuvent être modifiés).
-Licence GPL-3.0 : tu peux utiliser, modifier et partager la carte, y compris à des fins
-commerciales, à condition que les versions modifiées restent sous GPL-3.0, avec le code
-source et un nom différent de « Aurora Glass ». Voir LICENSE.
+LICENCE ET ATTRIBUTION
+ Luma Home est une version dérivée non officielle, sans approbation revendiquée
+ de l’auteur original. Crédit conservé : © 2026 DomotikPro.it (Luca Pinelli).
+ Adaptation et traductions : Fonkyup.
+
+ Le logiciel dérivé est distribué sous GNU GPL version 3. Tu peux l’utiliser,
+ le modifier et le redistribuer, y compris commercialement, sous réserve des
+ conditions de la licence. Les versions distribuées doivent notamment conserver
+ les notices applicables, signaler les modifications et leurs dates, et respecter
+ les obligations de licence et de fourniture du code source correspondant.
+ Les éventuelles conditions propres aux composants tiers restent applicables.
+ Le nom Aurora Glass et la marque DomotikPro.it identifient le projet original ;
+ aucun droit de marque ni aucune approbation ne sont revendiqués.
+
+ Voir LICENSE à la racine du dépôt pour le texte intégral. Ne modifie pas le texte
+ de la GPL. Ce guide ne le remplace pas. Logiciel fourni sans garantie, dans les
+ limites de la licence et du droit applicable.
