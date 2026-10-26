@@ -4427,6 +4427,11 @@
         EN.days = (r[ENT.energy.energyTotal] || []).map(function (x) { return { d: new Date(tms(x.start)), v: x.change }; }).filter(function (x) { return x.v !== null && x.v !== undefined; }); drawDays();
       }).catch(function () { EN.days = []; drawDays(); });
     }
+    function isDynamicPricing() {
+      return LIVE &&
+        CFG.energyPricing &&
+        CFG.energyPricing.mode === "dynamic";
+    }    
     function drawDays() {
       var box = $("#en-days");
       var a = EN.days;
@@ -4470,7 +4475,9 @@
 
       EN.pDrawn = EN.pEff;
 
-      var eur = EN.dayUnit === "eur";
+      var dynamic = isDynamicPricing();
+
+      var eur = !dynamic && EN.dayUnit === "eur";
 
       $("#en-days-t").textContent = eur
         ? labels.dailyCost
@@ -4520,8 +4527,12 @@
 
         var tooltip =
           dateLabel +
-          " · " + fmtKwh(x.v) + " kWh" +
-          " · " + fmtEur(x.v * EN.pEff);
+          " · " + fmtKwh(x.v) + " kWh";
+
+        if (!dynamic) {
+          tooltip +=
+            " · " + fmtEur(x.v * EN.pEff);
+        }
 
         var height = Math.max(3, vals[i] / mx * 100);
 
@@ -4540,26 +4551,77 @@
       }).join("");
 
       if (sum) {
+        var totalCost = !dynamic
+          ? " · <b>" + fmtEur(tk * EN.pEff) + "</b>"
+          : "";
+
+        var averageCost = !dynamic
+          ? " · <b>" +
+              fmtEur(tk / a.length * EN.pEff) +
+            "</b>"
+          : "";
+
+        var rateExplanation = !dynamic
+          ? '<span class="echip">' +
+              '<i class="mdi mdi-information-outline"></i>' +
+              labels.calculatedWith +
+              fmtP(EN.pEff) + " " + priceUnit() +
+            "</span>"
+          : "";
+
         sum.innerHTML =
           '<span class="echip">' +
             '<i class="mdi mdi-sigma"></i>' +
             labels.total + " " +
             "<b>" + fmtKwh(tk) + " kWh</b>" +
-            " · <b>" + fmtEur(tk * EN.pEff) + "</b>" +
+            totalCost +
           "</span>" +
           '<span class="echip">' +
             '<i class="mdi mdi-chart-line"></i>' +
             labels.average + " " +
-            "<b>" + fmtKwh(tk / a.length) + " kWh</b>" +
-            " · <b>" +
+            "<b>" +
+              fmtKwh(tk / a.length) +
+              " kWh</b>" +
+            averageCost +
+          "</span>" +
+          rateExplanation;
+
+        hydrate(sum);
+      }      if (sum) {
+        var totalCost = !dynamic
+          ? " · <b>" + fmtEur(tk * EN.pEff) + "</b>"
+          : "";
+
+        var averageCost = !dynamic
+          ? " · <b>" +
               fmtEur(tk / a.length * EN.pEff) +
-            "</b>" +
+            "</b>"
+          : "";
+
+        var rateExplanation = !dynamic
+          ? '<span class="echip">' +
+              '<i class="mdi mdi-information-outline"></i>' +
+              labels.calculatedWith +
+              fmtP(EN.pEff) + " " + priceUnit() +
+            "</span>"
+          : "";
+
+        sum.innerHTML =
+          '<span class="echip">' +
+            '<i class="mdi mdi-sigma"></i>' +
+            labels.total + " " +
+            "<b>" + fmtKwh(tk) + " kWh</b>" +
+            totalCost +
           "</span>" +
           '<span class="echip">' +
-            '<i class="mdi mdi-information-outline"></i>' +
-            labels.calculatedWith +
-            fmtP(EN.pEff) + " " + priceUnit() +
-          "</span>";
+            '<i class="mdi mdi-chart-line"></i>' +
+            labels.average + " " +
+            "<b>" +
+              fmtKwh(tk / a.length) +
+              " kWh</b>" +
+            averageCost +
+          "</span>" +
+          rateExplanation;
 
         hydrate(sum);
       }
@@ -4574,15 +4636,86 @@
         EN.geo.data.forEach(function (d) { var dd = Math.abs(d.t - t2); if (dd < bd) { bd = dd; best = d; } });
         if (!best) return; var w = fmtW(best.v), cur = $("#en-cur"), px = EN.geo.xs(best.t);
         cur.style.display = ""; cur.setAttribute("x1", px); cur.setAttribute("x2", px);
-        tip.hidden = false; tip.style.left = Math.min(Math.max(px / EN.geo.W * r.width, 40), r.width - 40) + "px"; tip.textContent = fmtHM(best.t) + " · " + w.n + " " + w.u + (EN.pEff > 0 ? " · " + fmtEur(best.v / 1000 * EN.pEff) + "/h" : "");
+        tip.hidden = false;
+
+        tip.style.left =
+          Math.min(
+            Math.max(
+              px / EN.geo.W * r.width,
+              40
+            ),
+            r.width - 40
+          ) + "px";
+
+        var tooltip =
+          fmtHM(best.t) +
+          " · " + w.n + " " + w.u;
+
+        if (!isDynamicPricing() && EN.pEff > 0) {
+          tooltip +=
+            " · " +
+            fmtEur(best.v / 1000 * EN.pEff) +
+            "/h";
+        }
+
+        tip.textContent = tooltip;
       }
       plot.addEventListener("pointermove", move); plot.addEventListener("pointerdown", move);
       plot.addEventListener("pointerleave", function () { tip.hidden = true; var c = $("#en-cur"); if (c) c.style.display = "none"; });
       $("#chip-power").addEventListener("click", function () { show("en"); });
-      EN.dayUnit = store("dayunit") === "eur" ? "eur" : "kwh";
+      var dynamic = isDynamicPricing();
+
+      EN.dayUnit = dynamic
+        ? "kwh"
+        : store("dayunit") === "eur"
+          ? "eur"
+          : "kwh";
+
       $$("#en-dunit button").forEach(function (b) {
-        b.setAttribute("aria-pressed", b.dataset.u === EN.dayUnit ? "true" : "false");
-        b.addEventListener("click", function () { EN.dayUnit = b.dataset.u; store("dayunit", EN.dayUnit); $$("#en-dunit button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); drawDays(); });
+        var unavailable =
+          dynamic && b.dataset.u === "eur";
+
+        b.hidden = unavailable;
+        b.disabled = unavailable;
+
+        b.setAttribute(
+          "aria-pressed",
+          b.dataset.u === EN.dayUnit
+            ? "true"
+            : "false"
+        );
+
+        b.addEventListener("click", function () {
+          var dynamicNow = isDynamicPricing();
+
+          if (
+            dynamicNow &&
+            b.dataset.u === "eur"
+          ) {
+            return;
+          }
+
+          EN.dayUnit = dynamicNow
+            ? "kwh"
+            : b.dataset.u;
+
+          // Do not overwrite the standard-mode preference
+          // when dynamic pricing is active.
+          if (!dynamicNow) {
+            store("dayunit", EN.dayUnit);
+          }
+
+          $$("#en-dunit button").forEach(function (x) {
+            x.setAttribute(
+              "aria-pressed",
+              x.dataset.u === EN.dayUnit
+                ? "true"
+                : "false"
+            );
+          });
+
+          drawDays();
+        });
       });
       buildPrice();
       renderEnergy();
