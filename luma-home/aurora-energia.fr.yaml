@@ -1,41 +1,63 @@
-# Luma Home — unofficial derivative of Aurora Glass v3.
-# Original project: © 2026 DomotikPro.it (Luca Pinelli).
-# Translation and adaptation: Fonkyup — 2026-10-25.
-# GNU GPL version 3; see LICENSE. Original notices remain applicable.
-# Compteurs d’énergie facultatifs : jour, mois, année, hier et mois précédent.
-# UTILISEZ UNE SEULE VERSION de ce fichier (IT, FR ou EN), jamais les trois.
-# Les identifiants et noms des capteurs d’origine sont volontairement conservés.
-# Remplacez sensor.SENSORE_ENERGIA_KWH aux trois endroits par votre capteur
-# d’énergie totale cumulée en kWh (pas un capteur de puissance en W).
-# Option A : copiez cette version sous /config/packages/aurora-energia.yaml.
-# Dans configuration.yaml, fusionnez cette configuration avec votre section existante :
+# Luma Home — compteurs d’énergie, version française.
+# Version dérivée non officielle d’Aurora Glass v3.
+# Projet original : © 2026 DomotikPro.it (Luca Pinelli).
+# Adaptation : Fonkyup.
+# Mise à jour : 26 octobre 2026.
+# GNU GPL version 3 ; voir LICENSE à la racine du dépôt.
+#
+# Installez UNE SEULE variante : française, anglaise ou italienne.
+#
+# Remplacez sensor.SENSORE_ENERGIA_KWH aux trois endroits
+# par votre capteur d’énergie cumulée en kWh, pas une puissance en W.
+#
+# Installation comme package :
+# copiez ce fichier dans /config/packages/aurora-energia.yaml.
+# Activez les packages dans configuration.yaml :
+#
 # homeassistant:
 #   packages: !include_dir_named packages
-# Option B : fusionnez utility_meter et template dans configuration.yaml.
-# Ne créez pas deux clés identiques au même niveau ni de compteurs en double.
-# Vérifiez la configuration dans Home Assistant avant de redémarrer.
-# Ces compteurs ne reconstituent pas automatiquement l’historique antérieur.
+#
+# Si homeassistant existe déjà, fusionnez les options sans dupliquer la clé.
+# Vérifiez la configuration avant de redémarrer.
+#
+# Les premiers cycles seront incomplets : ce fichier ne reconstitue
+# pas automatiquement la consommation antérieure à son installation.
 
 utility_meter:
   aurora_energia_oggi:
+    name: "Luma Home — Énergie aujourd’hui"
+    unique_id: aurora_energia_oggi
     source: sensor.SENSORE_ENERGIA_KWH
     cycle: daily
+
   aurora_energia_mese:
+    name: "Luma Home — Énergie ce mois-ci"
+    unique_id: aurora_energia_mese
     source: sensor.SENSORE_ENERGIA_KWH
     cycle: monthly
+
   aurora_energia_anno:
+    name: "Luma Home — Énergie cette année"
+    unique_id: aurora_energia_anno
     source: sensor.SENSORE_ENERGIA_KWH
     cycle: yearly
 
 template:
   - sensor:
-      - name: Aurora energia ieri
+      - name: "Luma Home — Énergie hier"
         unique_id: aurora_energia_ieri
-        unit_of_measurement: kWh
+        default_entity_id: sensor.aurora_energia_ieri
+        unit_of_measurement: "kWh"
         device_class: energy
-        state: "{{ state_attr('sensor.aurora_energia_oggi', 'last_period') | float(0) }}"
-      - name: Aurora energia mese scorso
+        state: >-
+          {{ state_attr('sensor.aurora_energia_oggi', 'last_period')
+             | float(0) }}
+
+      - name: "Luma Home — Énergie le mois précédent"
         unique_id: aurora_energia_mese_scorso
-        unit_of_measurement: kWh
+        default_entity_id: sensor.aurora_energia_mese_scorso
+        unit_of_measurement: "kWh"
         device_class: energy
-        state: "{{ state_attr('sensor.aurora_energia_mese', 'last_period') | float(0) }}"
+        state: >-
+          {{ state_attr('sensor.aurora_energia_mese', 'last_period')
+             | float(0) }}
