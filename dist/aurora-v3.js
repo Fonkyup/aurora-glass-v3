@@ -4109,15 +4109,60 @@
       $("#pr-calc-out").textContent = "";
       $("#pr-calc").open = false;
 
-      $("#pr-where").textContent = !LIVE
-        ? labels.preview
-        : sv(ENT.energy.price)
-          ? labels.savedBefore +
-            ENT.energy.price +
-            labels.savedAfter
-          : labels.createBefore +
-            ENT.energy.price +
-            labels.createAfter;
+      var helperId = String(
+        ENT.energy.price || ""
+      ).trim();
+
+      var helperState = helperId
+        ? sv(helperId)
+        : null;
+
+      var validHelperId =
+        /^input_number\.[a-z0-9_]+$/.test(helperId);
+
+      var safety = priceSafetyLabels();
+
+      var whereText;
+
+      if (!LIVE) {
+        whereText = labels.preview;
+      } else if (!validHelperId) {
+        whereText =
+          priceSaveLabels().local +
+          " · " +
+          safety.incompatible;
+      } else if (
+        helperState &&
+        !priceHelperCompatible(helperState)
+      ) {
+        whereText =
+          priceSaveLabels().local +
+          " · " +
+          safety.incompatible;
+      } else if (
+        helperState &&
+        (
+          helperState.state === "unknown" ||
+          helperState.state === "unavailable"
+        )
+      ) {
+        whereText =
+          priceSaveLabels().local +
+          " · " +
+          safety.unavailable;
+      } else if (helperState) {
+        whereText =
+          labels.savedBefore +
+          helperId +
+          labels.savedAfter;
+      } else {
+        whereText =
+          labels.createBefore +
+          helperId +
+          labels.createAfter;
+      }
+
+      $("#pr-where").textContent = whereText;
 
       box.classList.add("open");
       box.setAttribute("aria-hidden", "false");
@@ -4161,11 +4206,11 @@
       return translations[LANG] || translations.it;
     }
     function savePrice() {
-      var pricing = CFG.energyPricing || {};
-
-      if (LIVE && pricing.mode === "dynamic") {
+      // Dynamic sources are read-only.
+      if (isDynamicPricing()) {
         return;
-      }      
+      }
+
       var labels = priceSaveLabels();
       var safety = priceSafetyLabels();
       var v = prNum("#pr-in");
@@ -4206,45 +4251,134 @@
         return;
       }
 
-      var id = ENT.energy.price;
+      var id = String(
+        ENT.energy.price || ""
+      ).trim();
+
       var state = id ? sv(id) : null;
 
-      if (!state) {
-        saveLocal(safety.missing);
+      // Automatic creation is only meaningful for input_number.
+      if (!/^input_number\.[a-z0-9_]+$/.test(id)) {
+        saveLocal(safety.incompatible);
         return;
       }
 
-      if (
-        id.indexOf("input_number.") !== 0 ||
-        !priceHelperCompatible(state)
-      ) {
+      if (state && !priceHelperCompatible(state)) {
         saveLocal(safety.incompatible);
         return;
       }
 
       if (
-        state.state === "unknown" ||
-        state.state === "unavailable"
+        state &&
+        (
+          state.state === "unknown" ||
+          state.state === "unavailable"
+        )
       ) {
         saveLocal(safety.unavailable);
         return;
       }
 
+      // Respect the limits of an existing helper.
+      if (state) {
+        var min = Number(state.attributes.min);
+        var max = Number(state.attributes.max);
+
+        if (
+          (
+            Number.isFinite(min) &&
+            v < min
+          ) ||
+          (
+            Number.isFinite(max) &&
+            v > max
+          )
+        ) {
+          saveLocal(
+            String(state.attributes.min) +
+            " – " +
+            String(state.attributes.max) +
+            " " +
+            priceUnit()
+          );
+          return;
+        }
+      }
+
       var btn = $("#pr-ok");
+
+      if (btn.disabled) {
+        return;
+      }
+
       btn.disabled = true;
+
+      var creating = !state;
+      var objectId = id.split(".")[1];
 
       Promise.resolve()
         .then(function () {
-          return ctx.call(
-            "input_number",
-            "set_value",
-            {
-              entity_id: id,
-              value: v
-            }
-          );
+          if (!creating) {
+            return ctx.call(
+              "input_number",
+              "set_value",
+              {
+                entity_id: id,
+                value: v
+              }
+            );
+          }
+
+          if (
+            !HASS ||
+            typeof HASS.callWS !== "function"
+          ) {
+            throw new Error(
+              "Home Assistant WebSocket unavailable"
+            );
+          }
+
+          return HASS.callWS({
+            type: "input_number/create",
+
+            // Keep the requested object ID as the name.
+            // Do not translate or append a currency here.
+            name: objectId,
+
+            icon: "mdi:cash-multiple",
+            min: 0,
+            max: 5,
+            step: 0.001,
+            mode: "box",
+            unit_of_measurement: CURRENCY + "/kWh",
+            initial: v
+          });
         })
-        .then(function () {
+        .then(function (result) {
+          if (creating) {
+            var createdObjectId = String(
+              result && result.id || ""
+            );
+
+            if (createdObjectId !== objectId) {
+              console.warn(
+                "Luma Home: helper creation did not return " +
+                "the requested ID.",
+                {
+                  requested: id,
+                  result: result
+                }
+              );
+
+              throw new Error(
+                "Created helper ID must be checked"
+              );
+            }
+          }
+
+          // Also keep a currency-scoped local copy.
+          store(priceStorageKey(), String(v));
+
           PEND = {
             v: v,
             currency: CURRENCY,
@@ -4256,7 +4390,17 @@
             labels.homeAssistant + amount
           );
         })
-        .catch(function () {
+        .catch(function (error) {
+          console.warn(
+            "Luma Home: rate save failed.",
+            error
+          );
+
+          if (creating) {
+            saveLocal(safety.failed);
+            return;
+          }
+
           btn.disabled = false;
 
           toast(
