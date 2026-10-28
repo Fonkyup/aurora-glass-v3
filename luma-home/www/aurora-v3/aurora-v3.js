@@ -3819,7 +3819,7 @@
       }
       renderDynamicRateBar(m);
       refreshDynamicPriceDialog(m);            
-      if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
+      drawDays();
       // Energy KPI labels.
       var kpiTranslations = {
         it: {
@@ -4927,12 +4927,72 @@
     }    
     function drawDays() {
       var box = $("#en-days");
-      var a = EN.days;
+      var a = EN.days.slice();
+
+      if (LIVE) {
+        var now = new Date();
+        var todayKey = now.toDateString();
+        var todayValue = enNum(ENT.energy.today);
+
+        var firstDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 13
+        );
+
+        a = a.filter(function (item) {
+          return item.d >= firstDay && item.d <= now;
+        });
+
+        if (
+          todayValue !== null &&
+          Number.isFinite(todayValue) &&
+          todayValue >= 0
+        ) {
+          a = a.filter(function (item) {
+            return item.d.toDateString() !== todayKey;
+          });
+
+          a.push({
+            d: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate()
+            ),
+            v: todayValue,
+            liveToday: true
+          });
+        }
+
+        a.sort(function (left, right) {
+          return left.d - right.d;
+        });
+      }
       var sum = $("#en-days-sum");
+
 
       if (!box) {
         return;
       }
+      var renderKey = JSON.stringify({
+        days: a.map(function (item) {
+          return [
+            item.d.getTime(),
+            item.v,
+            Boolean(item.liveToday)
+          ];
+        }),
+        unit: EN.dayUnit,
+        rate: EN.pEff,
+        dynamic: isDynamicPricing(),
+        language: LANG
+      });
+
+      if (box.dataset.renderKey === renderKey) {
+        return;
+      }
+
+      box.dataset.renderKey = renderKey;      
 
       var translations = {
         it: {
@@ -5021,6 +5081,15 @@
         var tooltip =
           dateLabel +
           " · " + fmtKwh(x.v) + " kWh";
+        if (x.liveToday) {
+          var liveLabels = {
+            fr: "En cours — même capteur que la tuile Aujourd’hui",
+            en: "In progress — same sensor as the Today tile",
+            it: "In corso — stesso sensore del riquadro Oggi"
+          };
+
+  tooltip += " · " + (liveLabels[LANG] || liveLabels.fr);
+}  
 
         if (!dynamic) {
           tooltip +=
