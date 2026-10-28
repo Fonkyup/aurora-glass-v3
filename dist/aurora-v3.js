@@ -988,11 +988,11 @@
     var $ = function (s, r) { return (r || ROOT).querySelector(s); };
     var $$ = function (s, r) { return Array.prototype.slice.call((r || ROOT).querySelectorAll(s)); };
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var timers = [], unbinds = [], running = false;
+    var timers = [], unbinds = [], running = false, disposed = false;
     function pad(n) { return (n < 10 ? "0" : "") + n; }
     function store(k, v) { try { if (v === undefined) return localStorage.getItem("aurora-v3-" + k); localStorage.setItem("aurora-v3-" + k, v); } catch (e) {} return null; }
     function every(fn, ms) { var id = setInterval(fn, ms); timers.push(id); return id; }
-    function later(fn, ms) { var id = setTimeout(fn, ms); timers.push(id); return id; }
+    function later(fn, ms) { if (disposed) return 0; var id = setTimeout(function () { if (!disposed) fn(); }, ms); timers.push(id); return id; }
     function on(target, ev, fn, opt) { target.addEventListener(ev, fn, opt); unbinds.push(function () { target.removeEventListener(ev, fn, opt); }); }
 
     /* ------------------------------------------------------------------ icone (ha-icon dentro Home Assistant, webfont MDI nell'anteprima) */
@@ -2699,6 +2699,7 @@
 
       if (onOff) {
         window.loadCardHelpers().then(function (h) {
+          if (disposed || !running) return;
           try {
             var e = h.createCardElement({
               type: "picture-entity",
@@ -2848,6 +2849,7 @@
       camsEnter();
     }
     function setHass(h) {
+      if (disposed) return;
       var firstTime = !HASS;
       HASS = h;
       if (!LIVE) return;
@@ -3095,7 +3097,7 @@
         if (wasOff && m === "heat" && clima.tgt <= clima.cur) nt = Math.min(clima.max, Math.ceil((clima.cur + 2) / st) * st);
         if (nt !== null && nt !== clima.tgt) {
           clima.tgt = nt;
-          if (LIVE) setTimeout(function () { call("climate", "set_temperature", { entity_id: ENT.climate, temperature: nt }); }, 1200);
+          if (LIVE) later(function () { call("climate", "set_temperature", { entity_id: ENT.climate, temperature: nt }); }, 1200);
           climaToast(m, nt);
         } else climaToast(m, null);
         renderClima();
@@ -4828,7 +4830,7 @@
       var key = EN.range;
       if (!force && EN.rangeKey === key && Date.now() - EN.last < 45000) return;
       if (EN.busy) return; EN.busy = true;
-      enFetch(key).then(function (a) { EN.series = a; EN.rangeKey = key; EN.last = Date.now(); EN.busy = false; drawChart(); }).catch(function () { EN.busy = false; EN.series = []; drawChart(); });
+      enFetch(key).then(function (a) { if (disposed) return; EN.series = a; EN.rangeKey = key; EN.last = Date.now(); EN.busy = false; drawChart(); }).catch(function () { if (disposed) return; EN.busy = false; EN.series = []; drawChart(); });
     }
     function daysLoad() {
       if (Date.now() - EN.daysAt < 600000 && EN.days.length) return;
@@ -4836,8 +4838,9 @@
       if (!LIVE) { var d0 = new Date(), a = []; for (var i = 13; i >= 0; i--) { var dd = new Date(d0 - i * 864e5); a.push({ d: dd, v: i === 0 ? 3.4 : 6 + 5 * Math.abs(Math.sin(i * 1.3)) + (i % 5 === 0 ? 3 : 0) }); } EN.days = a; drawDays(); return; }
       var st = new Date(); st.setDate(st.getDate() - 13); st.setHours(0, 0, 0, 0);
       HASS.callWS({ type: "recorder/statistics_during_period", start_time: st.toISOString(), end_time: new Date().toISOString(), statistic_ids: [ENT.energy.energyTotal], period: "day", types: ["change"] }).then(function (r) {
+        if (disposed) return;
         EN.days = (r[ENT.energy.energyTotal] || []).map(function (x) { return { d: new Date(tms(x.start)), v: x.change }; }).filter(function (x) { return x.v !== null && x.v !== undefined; }); drawDays();
-      }).catch(function () { EN.days = []; drawDays(); });
+      }).catch(function () { if (disposed) return; EN.days = []; drawDays(); });
     }
     function dynamicRateLabels() {
       var translations = {
@@ -5176,22 +5179,49 @@
     }
 
     /* ------------------------------------------------------------------ ciclo di vita */
-    var ro = null;
+    var ro = null, resizeTimer = 0;
     function start() {
-      if (running) return; running = true;
+      if (disposed || running) return; running = true;
       every(function () { if (!LIVE) { chipPower(demoPower()); if (!$("#view-en").hidden) renderEnergy(); } else { livePoll(); if (!$("#view-en").hidden) enLoad(false); } enAge(); tickClock(); lastMotionText(); camsTick(); var d = new Date(), ts = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); $$("[data-stamp]").forEach(function (n) { n.textContent = ts; }); }, 1000);
       every(tickDate, 60000);
       if (!LIVE) later(motionLoop, 1800);
       applyFx();
-      if (window.ResizeObserver) { var rzT; ro = new ResizeObserver(function () { clearTimeout(rzT); rzT = setTimeout(function () { fxHero.resize(); fxPage.resize(); movePill(); }, 120); }); ro.observe($("#shell")); }
+      if (window.ResizeObserver) { ro = new ResizeObserver(function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(function () { if (disposed || !running) return; fxHero.resize(); fxPage.resize(); movePill(); }, 120); }); ro.observe($("#shell")); }
     }
     function stop() {
       running = false;
       timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = [];
+      clearTimeout(resizeTimer);
+      resizeTimer = 0;
       if (ro) { ro.disconnect(); ro = null; }
+      Object.keys(TW).forEach(function (key) {
+        cancelAnimationFrame(TW[key].raf);
+        TW[key].raf = 0;
+      });
       fxHero.stop(); fxPage.stop();
     }
-    function destroy() { stop(); unbinds.forEach(function (u) { u(); }); unbinds = []; }
+    function destroy() {
+      if (disposed) return;
+      disposed = true;
+      stop();
+      [toastT, deltaT, cycleT, clTimer].forEach(function (timer) {
+        clearTimeout(timer);
+        clearInterval(timer);
+      });
+      cycleT = 0;
+      clTimer = 0;
+      camTiles.forEach(function (tile) {
+        clearTimeout(tile.timer);
+        tile.im.onload = null;
+        tile.im.onerror = null;
+        tile.liveBox.innerHTML = "";
+        tile.liveEl = null;
+      });
+      artFront.onload = null;
+      artBack.onload = null;
+      unbinds.forEach(function (unbind) { unbind(); });
+      unbinds = [];
+    }
 
     /* ------------------------------------------------------------------ avvio */
         if (LIVE) {
@@ -7444,24 +7474,83 @@ function defaultAssets() {
   }
 
   class AuroraV3Card extends HTMLElement {
-    constructor() { super(); this._root = this.attachShadow({ mode: "open" }); this._app = null; this._hass = null; }
-    setConfig(config) { this._config = config || {}; if (!this._app) this._mount(); }
+    constructor() {
+      super();
+      this._root = this.attachShadow({ mode: "open" });
+      this._app = null;
+      this._hass = null;
+      this._config = null;
+      this._configKey = null;
+      this._instanceRoot = null;
+    }
+
+    setConfig(config) {
+      var next = config || {};
+      var key = JSON.stringify(next);
+      if (this._app && key === this._configKey) return;
+      this._unmount();
+      this._config = JSON.parse(key);
+      this._configKey = key;
+      this._mount();
+    }
+
+    _unmount() {
+      var old = this._app;
+      this._app = null;
+      this._instanceRoot = null;
+      try {
+        if (old) old.destroy();
+      } finally {
+        this._root.textContent = "";
+        this.removeAttribute("data-edit");
+      }
+    }
+
     _mount() {
       boot();
-      var style = document.createElement("style"); style.textContent = CSS + "\n" + OVERRIDES;
-      var wrap = document.createElement("div"); wrap.innerHTML = HTML;
+      var style = document.createElement("style");
+      style.textContent = CSS + "\n" + OVERRIDES;
+      var wrap = document.createElement("div");
+      wrap.style.display = "contents";
+      wrap.innerHTML = HTML;
       this._root.appendChild(style);
-      while (wrap.firstChild) this._root.appendChild(wrap.firstChild);
-      var self = this, cfg = this._config;
+      this._root.appendChild(wrap);
+      this._instanceRoot = wrap;
+      var self = this;
+      var cfg = this._config;
       this._app = new window.AuroraApp({
-        root: this._root, host: this, layer: this._root.querySelector("#shell"), scroll: this._root.querySelector("#scroll"),
-        assets: cfg.assets || defaultAssets(), live: true, embedded: true, haIcons: true, config: cfg,
-        call: function (domain, service, data) { return self._hass.callService(domain, service, data); },
-        moreInfo: function (entityId) { self.dispatchEvent(new CustomEvent("hass-more-info", { bubbles: true, composed: true, detail: { entityId: entityId } })); }
+        root: wrap,
+        host: this,
+        layer: wrap.querySelector("#shell"),
+        scroll: wrap.querySelector("#scroll"),
+        assets: cfg.assets || defaultAssets(),
+        live: true,
+        embedded: true,
+        haIcons: true,
+        config: cfg,
+        call: function (domain, service, data) {
+          if (self._instanceRoot !== wrap || !self._hass) {
+            return Promise.reject(new Error("Luma Home: inactive card instance"));
+          }
+          return self._hass.callService(domain, service, data);
+        },
+        moreInfo: function (entityId) {
+          if (self._instanceRoot !== wrap) return;
+          self.dispatchEvent(new CustomEvent("hass-more-info", {
+            bubbles: true,
+            composed: true,
+            detail: { entityId: entityId }
+          }));
+        }
       });
       if (this._hass) this._app.setHass(this._hass);
+      if (!this.isConnected) this._app.stop();
     }
-    set hass(h) { this._hass = h; if (this._app) this._app.setHass(h); }
+
+    set hass(h) {
+      this._hass = h;
+      if (this._app) this._app.setHass(h);
+    }
     get hass() { return this._hass; }
     getCardSize() { return 20; }
     getLayoutOptions() { return { grid_columns: 12, grid_rows: 12 }; }
