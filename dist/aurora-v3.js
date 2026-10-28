@@ -4833,7 +4833,7 @@
       enFetch(key).then(function (a) { if (disposed) return; EN.series = a; EN.rangeKey = key; EN.last = Date.now(); EN.busy = false; drawChart(); }).catch(function () { if (disposed) return; EN.busy = false; EN.series = []; drawChart(); });
     }
     function daysLoad() {
-      if (Date.now() - EN.daysAt < 600000 && EN.days.length) return;
+      if (Date.now() - EN.daysAt < 60000 && EN.days.length) return;
       EN.daysAt = Date.now();
       if (!LIVE) { var d0 = new Date(), a = []; for (var i = 13; i >= 0; i--) { var dd = new Date(d0 - i * 864e5); a.push({ d: dd, v: i === 0 ? 3.4 : 6 + 5 * Math.abs(Math.sin(i * 1.3)) + (i % 5 === 0 ? 3 : 0) }); } EN.days = a; drawDays(); return; }
       var st = new Date(); st.setDate(st.getDate() - 13); st.setHours(0, 0, 0, 0);
@@ -5183,6 +5183,20 @@
     function start() {
       if (disposed || running) return; running = true;
       every(function () { if (!LIVE) { chipPower(demoPower()); if (!$("#view-en").hidden) renderEnergy(); } else { livePoll(); if (!$("#view-en").hidden) enLoad(false); } enAge(); tickClock(); lastMotionText(); camsTick(); var d = new Date(), ts = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); $$("[data-stamp]").forEach(function (n) { n.textContent = ts; }); }, 1000);
+      every(function () {
+        if (disposed || !running || !LIVE || document.hidden) {
+          return;
+        }
+
+        var energyView = ROOT.querySelector("#view-en");
+
+        if (!energyView || energyView.hidden) {
+          return;
+        }
+
+        daysLoad();
+      }, 60000); 
+           
       every(tickDate, 60000);
       if (!LIVE) later(motionLoop, 1800);
       applyFx();
