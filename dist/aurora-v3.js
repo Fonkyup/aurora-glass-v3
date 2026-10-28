@@ -3743,7 +3743,8 @@
           ? rateLabels.edit
           : rateLabels.set;
       }
-      renderDynamicRateBar(m);      
+      renderDynamicRateBar(m);
+      refreshDynamicPriceDialog(m);            
       if (EN.pDrawn !== EN.pEff && EN.days.length) drawDays();
       // Energy KPI labels.
       var kpiTranslations = {
@@ -4008,6 +4009,71 @@
         output.textContent = "";
       }
     }
+    function refreshDynamicPriceDialog(m) {
+      if (!isDynamicPricing()) return;
+
+      var box = $("#pricebox");
+
+      if (
+        !box ||
+        !box.classList.contains("open")
+      ) {
+        return;
+      }
+
+      var labels = dynamicRateLabels();
+      var pricing = CFG.energyPricing || {};
+      var model = m || enModel();
+
+      var available =
+        model.rateAvailable === true &&
+        model.price &&
+        Number.isFinite(model.price.v);
+
+      var input = $("#pr-in");
+
+      if (input) {
+        input.readOnly = true;
+
+        input.value = available
+          ? String(model.price.v)
+          : "";
+
+        input.placeholder = available
+          ? ""
+          : labels.unavailable;
+
+        input.setAttribute(
+          "aria-label",
+          labels.rate.trim() +
+          " — " +
+          priceUnit()
+        );
+      }
+
+      var where = $("#pr-where");
+
+      if (where) {
+        var rateText = available
+          ? labels.rate +
+            Number(model.price.v).toLocaleString(
+              LOCALE,
+              {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 5
+              }
+            ) +
+            " " +
+            priceUnit()
+          : labels.unavailable;
+
+        where.textContent =
+          rateText +
+          " · " +
+          labels.source +
+          String(pricing.currentRate || "—");
+      }
+    }    
     function openDynamicPrice() {
       var translations = {
         fr: {
@@ -4101,6 +4167,8 @@
 
       box.classList.add("open");
       box.setAttribute("aria-hidden", "false");
+
+      refreshDynamicPriceDialog(m);      
 
       later(function () {
         var closeButton = $("#pr-close");
