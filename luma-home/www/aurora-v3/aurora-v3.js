@@ -3293,7 +3293,76 @@
       };
 
       return translations[LANG] || translations.it;
-    }    
+    }
+    function migrateLegacyLocalPrice() {
+      var pricing = CFG.energyPricing || {};
+
+      // Dynamic pricing never imports a manual legacy rate.
+      if (pricing.mode === "dynamic") return;
+
+      var legacyCurrency = String(
+        CFG.legacyPriceCurrency || ""
+      ).trim().toUpperCase();
+
+      // Import only after an explicit currency declaration.
+      // Never convert a value between currencies.
+      if (
+        !legacyCurrency ||
+        legacyCurrency !== CURRENCY
+      ) {
+        return;
+      }
+
+      var targetKey = priceStorageKey();
+
+      var markerKey =
+        "price-legacy-imported:" +
+        legacyCurrency;
+
+      // The legacy value is imported once per browser
+      // and declared currency, not into every helper.
+      if (store(markerKey)) return;
+
+      var current = store(targetKey);
+
+      // Never overwrite an existing scoped value.
+      if (
+        current !== null &&
+        current !== undefined &&
+        String(current).trim() !== ""
+      ) {
+        return;
+      }
+
+      var raw = store("price");
+
+      if (
+        raw === null ||
+        raw === undefined ||
+        String(raw).trim() === ""
+      ) {
+        return;
+      }
+
+      var value = Number(raw);
+
+      if (
+        !Number.isFinite(value) ||
+        value < 0.001 ||
+        value > 5
+      ) {
+        return;
+      }
+
+      var serialized = String(value);
+
+      store(targetKey, serialized);
+
+      // Mark the migration only after verifying the write.
+      if (store(targetKey) === serialized) {
+        store(markerKey, targetKey);
+      }
+    }        
     function priceInfo() {
       var id = ENT.energy.price;
       var state = id ? sv(id) : null;
@@ -3327,6 +3396,9 @@
         return { v: v, src: "ha" };
       }
 
+      migrateLegacyLocalPrice();
+      
+      
       var localValue = Number(
         store(priceStorageKey())
       );
