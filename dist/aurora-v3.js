@@ -2444,14 +2444,64 @@
     /* ------------------------------------------------------------------ Home Assistant: sincronizzazione */
     var tracked = {};
     function trackedIds() {
-      var ids = [ENT.alarm, ENT.weather, ENT.power, ENT.climate];
-      Object.keys(ENT.lights).forEach(function (k) { ids.push(ENT.lights[k]); });
-      Object.keys(ENT.motion).forEach(function (k) { (ENT.motion[k] || []).forEach(function (i) { ids.push(i); }); });
-      Object.keys(ENT.opens).forEach(function (k) { ids.push(ENT.opens[k]); });
-      (ENT.cameras || []).forEach(function (c) { if (c.cam) ids.push(c.cam); });
-      Object.keys(ENT.energy).forEach(function (k) { var v = ENT.energy[k]; if (typeof v === 'string' && v.indexOf('.') > 0) ids.push(v); });
-      ENT.energy.appliances.forEach(function (x) { ids.push(x.p); if (x.e) ids.push(x.e); });
-      return ids.filter(Boolean);
+      var ids = [
+        ENT.alarm,
+        ENT.weather,
+        ENT.power,
+        ENT.climate
+      ];
+
+      Object.keys(ENT.lights).forEach(function (k) {
+        ids.push(ENT.lights[k]);
+      });
+
+      Object.keys(ENT.motion).forEach(function (k) {
+        (ENT.motion[k] || []).forEach(function (id) {
+          ids.push(id);
+        });
+      });
+
+      Object.keys(ENT.opens).forEach(function (k) {
+        ids.push(ENT.opens[k]);
+      });
+
+      (ENT.cameras || []).forEach(function (camera) {
+        if (camera.cam) {
+          ids.push(camera.cam);
+        }
+      });
+
+      Object.keys(ENT.energy).forEach(function (k) {
+        var value = ENT.energy[k];
+
+        if (
+          typeof value === "string" &&
+          value.indexOf(".") > 0
+        ) {
+          ids.push(value);
+        }
+      });
+
+      ENT.energy.appliances.forEach(function (appliance) {
+        ids.push(appliance.p);
+
+        if (appliance.e) {
+          ids.push(appliance.e);
+        }
+      });
+
+      var pricing = CFG.energyPricing || {};
+
+      if (
+        pricing.mode === "dynamic" &&
+        typeof pricing.currentRate === "string"
+      ) {
+        ids.push(pricing.currentRate.trim());
+      }
+
+      return ids.filter(function (id, index, list) {
+        return Boolean(id) && list.indexOf(id) === index;
+      });
     }
     function condIcon(c) { return { sunny: "mdi-weather-sunny", "clear-night": "mdi-weather-night", cloudy: "mdi-weather-cloudy", partlycloudy: "mdi-weather-partly-cloudy", rainy: "mdi-weather-rainy", pouring: "mdi-weather-pouring", snowy: "mdi-weather-snowy", "snowy-rainy": "mdi-weather-snowy-rainy", fog: "mdi-weather-fog", lightning: "mdi-weather-lightning", "lightning-rainy": "mdi-weather-lightning-rainy", windy: "mdi-weather-windy", hail: "mdi-weather-hail" }[c] || "mdi-weather-partly-cloudy"; }
     function fmt(n, d) { return Number(n).toLocaleString(LOCALE, { maximumFractionDigits: d === undefined ? 1 : d }); }
@@ -3568,14 +3618,26 @@
       EN.pEff = m.pEff;
 
       if (m.power !== null && !m.na) {
+        var currentCostAvailable =
+          !isDynamicPricing() ||
+          m.rateAvailable === true;
+
+        var currentCostText = currentCostAvailable
+          ? fmtEur(m.power / 1000 * m.pEff) + "/h"
+          : "—";
+
+        var currentCostAction = isDynamicPricing()
+          ? dynamicRateLabels().view
+          : powerChipLabels.changeRate;
+
         chips +=
           '<span class="echip cost" title="' +
-          powerChipLabels.changeRate +
-          '"><i class="mdi mdi-currency-eur"></i>' +
+          currentCostAction +
+          '"><i class="mdi mdi-cash-multiple"></i>' +
           powerChipLabels.currentCost +
           ' <b>' +
-          fmtEur(m.power / 1000 * m.pEff) +
-          "/h</b></span>";
+          currentCostText +
+          "</b></span>";
       }
 
       if (m.base !== null) {
@@ -4810,43 +4872,7 @@
           rateExplanation;
 
         hydrate(sum);
-      }      if (sum) {
-        var totalCost = !dynamic
-          ? " · <b>" + fmtEur(tk * EN.pEff) + "</b>"
-          : "";
 
-        var averageCost = !dynamic
-          ? " · <b>" +
-              fmtEur(tk / a.length * EN.pEff) +
-            "</b>"
-          : "";
-
-        var rateExplanation = !dynamic
-          ? '<span class="echip">' +
-              '<i class="mdi mdi-information-outline"></i>' +
-              labels.calculatedWith +
-              fmtP(EN.pEff) + " " + priceUnit() +
-            "</span>"
-          : "";
-
-        sum.innerHTML =
-          '<span class="echip">' +
-            '<i class="mdi mdi-sigma"></i>' +
-            labels.total + " " +
-            "<b>" + fmtKwh(tk) + " kWh</b>" +
-            totalCost +
-          "</span>" +
-          '<span class="echip">' +
-            '<i class="mdi mdi-chart-line"></i>' +
-            labels.average + " " +
-            "<b>" +
-              fmtKwh(tk / a.length) +
-              " kWh</b>" +
-            averageCost +
-          "</span>" +
-          rateExplanation;
-
-        hydrate(sum);
       }
     }
     function enEnter() { renderEnergy(); enLoad(true); daysLoad(); }
