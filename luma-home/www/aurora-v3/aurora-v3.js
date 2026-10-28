@@ -3892,6 +3892,70 @@
     function priceUnit() {
       return currencyLabel() + "/kWh";
     }
+    function syncEnergyCurrencyUI() {
+      var rateLabels = {
+        it: "Prezzo per kWh",
+        fr: "Prix par kWh",
+        en: "Price per kWh"
+      };
+
+      var input = $("#pr-in");
+
+      if (input) {
+        input.setAttribute(
+          "aria-label",
+          (rateLabels[LANG] || rateLabels.it) +
+          " — " +
+          priceUnit()
+        );
+      }
+
+      // Unit displayed beside the rate input.
+      var rateUnit = $("#pricebox .pr-box > span");
+
+      if (rateUnit) {
+        rateUnit.textContent = priceUnit();
+      }
+
+      // Currency displayed beside the bill amount.
+      // Preserve the input element and its event listeners.
+      var billInput = $("#pr-bill");
+
+      if (billInput && billInput.parentElement) {
+        var container = billInput.parentElement;
+
+        Array.prototype.slice.call(
+          container.childNodes
+        ).forEach(function (node) {
+          if (node.nodeType === 3) {
+            container.removeChild(node);
+          }
+        });
+
+        container.appendChild(
+          document.createTextNode(
+            " " + currencyLabel()
+          )
+        );
+      }
+
+      // Keep the existing internal value "eur"
+      // for compatibility with stored preferences.
+      var monetaryButton = $(
+        '#en-dunit button[data-u="eur"]'
+      );
+
+      if (monetaryButton) {
+        monetaryButton.textContent = currencyLabel();
+      }
+
+      // Neutral monetary icon for every supported currency.
+      var rateIcon = $("#en-price .pb-ico i");
+
+      if (rateIcon) {
+        setIco(rateIcon, "mdi-cash-multiple");
+      }
+    }    
     function fmtP(v) { return Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
     function prNum(sel) { var v = parseFloat(String($(sel).value).replace(",", ".")); return isNaN(v) ? null : v; }
     function prSet(v) { $("#pr-in").value = (Math.round(v * 1000) / 1000).toFixed(3); prMark(); }
@@ -4059,7 +4123,8 @@
 
       input.readOnly = false;
       input.placeholder = "";
-      input.removeAttribute("aria-label");
+
+      syncEnergyCurrencyUI();
 
       [
         "#pr-pre",
@@ -6473,7 +6538,7 @@
         close: "Fermer",
         decrease: "Diminuer",
         increase: "Augmenter",
-        input: "Prix en euros par kWh",
+        input: "Prix par kWh",
         billExample: "Ex. : 84,50",
         kwhExample: "Ex. : 210"
       },
@@ -6489,7 +6554,7 @@
         close: "Close",
         decrease: "Decrease",
         increase: "Increase",
-        input: "Price in euros per kWh",
+        input: "Price per kWh",
         billExample: "E.g. 84.50",
         kwhExample: "E.g. 210"
       }
@@ -6673,6 +6738,7 @@
     }
 
     translateEnergyStaticOverrides();
+    syncEnergyCurrencyUI();    
     function translateImageEditorStaticLabels() {
       var translations = {
         it: {
