@@ -1022,6 +1022,7 @@
     IMG.allarme_off = { kind: "single", src: BASE + "allarme_off.png" };
     ["allarme_notte", "allarme_fuori", "allarme_scattato"].forEach(function (k) { IMG[k] = { kind: "single", src: BASE + k + ".gif" }; });
     IMG.clima_off = { kind: "single", src: BASE + "clima_off.png" };
+    IMG.plinthe = { kind: "pair", off: BASE + "plinthe_off.png", on: BASE + "plinthe_on.gif" };
     ["cool", "heat", "dry", "fan", "auto"].forEach(function (k) { IMG["clima_" + k] = { kind: "single", src: BASE + "clima_" + k + ".gif" }; });
     var LIBGROUPS = [["Luci", "luce_"], ["Scene", "scena_"], ["Sensori", "sensore_"], ["Allarme", "allarme_"], ["Clima", "clima_"]];
     var LIBNAMES = { luce_salotto: "Salotto", luce_ingresso: "Ingresso", luce_corridoio: "Corridoio", luce_cucina: "Cucina", luce_balcone: "Balcone", luce_camera: "Camera", luce_cameretta: "Cameretta", luce_bagno_piccolo: "Bagno 1", luce_bagno_doccia: "Doccia", luce_lavanderia: "Lavanderia", luce_sgabuzzino: "Sgabuzzino",
@@ -1361,9 +1362,9 @@
 
     function zcText(key) {
       var texts = {
-        fr: { current: "Température actuelle", target: "Consigne", apply: "Appliquer", mode: "Mode", fan: "Ventilation", swing: "Volets", preset: "Préréglage", unavailable: "Indisponible", unknown: "Non renseigné", invalid: "Consigne hors limites ou incrément incorrect", heat: "Chauffage", cool: "Climatisation", auto: "Automatique", heat_cool: "Chauffage / climatisation", off: "Arrêt", fan_only: "Ventilation seule", dry: "Déshumidification", idle: "En pause", heating: "Chauffe actuellement", cooling: "Climatise actuellement", low: "Faible", medium: "Moyenne", high: "Élevée", horizontal: "Horizontal", vertical: "Vertical", both: "Les deux", none: "Normal", away: "Absence", sleep: "Sommeil", boost: "Boost" },
-        en: { current: "Current temperature", target: "Target", apply: "Apply", mode: "Mode", fan: "Fan", swing: "Swing", preset: "Preset", unavailable: "Unavailable", unknown: "Not reported", invalid: "Target outside limits or invalid step", heat: "Heat", cool: "Cool", auto: "Auto", heat_cool: "Heat / cool", off: "Off", fan_only: "Fan only", dry: "Dry", idle: "Idle", heating: "Heating", cooling: "Cooling" },
-        it: { current: "Temperatura attuale", target: "Temperatura desiderata", apply: "Applica", mode: "Modalità", fan: "Ventilazione", swing: "Alette", preset: "Preimpostazione", unavailable: "Non disponibile", unknown: "Non comunicato", invalid: "Temperatura fuori limite o incremento non valido", heat: "Riscaldamento", cool: "Raffrescamento", auto: "Automatico", heat_cool: "Caldo / freddo", off: "Spento", fan_only: "Solo ventilazione", dry: "Deumidificazione", idle: "In pausa", heating: "Riscaldamento attivo", cooling: "Raffrescamento attivo" }
+        fr: { current: "Température actuelle", target: "Consigne", apply: "Appliquer", lower: "Abaisser", raise: "Augmenter", image: "Image", mode: "Mode", fan: "Ventilation", swing: "Volets", preset: "Préréglage", unavailable: "Indisponible", unknown: "Non renseigné", invalid: "Consigne hors limites ou incrément incorrect", heat: "Chauffage", cool: "Climatisation", auto: "Automatique", heat_cool: "Chauffage / climatisation", off: "Arrêt", fan_only: "Ventilation seule", dry: "Déshumidification", idle: "En pause", heating: "Chauffe actuellement", cooling: "Climatise actuellement", low: "Faible", medium: "Moyenne", high: "Élevée", horizontal: "Horizontal", vertical: "Vertical", both: "Les deux", none: "Normal", away: "Absence", sleep: "Sommeil", boost: "Boost" },
+        en: { current: "Current temperature", target: "Target", apply: "Apply", lower: "Lower", raise: "Raise", image: "Image", mode: "Mode", fan: "Fan", swing: "Swing", preset: "Preset", unavailable: "Unavailable", unknown: "Not reported", invalid: "Target outside limits or invalid step", heat: "Heat", cool: "Cool", auto: "Auto", heat_cool: "Heat / cool", off: "Off", fan_only: "Fan only", dry: "Dry", idle: "Idle", heating: "Heating", cooling: "Cooling" },
+        it: { current: "Temperatura attuale", target: "Temperatura desiderata", apply: "Applica", lower: "Abbassa", raise: "Alza", image: "Immagine", mode: "Modalità", fan: "Ventilazione", swing: "Alette", preset: "Preimpostazione", unavailable: "Non disponibile", unknown: "Non comunicato", invalid: "Temperatura fuori limite o incremento non valido", heat: "Riscaldamento", cool: "Raffrescamento", auto: "Automatico", heat_cool: "Caldo / freddo", off: "Spento", fan_only: "Solo ventilazione", dry: "Deumidificazione", idle: "In pausa", heating: "Riscaldamento attivo", cooling: "Raffrescamento attivo" }
       };
       return (texts[LANG] || texts.it)[key] || key;
     }
@@ -1391,31 +1392,54 @@
         if (config.step !== undefined && !(zcNumber(config.step) > 0)) {
           throw new Error("Luma Home: climate step must be positive");
         }
-        var panel = { config: config, busy: false, fields: {} };
+        var panel = { config: config, busy: false, fields: {}, pending: null, timer: 0 };
         var box = zcElement("section", "card zone-climate");
-        box.style.cssText = "grid-column:1/-1;padding:18px;min-width:0;display:flex;flex-direction:column;gap:12px;--cl:#8B5CF6";
-        box.appendChild(zcElement("h3", "", config.name || config.entity));
+        box.style.cssText = "grid-column:1/-1;padding:18px;min-width:0;display:flex;flex-wrap:wrap;align-items:flex-start;gap:18px;--cl:#64748B";
+        // Image de l'appareil (plinthe chauffante), même système d'images que les autres boutons.
+        panel.art = zcElement("div", "cl-art");
+        panel.art.style.cssText = "flex:0 0 auto";
+        panel.art.dataset.img = "plinthe";
+        panel.art.dataset.ov = "zone_" + config.entity.replace(".", "_");
+        panel.art.dataset.on = "0";
+        panel.art.dataset.label = zcText("image") + " — " + (config.name || config.entity);
+        panel.art.hidden = true;
+        var artImage = document.createElement("img");
+        artImage.alt = "";
+        artImage.draggable = false;
+        panel.art.appendChild(artImage);
+        var artBadge = zcElement("span", "edit-badge");
+        artBadge.appendChild(zcElement("i", "mdi mdi-pencil"));
+        panel.art.appendChild(artBadge);
+        box.appendChild(panel.art);
+        var content = zcElement("div", "");
+        content.style.cssText = "flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:12px";
+        box.appendChild(content);
+        content.appendChild(zcElement("h3", "", config.name || config.entity));
         panel.status = zcElement("p", "sub");
         panel.current = zcElement("p", "sub");
-        box.appendChild(panel.status);
-        box.appendChild(panel.current);
-        panel.targetRow = zcElement("div", "");
-        panel.targetRow.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;align-items:center";
-        var targetLabel = zcElement("label", "pr-box");
-        targetLabel.style.cssText = "font-size:1rem;gap:8px;flex-wrap:wrap";
-        targetLabel.appendChild(zcElement("span", "", zcText("target")));
-        panel.input = document.createElement("input");
-        panel.input.type = "number";
-        panel.input.style.cssText = "font-size:1.4rem;width:5em";
-        panel.input.setAttribute("aria-label", zcText("target") + " — " + (config.name || config.entity));
-        targetLabel.appendChild(panel.input);
-        panel.unit = zcElement("span");
-        targetLabel.appendChild(panel.unit);
-        panel.apply = zcElement("button", "cchip", zcText("apply"));
-        panel.apply.type = "button";
-        panel.targetRow.appendChild(targetLabel);
-        panel.targetRow.appendChild(panel.apply);
-        box.appendChild(panel.targetRow);
+        content.appendChild(panel.status);
+        content.appendChild(panel.current);
+        panel.targetRow = zcElement("div", "tctl");
+        panel.targetRow.style.cssText = "align-self:flex-start";
+        panel.targetRow.setAttribute("role", "group");
+        panel.targetRow.setAttribute("aria-label", zcText("target") + " — " + (config.name || config.entity));
+        panel.minus = zcElement("button", "rbtn");
+        panel.minus.type = "button";
+        panel.minus.setAttribute("aria-label", zcText("lower") + " — " + (config.name || config.entity));
+        panel.minus.appendChild(zcElement("i", "mdi mdi-minus"));
+        panel.plus = zcElement("button", "rbtn");
+        panel.plus.type = "button";
+        panel.plus.setAttribute("aria-label", zcText("raise") + " — " + (config.name || config.entity));
+        panel.plus.appendChild(zcElement("i", "mdi mdi-plus"));
+        var big = zcElement("div", "tbig");
+        panel.value = zcElement("span", "", "--");
+        panel.unit = zcElement("small");
+        big.appendChild(panel.value);
+        big.appendChild(panel.unit);
+        panel.targetRow.appendChild(panel.minus);
+        panel.targetRow.appendChild(big);
+        panel.targetRow.appendChild(panel.plus);
+        content.appendChild(panel.targetRow);
         [
           ["mode", "hvac_modes", "hvac_mode", "set_hvac_mode", 0],
           ["fan", "fan_modes", "fan_mode", "set_fan_mode", 8],
@@ -1429,7 +1453,7 @@
           select.style.cssText = "max-width:100%;background:var(--surface-solid);color:var(--text)";
           select.setAttribute("aria-label", zcText(definition[0]) + " — " + (config.name || config.entity));
           label.appendChild(select);
-          box.appendChild(label);
+          content.appendChild(label);
           panel.fields[definition[0]] = { definition: definition, label: label, select: select, signature: "" };
           select.addEventListener("change", function () {
             var live = sv(config.entity);
@@ -1440,18 +1464,39 @@
             sendZoneClimate(panel, definition[3], data);
           });
         });
-        panel.apply.addEventListener("click", function () {
+        // +/- : l'affichage change tout de suite, la consigne est envoyée 0,7 s après le dernier clic.
+        function sendPendingTarget() {
+          if (disposed) return;
+          if (panel.busy) { panel.timer = later(sendPendingTarget, 300); return; }
+          panel.timer = 0;
+          if (panel.pending === null) return;
+          sendZoneClimate(panel, "set_temperature", { temperature: panel.pending });
+          later(function () {
+            if (panel.timer) return;
+            panel.pending = null;
+            renderZoneClimates();
+          }, 4000);
+        }
+        function stepZoneTarget(direction) {
           var live = sv(config.entity);
-          if (isUnavail(live) || !panel.input.reportValidity()) return;
-          var value = zcNumber(panel.input.value);
-          var minimum = zcNumber(live.attributes.min_temp);
-          var maximum = zcNumber(live.attributes.max_temp);
-          if (value === null || minimum === null || maximum === null || value < minimum || value > maximum) {
-            toast(zcText("invalid"), "mdi-alert-circle", "var(--warn)");
-            return;
-          }
-          sendZoneClimate(panel, "set_temperature", { temperature: value });
-        });
+          if (!LIVE || isUnavail(live)) return;
+          var attributes = live.attributes || {};
+          var minimum = zcNumber(attributes.min_temp);
+          var maximum = zcNumber(attributes.max_temp);
+          var current = panel.pending !== null ? panel.pending : zcNumber(attributes.temperature);
+          if (minimum === null || maximum === null || current === null) return;
+          var step = zcNumber(attributes.target_temp_step);
+          if (!(step > 0)) step = zcNumber(config.step);
+          if (!(step > 0)) step = 0.5;
+          var value = Math.round((current + direction * step) / step) * step;
+          value = Number(Math.min(maximum, Math.max(minimum, value)).toFixed(2));
+          panel.pending = value;
+          renderZoneClimates();
+          clearTimeout(panel.timer);
+          panel.timer = later(sendPendingTarget, 700);
+        }
+        panel.minus.addEventListener("click", function () { stepZoneTarget(-1); });
+        panel.plus.addEventListener("click", function () { stepZoneTarget(1); });
         panel.box = box;
         zoneClimatePanels.push(panel);
         body.appendChild(box);
@@ -1484,6 +1529,14 @@
         var features = Number(attributes.supported_features) || 0;
         var disabled = unavailable || panel.busy || !LIVE;
         panel.box.classList.toggle("na", unavailable);
+        // Image de plinthe seulement pour un appareil de chauffage seul ; animée pendant la chauffe.
+        var hvacModes = Array.isArray(attributes.hvac_modes) ? attributes.hvac_modes : [];
+        var heatingOnly = hvacModes.length > 0 && hvacModes.every(function (mode) { return mode === "heat" || mode === "off"; });
+        var heating = !unavailable && attributes.hvac_action === "heating";
+        panel.art.hidden = !heatingOnly;
+        panel.art.dataset.on = heating ? "1" : "0";
+        panel.box.style.setProperty("--cl", heating ? "#FB923C" : "#64748B");
+        refreshImg(panel.art);
         panel.status.textContent = unavailable ? zcText("unavailable") : zcText(live.state) + (attributes.hvac_action ? " · " + zcText(attributes.hvac_action) : "");
         var unit = attributes.temperature_unit || HASS && HASS.config && HASS.config.unit_system && HASS.config.unit_system.temperature || "";
         var current = zcNumber(attributes.current_temperature);
@@ -1492,21 +1545,18 @@
         var target = zcNumber(attributes.temperature);
         var minimum = zcNumber(attributes.min_temp);
         var maximum = zcNumber(attributes.max_temp);
-        var step = zcNumber(attributes.target_temp_step);
-        if (!(step > 0)) step = zcNumber(panel.config.step);
-        panel.input.step = step > 0 ? String(step) : "any";
-        if (minimum !== null) panel.input.min = String(minimum); else panel.input.removeAttribute("min");
-        if (maximum !== null) panel.input.max = String(maximum); else panel.input.removeAttribute("max");
+        if (panel.pending !== null && !panel.timer && target === panel.pending) panel.pending = null;
+        var shown = panel.pending !== null ? panel.pending : target;
         panel.targetRow.hidden = !(features & 1);
-        var editable = !disabled && target !== null && minimum !== null && maximum !== null;
-        panel.input.disabled = !editable;
-        panel.apply.disabled = !editable;
-        if (!panel.input.matches(":focus")) panel.input.value = target === null ? "" : String(target);
+        var adjustable = !unavailable && LIVE && shown !== null && minimum !== null && maximum !== null;
+        panel.value.textContent = shown === null ? "--" : shown.toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        panel.minus.disabled = !adjustable || shown <= minimum;
+        panel.plus.disabled = !adjustable || shown >= maximum;
         Object.keys(panel.fields).forEach(function (key) {
           var field = panel.fields[key], definition = field.definition;
           var choices = attributes[definition[1]];
           if (!Array.isArray(choices)) choices = [];
-          field.label.hidden = !choices.length || (definition[4] && !(features & definition[4]));
+          field.label.hidden = !choices.length || (key === "mode" && choices.length < 2) || (definition[4] && !(features & definition[4]));
           var signature = JSON.stringify(choices);
           if (signature !== field.signature) {
             field.select.textContent = "";
@@ -3144,7 +3194,7 @@
     function renderClima() {
       var wrap = $("#clima-wrap"), box = $("#clima");
       if (!wrap) return;
-      if (CUSTOM_ZONES) {
+      if (CUSTOM_ZONES && !(CFG.entities && CFG.entities.climate)) {
         wrap.hidden = true;
         return;
       }
