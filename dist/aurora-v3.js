@@ -1154,7 +1154,7 @@
             throw new Error("Luma Home: each configured light needs a unique light entity");
           }
           entityIds.add(light.entity);
-          var key = "zone_" + zone.id + "__" + light.entity.replace(".", "_");
+          var key = "zone_" + light.entity.replace(".", "_");
           var icon = /^mdi:[a-z0-9-]+$/.test(light.icon || "") ? light.icon.replace("mdi:", "mdi-") : "mdi-lightbulb";
           var image = light.image || "luce_bagno_piccolo";
           if (!Object.prototype.hasOwnProperty.call(IMG, image)) throw new Error("Luma Home: unknown light image " + image);
