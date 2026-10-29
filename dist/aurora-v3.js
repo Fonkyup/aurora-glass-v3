@@ -1349,10 +1349,184 @@
       };
 
       return translations[LANG] || translations.it;
-    }    
+    }
+    // Climate panels for configurable zones. No shared target or delayed commands.
+    var zoneClimatePanels = [];
+
+    function zcNumber(value) {
+      if (value === null || value === undefined || value === "") return null;
+      var result = Number(value);
+      return Number.isFinite(result) ? result : null;
+    }
+
+    function zcText(key) {
+      var texts = {
+        fr: { current: "Température actuelle", target: "Consigne", apply: "Appliquer", mode: "Mode", fan: "Ventilation", swing: "Volets", preset: "Préréglage", unavailable: "Indisponible", unknown: "Non renseigné", invalid: "Consigne hors limites ou incrément incorrect", heat: "Chauffage", cool: "Climatisation", auto: "Automatique", heat_cool: "Chauffage / climatisation", off: "Arrêt", fan_only: "Ventilation seule", dry: "Déshumidification", idle: "En pause", heating: "Chauffe actuellement", cooling: "Climatise actuellement", low: "Faible", medium: "Moyenne", high: "Élevée", horizontal: "Horizontal", vertical: "Vertical", both: "Les deux", none: "Normal", away: "Absence", sleep: "Sommeil", boost: "Boost" },
+        en: { current: "Current temperature", target: "Target", apply: "Apply", mode: "Mode", fan: "Fan", swing: "Swing", preset: "Preset", unavailable: "Unavailable", unknown: "Not reported", invalid: "Target outside limits or invalid step", heat: "Heat", cool: "Cool", auto: "Auto", heat_cool: "Heat / cool", off: "Off", fan_only: "Fan only", dry: "Dry", idle: "Idle", heating: "Heating", cooling: "Cooling" },
+        it: { current: "Temperatura attuale", target: "Temperatura desiderata", apply: "Applica", mode: "Modalità", fan: "Ventilazione", swing: "Alette", preset: "Preimpostazione", unavailable: "Non disponibile", unknown: "Non comunicato", invalid: "Temperatura fuori limite o incremento non valido", heat: "Riscaldamento", cool: "Raffrescamento", auto: "Automatico", heat_cool: "Caldo / freddo", off: "Spento", fan_only: "Solo ventilazione", dry: "Deumidificazione", idle: "In pausa", heating: "Riscaldamento attivo", cooling: "Raffrescamento attivo" }
+      };
+      return (texts[LANG] || texts.it)[key] || key;
+    }
+
+    function zcElement(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function buildZoneClimates(card, roomIndex) {
+      if (!CUSTOM_ZONES) return;
+      var zone = CFG.zones[roomIndex];
+      var configs = zone.climates == null ? [] : zone.climates;
+      if (!Array.isArray(configs)) throw new Error("Luma Home: climates must be a list");
+      var body = card.querySelector(".room-body");
+      configs.forEach(function (config) {
+        if (!config || !/^climate\.[a-z0-9_]+$/.test(config.entity || "")) {
+          throw new Error("Luma Home: invalid climate entity");
+        }
+        if (zoneClimatePanels.some(function (panel) { return panel.config.entity === config.entity; })) {
+          throw new Error("Luma Home: duplicate climate entity " + config.entity);
+        }
+        if (config.step !== undefined && !(zcNumber(config.step) > 0)) {
+          throw new Error("Luma Home: climate step must be positive");
+        }
+        var panel = { config: config, busy: false, fields: {} };
+        var box = zcElement("section", "card zone-climate");
+        box.style.cssText = "grid-column:1/-1;padding:18px;min-width:0;display:flex;flex-direction:column;gap:12px;--cl:#8B5CF6";
+        box.appendChild(zcElement("h3", "", config.name || config.entity));
+        panel.status = zcElement("p", "sub");
+        panel.current = zcElement("p", "sub");
+        box.appendChild(panel.status);
+        box.appendChild(panel.current);
+        panel.targetRow = zcElement("div", "");
+        panel.targetRow.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;align-items:center";
+        var targetLabel = zcElement("label", "pr-box");
+        targetLabel.style.cssText = "font-size:1rem;gap:8px;flex-wrap:wrap";
+        targetLabel.appendChild(zcElement("span", "", zcText("target")));
+        panel.input = document.createElement("input");
+        panel.input.type = "number";
+        panel.input.style.cssText = "font-size:1.4rem;width:5em";
+        panel.input.setAttribute("aria-label", zcText("target") + " — " + (config.name || config.entity));
+        targetLabel.appendChild(panel.input);
+        panel.unit = zcElement("span");
+        targetLabel.appendChild(panel.unit);
+        panel.apply = zcElement("button", "cchip", zcText("apply"));
+        panel.apply.type = "button";
+        panel.targetRow.appendChild(targetLabel);
+        panel.targetRow.appendChild(panel.apply);
+        box.appendChild(panel.targetRow);
+        [
+          ["mode", "hvac_modes", "hvac_mode", "set_hvac_mode", 0],
+          ["fan", "fan_modes", "fan_mode", "set_fan_mode", 8],
+          ["swing", "swing_modes", "swing_mode", "set_swing_mode", 32],
+          ["preset", "preset_modes", "preset_mode", "set_preset_mode", 16]
+        ].forEach(function (definition) {
+          var label = zcElement("label", "");
+          label.style.cssText = "display:flex;flex-wrap:wrap;align-items:center;gap:10px";
+          label.appendChild(zcElement("span", "", zcText(definition[0])));
+          var select = zcElement("select", "cchip");
+          select.style.cssText = "max-width:100%;background:var(--surface-solid);color:var(--text)";
+          select.setAttribute("aria-label", zcText(definition[0]) + " — " + (config.name || config.entity));
+          label.appendChild(select);
+          box.appendChild(label);
+          panel.fields[definition[0]] = { definition: definition, label: label, select: select, signature: "" };
+          select.addEventListener("change", function () {
+            var live = sv(config.entity);
+            var list = live && live.attributes[definition[1]];
+            if (!Array.isArray(list) || list.indexOf(select.value) === -1) return;
+            var data = {};
+            data[definition[2]] = select.value;
+            sendZoneClimate(panel, definition[3], data);
+          });
+        });
+        panel.apply.addEventListener("click", function () {
+          var live = sv(config.entity);
+          if (isUnavail(live) || !panel.input.reportValidity()) return;
+          var value = zcNumber(panel.input.value);
+          var minimum = zcNumber(live.attributes.min_temp);
+          var maximum = zcNumber(live.attributes.max_temp);
+          if (value === null || minimum === null || maximum === null || value < minimum || value > maximum) {
+            toast(zcText("invalid"), "mdi-alert-circle", "var(--warn)");
+            return;
+          }
+          sendZoneClimate(panel, "set_temperature", { temperature: value });
+        });
+        panel.box = box;
+        zoneClimatePanels.push(panel);
+        body.appendChild(box);
+      });
+      renderZoneClimates();
+    }
+
+    function sendZoneClimate(panel, service, values) {
+      if (disposed || !running || !LIVE || panel.busy || isUnavail(sv(panel.config.entity))) return;
+      var data = { entity_id: panel.config.entity };
+      Object.keys(values).forEach(function (key) { data[key] = values[key]; });
+      panel.busy = true;
+      renderZoneClimates();
+      Promise.resolve(call("climate", service, data)).then(function () {
+        if (disposed) return;
+        panel.busy = false;
+        renderZoneClimates();
+      }, function () {
+        if (disposed) return;
+        panel.busy = false;
+        renderZoneClimates();
+      });
+    }
+
+    function renderZoneClimates() {
+      zoneClimatePanels.forEach(function (panel) {
+        var live = sv(panel.config.entity);
+        var unavailable = isUnavail(live);
+        var attributes = live && live.attributes || {};
+        var features = Number(attributes.supported_features) || 0;
+        var disabled = unavailable || panel.busy || !LIVE;
+        panel.box.classList.toggle("na", unavailable);
+        panel.status.textContent = unavailable ? zcText("unavailable") : zcText(live.state) + (attributes.hvac_action ? " · " + zcText(attributes.hvac_action) : "");
+        var unit = attributes.temperature_unit || HASS && HASS.config && HASS.config.unit_system && HASS.config.unit_system.temperature || "";
+        var current = zcNumber(attributes.current_temperature);
+        panel.current.textContent = zcText("current") + " : " + (current === null ? zcText("unknown") : current.toLocaleString(LOCALE) + " " + unit);
+        panel.unit.textContent = unit;
+        var target = zcNumber(attributes.temperature);
+        var minimum = zcNumber(attributes.min_temp);
+        var maximum = zcNumber(attributes.max_temp);
+        var step = zcNumber(attributes.target_temp_step);
+        if (!(step > 0)) step = zcNumber(panel.config.step);
+        panel.input.step = step > 0 ? String(step) : "any";
+        if (minimum !== null) panel.input.min = String(minimum); else panel.input.removeAttribute("min");
+        if (maximum !== null) panel.input.max = String(maximum); else panel.input.removeAttribute("max");
+        panel.targetRow.hidden = !(features & 1);
+        var editable = !disabled && target !== null && minimum !== null && maximum !== null;
+        panel.input.disabled = !editable;
+        panel.apply.disabled = !editable;
+        if (!panel.input.matches(":focus")) panel.input.value = target === null ? "" : String(target);
+        Object.keys(panel.fields).forEach(function (key) {
+          var field = panel.fields[key], definition = field.definition;
+          var choices = attributes[definition[1]];
+          if (!Array.isArray(choices)) choices = [];
+          field.label.hidden = !choices.length || (definition[4] && !(features & definition[4]));
+          var signature = JSON.stringify(choices);
+          if (signature !== field.signature) {
+            field.select.textContent = "";
+            choices.forEach(function (choice) {
+              var option = zcElement("option", "", zcText(choice));
+              option.value = choice;
+              field.select.appendChild(option);
+            });
+            field.signature = signature;
+          }
+          var value = key === "mode" ? live && live.state : attributes[definition[2]];
+          if (!field.select.matches(":focus")) field.select.value = value == null ? "" : value;
+          field.select.disabled = disabled || choices.length < 2;
+        });
+      });
+    }
+
     function buildRooms() {
       var box = $("#rooms");
-      ROOMS.forEach(function (r) {
+      ROOMS.forEach(function (r, roomIndex) {
         var card = el("article", "card room w" + r.w); card.style.setProperty("--room", r.c);
         var orbs = "";
         r.l.forEach(function (k) {
@@ -1365,6 +1539,7 @@
         var body = orbs;
         if (r.cell) body += '<div class="sens-cell sensors">' + chips + "</div>"; else if (chips) body += '<div class="sensors strip">' + chips + "</div>";
         card.innerHTML = '<div class="room-head"><span class="r-ico"><i class="mdi ' + r.ic + '"></i></span><h3>' + zoneHtml(r.n) + '</h3><span class="count">0/' + r.l.length + '</span></div><div class="bar"><i></i></div><div class="room-body">' + body + "</div>";
+        buildZoneClimates(card, roomIndex);
         hydrate(card);
         box.appendChild(card);
       });
@@ -2505,7 +2680,9 @@
         ENT.power,
         ENT.climate
       ];
-
+      zoneClimatePanels.forEach(function (panel) {
+        ids.push(panel.config.entity);
+      });
       Object.keys(ENT.lights).forEach(function (k) {
         ids.push(ENT.lights[k]);
       });
@@ -2605,7 +2782,9 @@
       if (p && !isUnavail(p) && !isNaN(parseFloat(p.state))) { cp.hidden = false; var v = parseFloat(p.state), u = p.attributes.unit_of_measurement || "W"; if (u === "kW") v *= 1000; chipPower(v); } else cp.hidden = true;
       var nm = HASS && HASS.user && HASS.user.name ? HASS.user.name.split(" ")[0] : "";
       if (nm && nm !== userName) { userName = nm; tickClock(); if (!clockLive) applyHour(hour); }
-      climaFromHass(); renderClima();
+      climaFromHass();
+      renderClima();
+      renderZoneClimates();
       var enBtn = $('.dock [data-view="en"]'); if (enBtn) enBtn.hidden = !(sv(ENT.energy.power) || sv(ENT.power));
       renderEnergy(); if (!$("#view-en").hidden) enLoad(false);
       camsStatus();
@@ -2965,6 +3144,10 @@
     function renderClima() {
       var wrap = $("#clima-wrap"), box = $("#clima");
       if (!wrap) return;
+      if (CUSTOM_ZONES) {
+        wrap.hidden = true;
+        return;
+      }
       if (LIVE && !sv(ENT.climate)) { wrap.hidden = true; return; }
       wrap.hidden = false;
       var m = clima.mode, col = CL_COL[m] || CL_COL.off;
