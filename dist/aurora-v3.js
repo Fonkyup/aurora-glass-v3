@@ -1135,6 +1135,23 @@
         ENT.lights[x.k] = x.id; room.l.push(x.k); state.lights[x.k] = false;
       });
     })();
+    // Appareils de la carte « Clima » : une entité (texte) ou une liste d'entités, chacune avec un nom facultatif.
+    var CLIMATES = [], climateIndex = 0;
+    (function configureClimates() {
+      var raw = Array.isArray(ENT.climate) ? ENT.climate : [ENT.climate];
+      var seen = {};
+      raw.forEach(function (item) {
+        var entity = typeof item === "string" ? item : item && item.entity;
+        if (typeof entity !== "string" || !entity) throw new Error("Luma Home: each climate needs an entity");
+        if (seen[entity]) throw new Error("Luma Home: duplicate climate entity " + entity);
+        seen[entity] = true;
+        CLIMATES.push({ entity: entity, name: item && typeof item === "object" && item.name ? String(item.name) : "" });
+      });
+      if (!CLIMATES.length) CLIMATES.push({ entity: "climate.salotto", name: "" });
+      var saved = store("climate");
+      CLIMATES.forEach(function (item, index) { if (item.entity === saved) climateIndex = index; });
+      ENT.climate = CLIMATES[climateIndex].entity;
+    })();
     var CUSTOM_ZONES = false;
     (function configureZones() {
       if (CFG.zones === undefined) return;
@@ -2727,9 +2744,11 @@
       var ids = [
         ENT.alarm,
         ENT.weather,
-        ENT.power,
-        ENT.climate
+        ENT.power
       ];
+      CLIMATES.forEach(function (item) {
+        ids.push(item.entity);
+      });
       zoneClimatePanels.forEach(function (panel) {
         ids.push(panel.config.entity);
       });
@@ -3161,13 +3180,14 @@
     }
     var clima = { avail: true, name: defaultClimateName(), mode: "off", action: "off", cur: 23, tgt: 25, min: 16, max: 30, step: .5, modes: ["off", "heat_cool", "cool", "dry", "fan_only", "heat"],
       fan: "Auto", fans: ["Auto", "Low", "LowMid", "Mid", "HighMid", "High"], swing: "Up", swings: ["Auto", "Up", "UpMid", "Mid", "DownMid", "Down"], hswing: "Auto", hswings: ["Auto", "Left", "LeftMid", "Mid", "RightMid", "Right"], preset: "none", presets: ["none", "quiet", "powerful"] };
+    var CLIMA_DEFAULT = JSON.stringify(clima);
     var clTimer = 0;
     function climaFromHass() {
       var s = sv(ENT.climate);
       if (!s) { clima.avail = false; return; }
       var a = s.attributes;
       clima.avail = s.state !== "unavailable";
-      clima.name = a.friendly_name || clima.name; clima.mode = (s.state === "unavailable" || s.state === "unknown") ? "off" : s.state; clima.action = a.hvac_action || "";
+      clima.name = CLIMATES[climateIndex].name || a.friendly_name || clima.name; clima.mode = (s.state === "unavailable" || s.state === "unknown") ? "off" : s.state; clima.action = a.hvac_action || "";
       if (a.current_temperature !== undefined && a.current_temperature !== null) clima.cur = a.current_temperature;
       if (a.temperature !== undefined && a.temperature !== null && !clTimer) clima.tgt = a.temperature;
       clima.min = a.min_temp || 16; clima.max = a.max_temp || 30; clima.step = a.target_temp_step || a.target_temperature_step || .5;
@@ -3198,11 +3218,12 @@
         wrap.hidden = true;
         return;
       }
-      if (LIVE && !sv(ENT.climate)) { wrap.hidden = true; return; }
+      if (LIVE && !CLIMATES.some(function (item) { return sv(item.entity); })) { wrap.hidden = true; return; }
       wrap.hidden = false;
       var m = clima.mode, col = CL_COL[m] || CL_COL.off;
       box.style.setProperty("--cl", col); box.dataset.mode = m; box.classList.toggle("na", !clima.avail);
       $("#cl-name").textContent = clima.name; $("#cl-sub").textContent = clima.name;
+      renderClimaTiles();
       var climateText = climateLabels();
 
       var st = !clima.avail
@@ -3295,6 +3316,101 @@
       if (local) local();
       renderClima();
     }
+    // Tuiles de vue globale (affichées seulement avec plusieurs appareils) : un clic choisit l'appareil de la carte.
+    var climaTiles = [], climaTilesBox = null;
+    function climateTileLabels() {
+      var translations = {
+        fr: { group: "Appareils de climatisation", heating: "Chauffe", cooling: "Climatise", idle: "En pause", unavailable: "Indisponible", off: "Arrêt", one: "appareil", many: "appareils", heatingCount: "en chauffe", coolingCount: "en climatisation", none: "aucun en marche", modes: { heat: "Mode chaud", cool: "Mode froid", dry: "Déshumidification", fan_only: "Ventilation", heat_cool: "Auto" } },
+        en: { group: "Climate devices", heating: "Heating", cooling: "Cooling", idle: "Idle", unavailable: "Unavailable", off: "Off", one: "device", many: "devices", heatingCount: "heating", coolingCount: "cooling", none: "none running", modes: { heat: "Heat mode", cool: "Cool mode", dry: "Dry", fan_only: "Fan", heat_cool: "Auto" } },
+        it: { group: "Apparecchi di climatizzazione", heating: "Riscalda", cooling: "Raffresca", idle: "In pausa", unavailable: "Non disponibile", off: "Spento", one: "apparecchio", many: "apparecchi", heatingCount: "in riscaldamento", coolingCount: "in raffrescamento", none: "nessuno acceso", modes: { heat: "Modalità caldo", cool: "Modalità freddo", dry: "Deumidificazione", fan_only: "Ventilazione", heat_cool: "Auto" } }
+      };
+      return translations[LANG] || translations.it;
+    }
+    function buildClimaTiles() {
+      var wrap = $("#clima-wrap"), card = $("#clima");
+      if (!wrap || !card || CLIMATES.length < 2) return;
+      climaTilesBox = el("div", "");
+      climaTilesBox.setAttribute("role", "group");
+      climaTilesBox.setAttribute("aria-label", climateTileLabels().group);
+      climaTilesBox.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:0 0 12px";
+      CLIMATES.forEach(function (item, index) {
+        var tile = el("button", "", "", { type: "button" });
+        tile.style.cssText = "display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);text-align:left;cursor:pointer;min-width:0;font:inherit;transition:border-color .3s,box-shadow .3s,opacity .3s";
+        var head = el("span", "");
+        head.style.cssText = "display:flex;align-items:center;gap:8px;width:100%;min-width:0;font-weight:700;font-size:.9rem";
+        var ico = el("i", "mdi mdi-power");
+        var name = el("span", "");
+        name.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0";
+        var dot = el("span", "");
+        dot.style.cssText = "width:8px;height:8px;border-radius:50%;margin-left:auto;flex:0 0 auto";
+        dot.hidden = true;
+        head.appendChild(ico); head.appendChild(name); head.appendChild(dot);
+        var temps = el("span", "");
+        temps.style.cssText = "font-family:var(--font-display);font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums";
+        var status = el("span", "");
+        status.style.cssText = "font-size:.76rem;color:var(--dim);font-weight:600";
+        tile.appendChild(head); tile.appendChild(temps); tile.appendChild(status);
+        tile.addEventListener("click", function () { selectClimate(index); });
+        climaTilesBox.appendChild(tile);
+        climaTiles.push({ tile: tile, ico: ico, name: name, dot: dot, temps: temps, status: status });
+      });
+      wrap.insertBefore(climaTilesBox, card);
+      hydrate(climaTilesBox);
+    }
+    function renderClimaTiles() {
+      if (!climaTilesBox) return;
+      var labels = climateTileLabels(), heating = 0, cooling = 0;
+      CLIMATES.forEach(function (item, index) {
+        var t = climaTiles[index], s = sv(item.entity), a = s && s.attributes || {};
+        var na = isUnavail(s), mode = s ? s.state : "off";
+        if (mode === "auto") mode = "heat_cool";
+        var action = !na ? a.hvac_action : "";
+        if (action === "heating") heating++;
+        if (action === "cooling") cooling++;
+        var color = na ? CL_COL.off : (CL_COL[mode] || CL_COL.off);
+        var known = CL_MODES.filter(function (x) { return x[0] === mode; })[0];
+        setIco(t.ico, na ? "mdi-alert-circle-outline" : known ? known[2] : "mdi-thermostat");
+        t.ico.style.color = color;
+        var label = item.name || a.friendly_name || item.entity;
+        t.name.textContent = label;
+        var cur = zcNumber(a.current_temperature), tgt = zcNumber(a.temperature);
+        var temps = na || cur === null ? "—" : fmt(cur) + "°";
+        if (!na && mode !== "off" && tgt !== null) temps += " → " + fmt(tgt) + "°";
+        t.temps.textContent = temps;
+        var word = na ? labels.unavailable : mode === "off" ? labels.off : action === "heating" ? labels.heating : action === "cooling" ? labels.cooling : action === "idle" ? labels.idle : (labels.modes[mode] || mode);
+        t.status.textContent = word;
+        t.dot.hidden = action !== "heating" && action !== "cooling";
+        t.dot.style.background = action === "cooling" ? CL_COL.cool : CL_COL.heat;
+        t.dot.style.boxShadow = "0 0 8px " + (action === "cooling" ? CL_COL.cool : CL_COL.heat);
+        var chosen = index === climateIndex;
+        t.tile.setAttribute("aria-pressed", chosen ? "true" : "false");
+        t.tile.setAttribute("aria-label", label + ", " + temps + ", " + word);
+        t.tile.style.borderColor = chosen ? color : "var(--border)";
+        t.tile.style.boxShadow = chosen ? "0 10px 22px -12px " + color : "none";
+        t.tile.style.opacity = na ? ".6" : "1";
+      });
+      var count = CLIMATES.length, parts = [count + " " + (count > 1 ? labels.many : labels.one)];
+      if (heating) parts.push(heating + " " + labels.heatingCount);
+      if (cooling) parts.push(cooling + " " + labels.coolingCount);
+      if (!heating && !cooling) parts.push(labels.none);
+      $("#cl-sub").textContent = parts.join(" · ");
+    }
+    function selectClimate(index) {
+      if (index === climateIndex || !CLIMATES[index]) return;
+      if (clTimer) {
+        // Consigne en attente (+/-) : elle part vers l'appareil qu'on quitte, pas vers le nouveau.
+        clearTimeout(clTimer);
+        clTimer = 0;
+        if (LIVE) call("climate", "set_temperature", { entity_id: ENT.climate, temperature: clima.tgt });
+      }
+      climateIndex = index;
+      ENT.climate = CLIMATES[index].entity;
+      store("climate", ENT.climate);
+      var defaults = JSON.parse(CLIMA_DEFAULT);
+      Object.keys(defaults).forEach(function (key) { clima[key] = defaults[key]; });
+      climaFromHass();
+      renderClima();
+    }
     function climateCommandLabels() {
       var translations = {
         it: {
@@ -3368,7 +3484,7 @@
     function buildClima() {
       if (!$("#clima")) return;
       $("#cl-modes").addEventListener("click", function (e) {
-        var b = e.target.closest("[data-mode]"); if (!b) return; var m = b.dataset.mode, wasOff = clima.mode === "off";
+        var b = e.target.closest("[data-mode]"); if (!b) return; var m = b.dataset.mode, wasOff = clima.mode === "off", eid = ENT.climate;
         if (LIVE && !clima.avail) {
           toast(
             climateCommandLabels().unavailable,
@@ -3385,7 +3501,7 @@
         if (wasOff && m === "heat" && clima.tgt <= clima.cur) nt = Math.min(clima.max, Math.ceil((clima.cur + 2) / st) * st);
         if (nt !== null && nt !== clima.tgt) {
           clima.tgt = nt;
-          if (LIVE) later(function () { call("climate", "set_temperature", { entity_id: ENT.climate, temperature: nt }); }, 1200);
+          if (LIVE) later(function () { call("climate", "set_temperature", { entity_id: eid, temperature: nt }); }, 1200);
           climaToast(m, nt);
         } else climaToast(m, null);
         renderClima();
@@ -3395,14 +3511,16 @@
       $("#cl-hswing").addEventListener("change", function (e) { var k = e.target.value; climaCall("set_swing_horizontal_mode", { swing_horizontal_mode: k }, function () { clima.hswing = k; }); });
       $("#cl-preset").addEventListener("change", function (e) { var k = e.target.value; climaCall("set_preset_mode", { preset_mode: k }, function () { clima.preset = k; }); });
       function step(dir) {
-        var v = Math.round((clima.tgt + dir * clima.step) / clima.step) * clima.step;
+        var eid = ENT.climate;
+        var v =Math.round((clima.tgt + dir * clima.step) / clima.step) * clima.step;
         clima.tgt = Math.min(clima.max, Math.max(clima.min, v)); renderClima();
         clearTimeout(clTimer);
-        clTimer = setTimeout(function () { clTimer = 0; if (LIVE) call("climate", "set_temperature", { entity_id: ENT.climate, temperature: clima.tgt }); }, 700);
+        clTimer = setTimeout(function () { clTimer = 0; if (LIVE) call("climate", "set_temperature", { entity_id: eid, temperature: clima.tgt }); }, 700);
         timers.push(clTimer);
       }
       $("#cl-minus").addEventListener("click", function () { step(-1); });
       $("#cl-plus").addEventListener("click", function () { step(1); });
+      buildClimaTiles();
       renderClima();
     }
 
