@@ -1134,6 +1134,48 @@
         ENT.lights[x.k] = x.id; room.l.push(x.k); state.lights[x.k] = false;
       });
     })();
+    var CUSTOM_ZONES = false;
+    (function configureZones() {
+      if (CFG.zones === undefined) return;
+      if (!Array.isArray(CFG.zones)) throw new Error("Luma Home: zones must be a list");
+      var rooms = [], lights = {}, entities = {}, values = {};
+      var zoneIds = new Set(), entityIds = new Set();
+      CFG.zones.forEach(function (zone) {
+        if (!zone || !/^[a-z][a-z0-9_]*$/.test(zone.id || "") || zoneIds.has(zone.id)) {
+          throw new Error("Luma Home: each zone needs a unique lowercase id");
+        }
+        zoneIds.add(zone.id);
+        if (!Array.isArray(zone.lights)) throw new Error("Luma Home: zone.lights must be a list");
+        var room = { n: String(zone.name || zone.id), ic: "mdi-lightbulb-group", c: "#8B5CF6", w: 3, l: [], s: [], o: [] };
+        if (/^mdi:[a-z0-9-]+$/.test(zone.icon || "")) room.ic = zone.icon.replace("mdi:", "mdi-");
+        if (/^#[0-9a-fA-F]{6}$/.test(zone.color || "")) room.c = zone.color;
+        zone.lights.forEach(function (light) {
+          if (!light || !/^light\.[a-z0-9_]+$/.test(light.entity || "") || entityIds.has(light.entity)) {
+            throw new Error("Luma Home: each configured light needs a unique light entity");
+          }
+          entityIds.add(light.entity);
+          var key = "zone_" + zone.id + "__" + light.entity.replace(".", "_");
+          var icon = /^mdi:[a-z0-9-]+$/.test(light.icon || "") ? light.icon.replace("mdi:", "mdi-") : "mdi-lightbulb";
+          var image = light.image || "luce_bagno_piccolo";
+          if (!Object.prototype.hasOwnProperty.call(IMG, image)) throw new Error("Luma Home: unknown light image " + image);
+          lights[key] = [String(light.name || light.entity), image, icon, "luce_" + key];
+          entities[key] = light.entity;
+          values[key] = false;
+          room.l.push(key);
+        });
+        rooms.push(room);
+      });
+      CUSTOM_ZONES = true;
+      ROOMS = rooms;
+      LIGHTS = lights;
+      ENT.lights = entities;
+      state.lights = values;
+    })();
+    function zoneHtml(value) {
+      return String(value).replace(/[&<>"']/g, function (char) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+      });
+    }
     var HASS = null;
     function sv(id) { return HASS && id && HASS.states[id] ? HASS.states[id] : null; }
     function availId(ids) { ids = Array.isArray(ids) ? ids : [ids]; for (var i = 0; i < ids.length; i++) { var s = sv(ids[i]); if (s && s.state !== "unavailable" && s.state !== "unknown") return ids[i]; } return ids[0]; }
@@ -1233,6 +1275,10 @@
       var box = $("#scenes");
       SCENES.forEach(function (sc) {
         var b = el("button", "scene", '<img class="s-img" alt="" draggable="false"><span class="s-ico"><i class="mdi ' + sc.ic + '"></i></span><span><b>' + sc.n + "</b><small>" + sc.sub + "</small></span>" + PEN, { type: "button", "data-scene": sc.id, "data-img": sc.img, "data-label": sceneCommandLabels().prefix + sc.n, "data-on": "0" });
+        if (CUSTOM_ZONES) {
+          b.disabled = true;
+          b.title = LANG === "fr" ? "Scène historique non configurée pour les nouvelles zones" : "Legacy scene not configured for custom zones";
+        }
         b.style.setProperty("--s1", sc.s1); b.style.setProperty("--s2", sc.s2);
         b.addEventListener("mouseenter", function () { b.dataset.on = "1"; refreshImg(b); });
         b.addEventListener("mouseleave", function () { b.dataset.on = state.scene === sc.id ? "1" : "0"; refreshImg(b); });
@@ -1307,14 +1353,14 @@
         var orbs = "";
         r.l.forEach(function (k) {
           var L = LIGHTS[k];
-          orbs += '<button class="orb" type="button" data-light="' + k + '" data-img="' + L[1] + '"' + (L[3] ? ' data-ov="' + L[3] + '"' : "") + ' data-label="Luce ' + L[0].toLowerCase() + '" data-on="0" aria-pressed="false">' +
+          orbs += '<button class="orb" type="button" data-light="' + k + '" data-img="' + L[1] + '"' + (L[3] ? ' data-ov="' + L[3] + '"' : "") + ' data-label="Luce ' + zoneHtml(L[0].toLowerCase()) + '" data-on="0" aria-pressed="false">' +
             '<img class="o-img" alt="" draggable="false"><span class="o-shade"></span><span class="sw"></span><span class="o-ico"><i class="mdi ' + L[2] + '"></i></span>' +
-            '<span class="o-txt"><span class="o-name">' + L[0] + '</span><span class="o-state">Spenta</span></span>' + PEN + "</button>";
+            '<span class="o-txt"><span class="o-name">' + zoneHtml(L[0]) + '</span><span class="o-state">Spenta</span></span>' + PEN + "</button>";
         });
         var chips = r.s.filter(hasMotion).map(sensChip).join("") + r.o.map(openChip).join("");
         var body = orbs;
         if (r.cell) body += '<div class="sens-cell sensors">' + chips + "</div>"; else if (chips) body += '<div class="sensors strip">' + chips + "</div>";
-        card.innerHTML = '<div class="room-head"><span class="r-ico"><i class="mdi ' + r.ic + '"></i></span><h3>' + r.n + '</h3><span class="count">0/' + r.l.length + '</span></div><div class="bar"><i></i></div><div class="room-body">' + body + "</div>";
+        card.innerHTML = '<div class="room-head"><span class="r-ico"><i class="mdi ' + r.ic + '"></i></span><h3>' + zoneHtml(r.n) + '</h3><span class="count">0/' + r.l.length + '</span></div><div class="bar"><i></i></div><div class="room-body">' + body + "</div>";
         hydrate(card);
         box.appendChild(card);
       });
@@ -1381,7 +1427,7 @@
       $$(".room").forEach(function (r) {
         var orbs = $$(".orb", r), n = orbs.filter(function (o) { return state.lights[o.dataset.light]; }).length;
         $(".count", r).textContent = n + "/" + orbs.length;
-        $(".bar i", r).style.width = (n / orbs.length * 100) + "%";
+        $(".bar i", r).style.width = (orbs.length ? n / orbs.length * 100 : 0) + "%";
       });
       $$(".wglow").forEach(function (w) { w.classList.toggle("on", !!state.lights[w.dataset.k]); });
       var a = ALARM[state.alarm] || ALARM.disarmed;
@@ -1392,6 +1438,11 @@
 
     /* ------------------------------------------------------------------ scene */
     function runScene(sc, b) {
+      if (CUSTOM_ZONES) {
+        toast(LANG === "fr" ? "Scènes historiques non configurées pour ces zones" : LANG === "en" ? "Legacy scenes are not configured for these zones" : "Scene originali non configurate per queste zone", "mdi-information-outline", "var(--warn)");
+        return;
+      }
+
       var onIds = [], offIds = [], skipped = 0;
       if (LIVE) {
         Object.keys(ENT.lights).forEach(function (k) { var s = sv(ENT.lights[k]); if (isUnavail(s)) { skipped++; return; } (sc.lights.indexOf(k) > -1 ? onIds : offIds).push(ENT.lights[k]); });
@@ -7455,6 +7506,7 @@
     };
 
     function translateRoomLabels() {
+      if (CUSTOM_ZONES) return;
       var labels = ROOM_I18N[LANG];
 
       // Italian keeps the original labels.
