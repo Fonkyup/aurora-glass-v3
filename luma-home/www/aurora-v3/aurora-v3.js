@@ -1145,11 +1145,15 @@
           throw new Error("Luma Home: each zone needs a unique lowercase id");
         }
         zoneIds.add(zone.id);
-        if (!Array.isArray(zone.lights)) throw new Error("Luma Home: zone.lights must be a list");
+        var zoneLights = zone.lights == null ? [] : zone.lights;
+
+        if (!Array.isArray(zoneLights)) {
+          throw new Error("Luma Home: zone.lights must be a list");
+        }
         var room = { n: String(zone.name || zone.id), ic: "mdi-lightbulb-group", c: "#8B5CF6", w: 3, l: [], s: [], o: [] };
         if (/^mdi:[a-z0-9-]+$/.test(zone.icon || "")) room.ic = zone.icon.replace("mdi:", "mdi-");
         if (/^#[0-9a-fA-F]{6}$/.test(zone.color || "")) room.c = zone.color;
-        zone.lights.forEach(function (light) {
+        zoneLights.forEach(function (light) {
           if (!light || !/^light\.[a-z0-9_]+$/.test(light.entity || "") || entityIds.has(light.entity)) {
             throw new Error("Luma Home: each configured light needs a unique light entity");
           }
