@@ -1379,9 +1379,9 @@
 
     function zcText(key) {
       var texts = {
-        fr: { current: "Température actuelle", target: "Consigne", apply: "Appliquer", lower: "Abaisser", raise: "Augmenter", image: "Image", mode: "Mode", fan: "Ventilation", swing: "Volets", preset: "Préréglage", unavailable: "Indisponible", unknown: "Non renseigné", invalid: "Consigne hors limites ou incrément incorrect", heat: "Chauffage", cool: "Climatisation", auto: "Automatique", heat_cool: "Chauffage / climatisation", off: "Arrêt", fan_only: "Ventilation seule", dry: "Déshumidification", idle: "En pause", heating: "Chauffe actuellement", cooling: "Climatise actuellement", low: "Faible", medium: "Moyenne", high: "Élevée", horizontal: "Horizontal", vertical: "Vertical", both: "Les deux", none: "Normal", away: "Absence", sleep: "Sommeil", boost: "Boost" },
-        en: { current: "Current temperature", target: "Target", apply: "Apply", lower: "Lower", raise: "Raise", image: "Image", mode: "Mode", fan: "Fan", swing: "Swing", preset: "Preset", unavailable: "Unavailable", unknown: "Not reported", invalid: "Target outside limits or invalid step", heat: "Heat", cool: "Cool", auto: "Auto", heat_cool: "Heat / cool", off: "Off", fan_only: "Fan only", dry: "Dry", idle: "Idle", heating: "Heating", cooling: "Cooling" },
-        it: { current: "Temperatura attuale", target: "Temperatura desiderata", apply: "Applica", lower: "Abbassa", raise: "Alza", image: "Immagine", mode: "Modalità", fan: "Ventilazione", swing: "Alette", preset: "Preimpostazione", unavailable: "Non disponibile", unknown: "Non comunicato", invalid: "Temperatura fuori limite o incremento non valido", heat: "Riscaldamento", cool: "Raffrescamento", auto: "Automatico", heat_cool: "Caldo / freddo", off: "Spento", fan_only: "Solo ventilazione", dry: "Deumidificazione", idle: "In pausa", heating: "Riscaldamento attivo", cooling: "Raffrescamento attivo" }
+        fr: { current: "Température actuelle", target: "Consigne", apply: "Appliquer", lower: "Abaisser", raise: "Augmenter", image: "Image", mode: "Mode", fan: "Ventilation", swing: "Volets", preset: "Préréglage", unavailable: "Indisponible", unknown: "Non renseigné", invalid: "Consigne hors limites ou incrément incorrect", heat: "Chauffage", cool: "Climatisation", auto: "Automatique", heat_cool: "Chauffage / climatisation", off: "Arrêt", fan_only: "Ventilation seule", dry: "Déshumidification", idle: "En pause", heating: "Chauffe actuellement", cooling: "Climatise actuellement", low: "Faible", medium: "Moyenne", high: "Élevée", horizontal: "Horizontal", vertical: "Vertical", both: "Les deux", none: "Normal", away: "Absence", sleep: "Sommeil", boost: "Boost", quiet: "Silencieux", eco: "Éco", comfort: "Confort", powerful: "Puissant" },
+        en: { current: "Current temperature", target: "Target", apply: "Apply", lower: "Lower", raise: "Raise", image: "Image", mode: "Mode", fan: "Fan", swing: "Swing", preset: "Preset", unavailable: "Unavailable", unknown: "Not reported", invalid: "Target outside limits or invalid step", heat: "Heat", cool: "Cool", auto: "Auto", heat_cool: "Heat / cool", off: "Off", fan_only: "Fan only", dry: "Dry", idle: "Idle", heating: "Heating", cooling: "Cooling", low: "Low", medium: "Medium", high: "High", horizontal: "Horizontal", vertical: "Vertical", both: "Both", none: "Normal", away: "Away", sleep: "Sleep", boost: "Boost", quiet: "Quiet", eco: "Eco", comfort: "Comfort", powerful: "Powerful" },
+        it: { current: "Temperatura attuale", target: "Temperatura desiderata", apply: "Applica", lower: "Abbassa", raise: "Alza", image: "Immagine", mode: "Modalità", fan: "Ventilazione", swing: "Alette", preset: "Preimpostazione", unavailable: "Non disponibile", unknown: "Non comunicato", invalid: "Temperatura fuori limite o incremento non valido", heat: "Riscaldamento", cool: "Raffrescamento", auto: "Automatico", heat_cool: "Caldo / freddo", off: "Spento", fan_only: "Solo ventilazione", dry: "Deumidificazione", idle: "In pausa", heating: "Riscaldamento attivo", cooling: "Raffrescamento attivo", low: "Bassa", medium: "Media", high: "Alta", horizontal: "Orizzontale", vertical: "Verticale", both: "Entrambe", none: "Normale", away: "Assente", sleep: "Notte", boost: "Boost", quiet: "Silenzioso", eco: "Eco", comfort: "Comfort", powerful: "Potente" }
       };
       return (texts[LANG] || texts.it)[key] || key;
     }
@@ -3164,10 +3164,11 @@
     }
 
     /* ------------------------------------------------------------------ clima (Panasonic) */
-    var CL_MODES = [["off", "Spento", "mdi-power"], ["heat_cool", "Auto", "mdi-thermostat-auto"], ["cool", "Freddo", "mdi-snowflake"], ["dry", "Deumidifica", "mdi-water-percent"], ["fan_only", "Ventola", "mdi-fan"], ["heat", "Caldo", "mdi-fire"]];
-    var CL_COL = { off: "#64748B", cool: "#38BDF8", heat: "#FB923C", dry: "#2DD4BF", fan_only: "#A5B4FC", heat_cool: "#C084FC" };
-    var CL_STATUS = { off: "Spento", cool: "Raffrescamento", heat: "Riscaldamento", dry: "Deumidificazione", fan_only: "Solo ventola", heat_cool: "Automatico" };
-    var CL_IT = { Auto: "Auto", Low: "Minima", LowMid: "Bassa", Mid: "Media", HighMid: "Alta", High: "Massima", Up: "Alto", UpMid: "Medio-alto", DownMid: "Medio-basso", Down: "Basso", Left: "Sinistra", LeftMid: "Centro-sx", RightMid: "Centro-dx", Right: "Destra", none: "Normale", quiet: "Silenzioso", powerful: "Potente", eco: "Eco", boost: "Boost", comfort: "Comfort", sleep: "Notte", away: "Assente" };
+    var CL_MODES = [["off", "Spento", "mdi-power"], ["heat_cool", "Auto", "mdi-thermostat-auto"], ["auto", "Auto", "mdi-thermostat-auto"],["cool", "Freddo", "mdi-snowflake"], ["dry", "Deumidifica", "mdi-water-percent"], ["fan_only", "Ventola", "mdi-fan"], ["heat", "Caldo", "mdi-fire"]];
+    var CL_COL = { off: "#64748B", cool: "#38BDF8", heat: "#FB923C", dry: "#2DD4BF", fan_only: "#A5B4FC", heat_cool: "#C084FC", auto: "#C084FC" };
+    var CL_STATUS = { off: "Spento", cool: "Raffrescamento", heat: "Riscaldamento", dry: "Deumidificazione", fan_only: "Solo ventola", heat_cool: "Automatico", auto: "Automatico" };
+    var CL_IT = { Auto: "Auto", Low: "Minima", LowMid: "Bassa", Mid: "Media", HighMid: "Alta", High: "Massima", Up: "Alto", UpMid: "Medio-alto", DownMid: "Medio-basso", Down: "Basso", Left: "Sinistra", LeftMid: "Centro-sx", RightMid: "Centro-dx", Right: "Destra", none: "Normale", quiet: "Silenzioso", powerful: "Potente", eco: "Eco", boost: "Boost", comfort: "Comfort", sleep: "Notte", away: "Assente",
+      low: "Bassa", medium: "Media", high: "Alta", auto: "Auto", off: "Spento", horizontal: "Orizzontale", vertical: "Verticale", both: "Entrambe" };
     function it(k) { return CL_IT[k] || k; }
     function defaultClimateName() {
       var names = {
@@ -3308,7 +3309,18 @@
         fw.dataset.sig = fsig; fw.innerHTML = "";
         clima.fans.forEach(function (k) { fw.appendChild(el("button", "cchip sm", it(k), { type: "button", "data-fan": k, "aria-pressed": k === clima.fan ? "true" : "false" })); });
       }
-      fillSel("#cl-swing", clima.swings, clima.swing); fillSel("#cl-hswing", clima.hswings, clima.hswing); fillSel("#cl-preset", clima.presets, clima.preset);
+      fillSel("#cl-swing", clima.swings, clima.swing);
+      // Liste standard de Home Assistant (horizontal / vertical / both) : titre générique au lieu de « Volets verticaux ».
+      var swingSelect = $("#cl-swing"), swingLabel = swingSelect.closest("label");
+      if (swingLabel) {
+        var standardSwing = clima.swings.some(function (k) { return k === "horizontal" || k === "vertical" || k === "both"; });
+        var swingTitles = { fr: "Volets", en: "Swing", it: "Alette" };
+        var swingSettings = CLIMATE_SETTINGS_I18N[LANG];
+        var swingText = (standardSwing ? (swingTitles[LANG] || swingTitles.it) : (swingSettings ? swingSettings.vertical : "Alette verticali")) + " ";
+        var swingNode = Array.prototype.filter.call(swingLabel.childNodes, function (c) { return c.nodeType === 3; })[0];
+        if (swingNode) { if (swingNode.nodeValue !== swingText) swingNode.nodeValue = swingText; }
+        else swingLabel.insertBefore(document.createTextNode(swingText), swingSelect);
+      } fillSel("#cl-hswing", clima.hswings, clima.hswing); fillSel("#cl-preset", clima.presets, clima.preset);
       $("#cl-minus").disabled = $("#cl-plus").disabled = !clima.avail;
     }
     function climaCall(svc, data, local) {
@@ -6847,6 +6859,7 @@
         modes: {
           off: "Arrêt",
           heat_cool: "Auto",
+          auto: "Auto",
           cool: "Climatisation",
           dry: "Déshumidification",
           fan_only: "Ventilation",
@@ -6855,6 +6868,7 @@
         statuses: {
           off: "À l’arrêt",
           heat_cool: "Automatique",
+          auto: "Automatique",
           cool: "Climatisation",
           dry: "Déshumidification",
           fan_only: "Ventilation seule",
@@ -6868,6 +6882,7 @@
         modes: {
           off: "Off",
           heat_cool: "Auto",
+          auto: "Auto",
           cool: "Cool",
           dry: "Dry",
           fan_only: "Fan",
@@ -6876,6 +6891,7 @@
         statuses: {
           off: "Off",
           heat_cool: "Automatic",
+          auto: "Automatic",
           cool: "Cooling",
           dry: "Dehumidifying",
           fan_only: "Fan only",
@@ -6944,7 +6960,15 @@
           boost: "Boost",
           comfort: "Confort",
           sleep: "Nuit",
-          away: "Absence"
+          away: "Absence",
+          low: "Faible",
+          medium: "Moyenne",
+          high: "Élevée",
+          auto: "Auto",
+          off: "Arrêt",
+          horizontal: "Horizontal",
+          vertical: "Vertical",
+          both: "Les deux"
         }
       },
       en: {
@@ -6975,7 +6999,15 @@
           boost: "Boost",
           comfort: "Comfort",
           sleep: "Sleep",
-          away: "Away"
+          away: "Away",
+          low: "Low",
+          medium: "Medium",
+          high: "High",
+          auto: "Auto",
+          off: "Off",
+          horizontal: "Horizontal",
+          vertical: "Vertical",
+          both: "Both"
         }
       }
     };
