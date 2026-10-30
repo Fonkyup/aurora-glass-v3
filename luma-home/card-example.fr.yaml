@@ -7,7 +7,7 @@
 # Les clés italiennes et room: Cucina sont conservées pour compatibilité.
 # assets ci-dessous correspond à une installation manuelle ; adaptez-le à votre installation.
 # energy est une section de entities, et non une option à la racine.
-# Documentation mise à jour le 26 octobre 2026.
+# Documentation mise à jour le 30 octobre 2026.
 
 type: custom:luma-home-card
 language: fr
@@ -31,6 +31,9 @@ entities:
   # --- ÉCLAIRAGES SUPPLÉMENTAIRES : affichés dans la pièce indiquée et inclus dans « Tout éteindre ».
   extraLights:
     - { k: strip_led, n: Ruban LED, id: light.strip_led, room: Cucina, ic: mdi-led-strip-variant }
+
+  # --- ZONES CONFIGURABLES : voir la section `zones` en fin de fichier, au niveau de la carte.
+
 
   # --- MOUVEMENT : une liste par pièce ; le premier capteur disponible est utilisé.
   motion:
@@ -84,3 +87,25 @@ entities:
     appliances:                           # Appareils facultatifs : puissance en W et énergie du jour en kWh
       - { n: Lave-linge, p: sensor.lavatrice_potenza, e: sensor.lavatrice_energia_oggi, ic: mdi-washing-machine, c: "#38BDF8" }
       - { n: Réfrigérateur, p: sensor.frigo_potenza, e: null, ic: mdi-fridge, c: "#34D399" }
+
+# --- ZONES CONFIGURABLES (option de cette version) : disposition personnalisée par pièce.
+# Décommentez le bloc ci-dessous pour activer le mode zones : entities.lights, motion et opens
+# ne sont alors plus utilisés (les autres sections d'entities restent valables).
+# Chaque zone exige un id unique en minuscules ; chaque entité ne peut apparaître qu'une fois
+# dans l'ensemble des zones.
+#
+# zones:
+#   - id: entree
+#     name: Entrée
+#     icon: mdi:door-closed          # facultatif
+#     color: "#8B5CF6"               # facultatif
+#     lights:                        # { entity, name?, image?, icon? }
+#       - { entity: light.ingresso, name: Plafonnier }
+#     motions:                       # { entity, name?, image? }
+#       - { entity: binary_sensor.ingresso_movimento, name: Mouvement }
+#     doors:                         # { entity, name?, image? }
+#       - { entity: binary_sensor.porta_ingresso, name: Porte }
+#     locks:                         # { entity, name?, image? } — commande avec confirmation
+#       - { entity: lock.serratura_ingresso, name: Serrure }
+#     climates:                      # { entity, name?, image?, step? } — step : pas des boutons +/-
+#       - { entity: climate.bureau, name: Plinthe bureau, step: 0.5 }

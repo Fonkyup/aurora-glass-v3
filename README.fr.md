@@ -25,7 +25,7 @@ Les contributions comprennent :
 - l’adoption du nom public Luma Home et du type `custom:luma-home-card` ;
 - la documentation de la structure d’installation manuelle.
 
-Documentation mise à jour le 26 octobre 2026. Les dates de modification figurent également dans les notices des fichiers source et dans l’historique du dépôt.
+Documentation mise à jour le 30 octobre 2026. Les dates de modification figurent également dans les notices des fichiers source et dans l’historique du dépôt.
 
 L’italien du projet original est conservé. Cette version n’est ni une publication officielle ni une version présentée comme approuvée par DomotikPro.it ou Luca Pinelli.
 
@@ -53,7 +53,10 @@ Fonctionnalités héritées du projet original :
 - Vue Énergie : puissance, consommation en kWh d’aujourd’hui, d’hier, du mois et de l’année ; coût calculé par kWh × tarif.
 - Carte distribuée sous la forme d’un fichier JavaScript, sans compilation nécessaire pour l’installation.
 
-Ajout de cette version : sélection de la langue de l’interface par `language: fr`, `language: en` ou `language: it`.
+Ajouts de cette version :
+- **Zones configurables** : organisez votre maison par pièces avec des panneaux personnalisés en mode zones. Pléacez des lumières, capteurs de mouvement, capteurs de porte/porte-fenêtre et verrous dans chaque zone.
+- **Contrôle du climat par zone** : affichez un appareil climatique par zone avec ajustement de la consigne (+/-), sélection du mode, et affichage animé sur les plinthes chauffantes.
+- Sélection de la langue de l’interface par `language: fr`, `language: en` ou `language: it`.
 
 ## Confidentialité et connexions
 
@@ -178,6 +181,66 @@ entities:
 Remplacez `light.salotto` par votre véritable entité. Conservez les clés techniques comme `salotto`, `cucina` et `ingresso` : la traduction de l’interface ne renomme pas ces clés.
 
 Consultez l’[exemple détaillé de carte](luma-home/card-example.fr.yaml) pour les autres options.
+
+### 5b. Configurer les zones — option de cette version
+
+À la place des listes historiques de `entities` (clés italiennes comme `salotto`), vous pouvez définir vos propres zones avec `zones` : une liste de pièces, chacune avec ses lumières, capteurs de mouvement, capteurs de porte, verrous et thermostats.
+
+En mode zones, `entities.lights` n'est plus utilisé ; les autres sections de `entities` (énergie, alarme, météo, etc.) restent valables. Sans `zones`, le comportement historique est inchangé.
+
+Exemple :
+
+```yaml
+type: custom:luma-home-card
+language: fr
+assets: /local/luma-home/btn/
+
+zones:
+  - id: entree
+    name: Entrée
+    icon: mdi:door-closed          # facultatif, icône Material Design
+    color: "#8B5CF6"               # facultatif, couleur d'accent de la zone
+    lights:                        # facultatif, liste de lumières
+      - { entity: light.ingresso, name: Plafonnier }
+    motions:                       # facultatif, capteurs de mouvement
+      - { entity: binary_sensor.ingresso_movimento, name: Mouvement }
+    doors:                         # facultatif, capteurs de porte/fenêtre
+      - { entity: binary_sensor.porta_ingresso, name: Porte }
+    locks:                         # facultatif, verrous (commande avec confirmation)
+      - { entity: lock.serratura_ingresso, name: Serrure }
+    climates:                      # facultatif, thermostats de la zone
+      - { entity: climate.bureau, name: Plinthe bureau, step: 0.5 }
+```
+
+Options par zone :
+- `id` : identifiant technique unique, en minuscules (obligatoire) ;
+- `name` : nom affiché (facultatif, sinon l'`id`) ;
+- `icon` : icône Material Design, format `mdi:...` (facultatif) ;
+- `color` : couleur d'accent au format `#RRGGBB` (facultatif) ;
+- `lights[]` : lumières `{ entity, name?, image?, icon? }` ;
+- `motions[]` : capteurs de mouvement `{ entity, name?, image? }` ;
+- `doors[]` : capteurs de porte/fenêtre `{ entity, name?, image? }` ;
+- `locks[]` : verrous `{ entity, name?, image? }` — le verrouillage/déverrouillage demande une confirmation ;
+- `climates[]` : thermostats `{ entity, name?, image?, step? }` — `step` définit le pas des boutons +/− (par défaut 0,5 si l'appareil ne le déclare pas).
+
+Règles :
+- chaque entité ne peut apparaître qu'une fois dans l'ensemble des zones (doublon = erreur explicite) ;
+- un appareil `climate` ne doit être que dans `zones[].climates` ou dans `entities.climate`, pas dans les deux.
+
+Les images des boutons sont personnalisables par entité avec `image:` (nom d'image de la bibliothèque, ou remplacement via l'option « modifier image » de la carte).
+
+**Plusieurs thermopompes** : en dehors du mode zones, `entities.climate` accepte aussi une liste d'appareils, chacun avec un nom facultatif :
+
+```yaml
+entities:
+  climate:
+    - entity: climate.franklin_sous_sol
+      name: Sous-sol
+    - entity: climate.franklin_etage
+      name: Étage
+```
+
+Une liste de plusieurs appareils affiche des tuiles de sélection au-dessus de la carte Clima ; une seule entité (texte) conserve le comportement historique sans tuiles. L'indicateur « Chauffe » est basé sur `hvac_action`, jamais sur le seul mode `heat`.
 
 ### 6. Configurer l’énergie — facultatif
 

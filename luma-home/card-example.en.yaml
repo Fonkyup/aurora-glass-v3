@@ -7,7 +7,7 @@
 # Italian keys and room: Cucina are preserved for compatibility.
 # assets below assumes a manual installation; adapt it to your installation.
 # energy belongs under entities, not at the configuration root.
-# Documentation updated October 26, 2026.
+# Documentation updated October 30, 2026.
 
 type: custom:luma-home-card
 language: en
@@ -31,6 +31,8 @@ entities:
   # --- EXTRA LIGHTS: displayed in the specified room and included in “Turn all off”.
   extraLights:
     - { k: strip_led, n: LED strip, id: light.strip_led, room: Cucina, ic: mdi-led-strip-variant }
+
+  # --- ZONES CONFIGURABLE: see the `zones` section at the end of this file (card level).
 
   # --- MOTION: one list per room; the first available sensor is used.
   motion:
@@ -84,3 +86,25 @@ entities:
     appliances:                           # Optional appliances: power in W and today’s energy in kWh
       - { n: Washing machine, p: sensor.lavatrice_potenza, e: sensor.lavatrice_energia_oggi, ic: mdi-washing-machine, c: "#38BDF8" }
       - { n: Refrigerator, p: sensor.frigo_potenza, e: null, ic: mdi-fridge, c: "#34D399" }
+
+# --- ZONES (option of this version): custom per-room layout.
+# Uncomment the block below to enable zones mode: entities.lights, motion and opens
+# are then no longer used (the other entities sections remain valid).
+# Each zone needs a unique lowercase id; each entity may appear only once
+# across all zones.
+#
+# zones:
+#   - id: entree
+#     name: Entrance
+#     icon: mdi:door-closed          # optional
+#     color: "#8B5CF6"               # optional
+#     lights:                        # { entity, name?, image?, icon? }
+#       - { entity: light.ingresso, name: Ceiling light }
+#     motions:                       # { entity, name?, image? }
+#       - { entity: binary_sensor.ingresso_movimento, name: Motion }
+#     doors:                         # { entity, name?, image? }
+#       - { entity: binary_sensor.porta_ingresso, name: Door }
+#     locks:                         # { entity, name?, image? } — command requires confirmation
+#       - { entity: lock.serratura_ingresso, name: Lock }
+#     climates:                      # { entity, name?, image?, step? } — step: +/- button increment
+#       - { entity: climate.bureau, name: Office heater, step: 0.5 }

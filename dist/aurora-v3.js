@@ -1144,6 +1144,7 @@
       raw.forEach(function (item) {
         var entity = typeof item === "string" ? item : item && item.entity;
         if (typeof entity !== "string" || !entity) throw new Error("Luma Home: each climate needs an entity");
+        if (!/^climate\.[a-z0-9_]+$/.test(entity)) throw new Error("Luma Home: invalid climate entity " + entity);
         if (seen[entity]) throw new Error("Luma Home: duplicate climate entity " + entity);
         seen[entity] = true;
         CLIMATES.push({ entity: entity, name: item && typeof item === "object" && item.name ? String(item.name) : "" });

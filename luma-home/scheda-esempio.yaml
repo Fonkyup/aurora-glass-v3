@@ -3,7 +3,7 @@
 # Versione derivata non ufficiale di Aurora Glass v3.
 # Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
 # Adattamento: Fonkyup.
-# Documentazione aggiornata il 26 ottobre 2026.
+# Documentazione aggiornata il 30 ottobre 2026.
 # GNU GPL versione 3; vedere LICENSE alla radice del repository.
 #
 # Incolla questa configurazione nell'editor YAML di una singola scheda.
@@ -92,3 +92,25 @@ entities:
     appliances:                           # elettrodomestici (facoltativi): potenza W + kWh di oggi
       - { n: Lavatrice, p: sensor.lavatrice_potenza, e: sensor.lavatrice_energia_oggi, ic: mdi-washing-machine, c: "#38BDF8" }
       - { n: Frigorifero, p: sensor.frigo_potenza, e: null, ic: mdi-fridge, c: "#34D399" }
+
+# --- ZONE CONFIGURABILI (opzione di questa versione): disposizione personalizzata per stanza.
+# Decommenta il blocco qui sotto per attivare la modalità zone: entities.lights, motion e opens
+# non vengono più usati (le altre sezioni di entities restano valide).
+# Ogni zona richiede un id univoco in minuscolo; ogni entità può comparire una sola volta
+# in tutte le zone.
+#
+# zones:
+#   - id: entree
+#     name: Ingresso
+#     icon: mdi:door-closed          # facoltativo
+#     color: "#8B5CF6"               # facoltativo
+#     lights:                        # { entity, name?, image?, icon? }
+#       - { entity: light.ingresso, name: Plafoniera }
+#     motions:                       # { entity, name?, image? }
+#       - { entity: binary_sensor.ingresso_movimento, name: Movimento }
+#     doors:                         # { entity, name?, image? }
+#       - { entity: binary_sensor.porta_ingresso, name: Porta }
+#     locks:                         # { entity, name?, image? } — comando con conferma
+#       - { entity: lock.serratura_ingresso, name: Serratura }
+#     climates:                      # { entity, name?, image?, step? } — step: incremento dei pulsanti +/-
+#       - { entity: climate.bureau, name: Termo ufficio, step: 0.5 }

@@ -27,7 +27,7 @@ Contributions include:
 
 The original Italian language is retained. This version is not an official release and is not presented as endorsed by DomotikPro.it or Luca Pinelli.
 
-Documentation updated on October 26, 2026. Modification dates are also recorded in source notices and the repository history.
+Documentation updated on October 30, 2026. Modification dates are also recorded in source notices and the repository history.
 
 The screenshots below come from the original project; they do not demonstrate validation of every translation.
 
@@ -55,7 +55,10 @@ Features inherited from the original project:
 - Energy view: power, kWh for today, yesterday, the month, and the year; cost calculated as kWh × rate.
 - A card distributed as one JavaScript file, with no build step required for installation.
 
-Added in this version: interface language selection using `language: fr`, `language: en`, or `language: it`.
+Added in this version:
+- **Configurable zones**: organize your home by rooms with custom per-zone panels. Place lights, motion sensors, doors/windows, and locks in each zone.
+- **Zone climate control**: display a climate device per-zone with +/- temperature adjustment, mode selection, and animated heating-only heater panel.
+- Interface language selection using `language: fr`, `language: en`, or `language: it`.
 
 ## Privacy and connections
 
@@ -180,6 +183,66 @@ entities:
 Replace `light.salotto` with your actual entity ID. Keep technical configuration keys such as `salotto`, `cucina`, and `ingresso`: translating the interface does not rename these keys.
 
 See the [detailed card example](luma-home/card-example.en.yaml) for the other options.
+
+### 5b. Configure zones — option of this version
+
+Instead of the historic Italian-keyed lists under `entities` (`salotto`, `cucina`…), you can define your own zones with `zones`: a list of rooms, each with its lights, motion sensors, door sensors, locks, and thermostats.
+
+In zones mode, `entities.lights` is no longer used; the other `entities` sections (energy, alarm, weather, etc.) remain valid. Without `zones`, the historic behavior is unchanged.
+
+Example:
+
+```yaml
+type: custom:luma-home-card
+language: en
+assets: /local/luma-home/btn/
+
+zones:
+  - id: entree
+    name: Entrance
+    icon: mdi:door-closed          # optional, Material Design icon
+    color: "#8B5CF6"               # optional, zone accent color
+    lights:                        # optional, list of lights
+      - { entity: light.ingresso, name: Ceiling light }
+    motions:                       # optional, motion sensors
+      - { entity: binary_sensor.ingresso_movimento, name: Motion }
+    doors:                         # optional, door/window sensors
+      - { entity: binary_sensor.porta_ingresso, name: Door }
+    locks:                         # optional, locks (command requires confirmation)
+      - { entity: lock.serratura_ingresso, name: Lock }
+    climates:                      # optional, thermostats of the zone
+      - { entity: climate.bureau, name: Office heater, step: 0.5 }
+```
+
+Per-zone options:
+- `id`: unique technical identifier, lowercase (required);
+- `name`: displayed name (optional, defaults to the `id`);
+- `icon`: Material Design icon in `mdi:...` format (optional);
+- `color`: accent color in `#RRGGBB` format (optional);
+- `lights[]`: lights `{ entity, name?, image?, icon? }`;
+- `motions[]`: motion sensors `{ entity, name?, image? }`;
+- `doors[]`: door/window sensors `{ entity, name?, image? }`;
+- `locks[]`: locks `{ entity, name?, image? }` — locking/unlocking asks for confirmation;
+- `climates[]`: thermostats `{ entity, name?, image?, step? }` — `step` sets the +/− button increment (0.5 by default when the device does not declare one).
+
+Rules:
+- each entity may appear only once across all zones (duplicate = explicit error);
+- a `climate` device must be either in `zones[].climates` or in `entities.climate`, not both.
+
+Button images can be customized per entity with `image:` (library image name, or override through the card's "change image" option).
+
+**Several heat pumps**: outside zones mode, `entities.climate` also accepts a list of devices, each with an optional name:
+
+```yaml
+entities:
+  climate:
+    - entity: climate.franklin_sous_sol
+      name: Basement
+    - entity: climate.franklin_etage
+      name: Upstairs
+```
+
+A list of several devices shows selection tiles above the Clima card; a single entity (plain text) keeps the historic behavior without tiles. The "Heating" indicator is based on `hvac_action`, never on the `heat` mode alone.
 
 ### 6. Configure energy — optional
 

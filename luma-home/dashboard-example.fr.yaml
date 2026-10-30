@@ -2,12 +2,13 @@
 # Version dérivée non officielle d’Aurora Glass v3.
 # Projet original : © 2026 DomotikPro.it (Luca Pinelli).
 # Adaptation et traduction : Fonkyup.
-# Documentation mise à jour le 26 octobre 2026.
+# Documentation mise à jour le 30 octobre 2026.
 # GNU GPL version 3 ; voir LICENSE à la racine du dépôt.
 #
 # Collez dans l’éditeur de configuration brute du tableau de bord.
 # Sauvegardez la configuration existante avant de la remplacer.
 # Le chemin assets concerne l’installation manuelle.
+# Zones configurables : voir card-example.fr.yaml (bloc zones en commentaire).
 
 title: Luma Home
 views:

@@ -3,7 +3,7 @@ LUMA HOME pour Home Assistant
 Version dérivée non officielle d’Aurora Glass v3.
 Projet original : © 2026 DomotikPro.it (Luca Pinelli).
 Adaptation et traductions : Fonkyup.
-Guide mis à jour le 26 octobre 2026.
+Guide mis à jour le 30 octobre 2026.
 
 Un tableau de bord animé : ciel suivant l’heure, 10 univers, 11 effets météo,
 boutons composés d’images et de GIF, alarme, climat, caméras et suivi de l’énergie.
@@ -83,6 +83,12 @@ INSTALLATION EN SIX ÉTAPES
 
    Remplace light.salotto par ton entité ; conserve la clé technique salotto.
    Consulte card-example.fr.yaml pour les autres options.
+
+   NOUVEAU : zones configurables. À la place des listes entities.lights/motion/opens,
+   tu peux définir tes propres pièces avec zones (lumières, capteurs de mouvement,
+   portes, serrures et thermostats par zone ; voir card-example.fr.yaml, bloc zones).
+   En mode zones, entities.lights n'est plus utilisé ; le comportement historique
+   reste inchangé sans zones.
 
 6) ÉNERGIE ET TARIF — FACULTATIF
    Le capteur de puissance se configure dans entities.energy.power, en watts :

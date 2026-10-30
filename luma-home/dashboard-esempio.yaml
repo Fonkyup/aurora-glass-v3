@@ -2,12 +2,13 @@
 # Versione derivata non ufficiale di Aurora Glass v3.
 # Progetto originale: © 2026 DomotikPro.it (Luca Pinelli).
 # Adattamento: Fonkyup.
-# Documentazione aggiornata il 26 ottobre 2026.
+# Documentazione aggiornata il 30 ottobre 2026.
 # GNU GPL versione 3; vedere LICENSE alla radice del repository.
 #
 # Incolla nell'Editor di configurazione testuale della plancia.
 # Salva una copia della configurazione esistente prima di sostituirla.
 # Il percorso assets riguarda l'installazione manuale.
+# Zone configurabili: vedi scheda-esempio.yaml (blocco zones commentato).
 
 title: Luma Home
 views:
