@@ -1023,10 +1023,11 @@
     ["allarme_notte", "allarme_fuori", "allarme_scattato"].forEach(function (k) { IMG[k] = { kind: "single", src: BASE + k + ".gif" }; });
     IMG.clima_off = { kind: "single", src: BASE + "clima_off.png" };
     IMG.plinthe = { kind: "pair", off: BASE + "plinthe_off.png", on: BASE + "plinthe_on.gif" };
+    IMG.clima_garage = { kind: "pair", off: BASE + "garage_off.png", on: BASE + "garage_on.gif" };
     ["cool", "heat", "dry", "fan", "auto"].forEach(function (k) { IMG["clima_" + k] = { kind: "single", src: BASE + "clima_" + k + ".gif" }; });
     var LIBGROUPS = [["Luci", "luce_"], ["Scene", "scena_"], ["Sensori", "sensore_"], ["Allarme", "allarme_"], ["Clima", "clima_"]];
     var LIBNAMES = { luce_salotto: "Salotto", luce_ingresso: "Ingresso", luce_corridoio: "Corridoio", luce_cucina: "Cucina", luce_balcone: "Balcone", luce_camera: "Camera", luce_cameretta: "Cameretta", luce_bagno_piccolo: "Bagno 1", luce_bagno_doccia: "Doccia", luce_lavanderia: "Lavanderia", luce_sgabuzzino: "Sgabuzzino",
-      scena_buongiorno: "Buongiorno", scena_cinema: "Cinema", scena_cena: "Cena", scena_notte: "Notte", scena_esco: "Esco", sensore_movimento: "Movimento", sensore_porta: "Porta", sensore_finestra: "Finestra", sensore_cancello: "Cancello", allarme_off: "Off", allarme_notte: "Notte", allarme_fuori: "Fuori", allarme_scattato: "Scattato", clima_off: "Spento", clima_cool: "Freddo", clima_heat: "Caldo", clima_dry: "Deumidifica", clima_fan: "Ventola", clima_auto: "Auto" };
+      scena_buongiorno: "Buongiorno", scena_cinema: "Cinema", scena_cena: "Cena", scena_notte: "Notte", scena_esco: "Esco", sensore_movimento: "Movimento", sensore_porta: "Porta", sensore_finestra: "Finestra", sensore_cancello: "Cancello", allarme_off: "Off", allarme_notte: "Notte", allarme_fuori: "Fuori", allarme_scattato: "Scattato", clima_off: "Spento", clima_cool: "Freddo", clima_heat: "Caldo", clima_dry: "Deumidifica", clima_fan: "Ventola", clima_auto: "Auto", clima_garage: "Garage" };
     var OV = {};
     try { OV = JSON.parse(store("img") || "{}") || {}; } catch (e) { OV = {}; }
     function imageSaveLabels() {
