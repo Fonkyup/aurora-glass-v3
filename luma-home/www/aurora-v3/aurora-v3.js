@@ -1411,7 +1411,7 @@
         }
         var panel = { config: config, busy: false, fields: {}, pending: null, timer: 0 };
         var box = zcElement("section", "card zone-climate");
-        box.style.cssText = "padding:14px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;--cl:#64748B";
+        box.style.cssText = "padding:14px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;container-type:inline-size;--cl:#64748B";
         // Image de l'appareil (plinthe chauffante), même système d'images que les autres boutons.
         panel.art = zcElement("div", "cl-art");
         panel.art.style.cssText = "flex:0 0 auto;align-self:center;width:min(112px,100%);border-radius:22px";
@@ -1442,21 +1442,21 @@
         content.appendChild(panel.status);
         content.appendChild(panel.current);
         panel.targetRow = zcElement("div", "tctl");
-        panel.targetRow.style.cssText = "align-self:center;gap:8px;padding:6px";
+        panel.targetRow.style.cssText = "align-self:center;box-sizing:border-box;max-width:100%;min-width:0;justify-content:center;gap:clamp(2px,3cqw,8px);padding:clamp(3px,3cqw,6px)";
         panel.targetRow.setAttribute("role", "group");
         panel.targetRow.setAttribute("aria-label", zcText("target") + " — " + (config.name || config.entity));
         panel.minus = zcElement("button", "rbtn");
-        panel.minus.style.cssText = "width:42px;height:42px;font-size:1.35rem";
+        panel.minus.style.cssText = "flex:0 1 auto;width:clamp(26px,18cqw,42px);height:clamp(26px,18cqw,42px);font-size:clamp(1rem,7cqw,1.35rem)";
         panel.minus.type = "button";
         panel.minus.setAttribute("aria-label", zcText("lower") + " — " + (config.name || config.entity));
         panel.minus.appendChild(zcElement("i", "mdi mdi-minus"));
         panel.plus = zcElement("button", "rbtn");
-        panel.plus.style.cssText = "width:42px;height:42px;font-size:1.35rem";
+        panel.plus.style.cssText = "flex:0 1 auto;width:clamp(26px,18cqw,42px);height:clamp(26px,18cqw,42px);font-size:clamp(1rem,7cqw,1.35rem)";
         panel.plus.type = "button";
         panel.plus.setAttribute("aria-label", zcText("raise") + " — " + (config.name || config.entity));
         panel.plus.appendChild(zcElement("i", "mdi mdi-plus"));
         var big = zcElement("div", "tbig");
-        big.style.cssText = "font-size:2rem;min-width:3.6ch";
+        big.style.cssText = "flex:0 1 auto;font-size:clamp(1.15rem,10cqw,2rem);min-width:0";
         panel.value = zcElement("span", "", "--");
         panel.unit = zcElement("small");
         big.appendChild(panel.value);
