@@ -1154,6 +1154,7 @@
       ENT.climate = CLIMATES[climateIndex].entity;
     })();
     var CUSTOM_ZONES = false;
+    var ZONE_LOCKS = {};   // clés des serrures de zone : le clic envoie lock/unlock après confirmation
     (function configureZones() {
       if (CFG.zones === undefined) return;
       if (!Array.isArray(CFG.zones)) throw new Error("Luma Home: zones must be a list");
@@ -1185,6 +1186,38 @@
           entities[key] = light.entity;
           values[key] = false;
           room.l.push(key);
+        });
+        // Capteurs de mouvement, capteurs de porte et serrures : même mécanique que les puces historiques.
+        var openLabels = {
+          fr: { open: "Ouverte", closed: "Fermée", unlocked: "Déverrouillée", locked: "Verrouillée" },
+          en: { open: "Open", closed: "Closed", unlocked: "Unlocked", locked: "Locked" },
+          it: { open: "Aperta", closed: "Chiusa", unlocked: "Sbloccata", locked: "Bloccata" }
+        }[LANG] || { open: "Aperta", closed: "Chiusa", unlocked: "Sbloccata", locked: "Bloccata" };
+        [["motions", "binary_sensor", "sensore_movimento"], ["doors", "binary_sensor", "sensore_porta"], ["locks", "lock", "sensore_cancello"]].forEach(function (kind) {
+          var items = zone[kind[0]] == null ? [] : zone[kind[0]];
+          if (!Array.isArray(items)) throw new Error("Luma Home: zone." + kind[0] + " must be a list");
+          items.forEach(function (item) {
+            if (!item || !new RegExp("^" + kind[1] + "\\.[a-z0-9_]+$").test(item.entity || "") || entityIds.has(item.entity)) {
+              throw new Error("Luma Home: each configured " + kind[0] + " entry needs a unique " + kind[1] + " entity");
+            }
+            entityIds.add(item.entity);
+            var key = "zone_" + item.entity.replace(".", "_");
+            var image = item.image || kind[2];
+            if (!Object.prototype.hasOwnProperty.call(IMG, image)) throw new Error("Luma Home: unknown image " + image);
+            var name = String(item.name || item.entity);
+            if (kind[0] === "motions") {
+              MOTION.push([key, name]);
+              ENT.motion[key] = [item.entity];
+              room.s.push(key);
+              return;
+            }
+            var isLock = kind[0] === "locks";
+            OPENS[key] = [name, image, isLock ? openLabels.unlocked : openLabels.open, isLock ? openLabels.locked : openLabels.closed];
+            OP[key] = false;
+            ENT.opens[key] = item.entity;
+            if (isLock) ZONE_LOCKS[key] = true;
+            room.o.push(key);
+          });
         });
         rooms.push(room);
       });
@@ -1326,13 +1359,13 @@
       return (
         '<span class="sens" data-sensor="' + k +
         '" data-img="sensore_movimento" data-ov="mov_' + k +
-        '" data-label="' + motionImageLabel(label) +
+        '" data-label="' + zoneHtml(motionImageLabel(label)) +
         '" data-on="0">' +
           '<span class="s-ph">' +
             '<img class="s-img" alt="" draggable="false">' +
           "</span>" +
           '<i class="mdi mdi-motion-sensor"></i>' +
-          label +
+          zoneHtml(label) +
           PEN +
         "</span>"
       );
@@ -1340,7 +1373,7 @@
     function openChip(id) {
       if (LIVE && !ENT.opens[id]) return "";
       var o = OPENS[id];
-      return '<span class="sens" data-op="' + id + '" data-img="' + o[1] + '" data-ov="op_' + id + '" data-label="' + o[0] + '" data-on="0"><span class="s-ph"><img class="s-img" alt="" draggable="false"></span><i class="mdi mdi-door-closed"></i>' + o[0] + PEN + "</span>";
+      return '<span class="sens" data-op="' + id + '" data-img="' + o[1] + '" data-ov="op_' + id + '" data-label="' + zoneHtml(o[0]) + '" data-on="0"><span class="s-ph"><img class="s-img" alt="" draggable="false"></span><i class="mdi ' + (ZONE_LOCKS[id] ? "mdi-lock" : "mdi-door-closed") + '"></i>' + zoneHtml(o[0]) + PEN + "</span>";
     }
     function longPress(node, fn) {
       var t = 0, fired = false;
@@ -1647,21 +1680,25 @@
         o.addEventListener("animationend", function (e) { if (e.animationName === "pop") o.classList.remove("pop"); });
         if (LIVE) longPress(o, function () { moreInfo(ENT.lights[o.dataset.light]); });
       });
-      $$("[data-op]").forEach(function (c) { c.addEventListener("click", function () { onOpenTap(c.dataset.op); }); c.style.cursor = "pointer"; });
+      $$("[data-op]").forEach(function (c) {
+        c.addEventListener("click", function () { onOpenTap(c.dataset.op); }); c.style.cursor = "pointer";
+        if (LIVE && ZONE_LOCKS[c.dataset.op]) longPress(c, function () { moreInfo(ENT.opens[c.dataset.op]); });
+      });
       $$(".sens[data-sensor]").forEach(function (c) { if (LIVE) { c.addEventListener("click", function () { moreInfo(availId(ENT.motion[c.dataset.sensor])); }); c.style.cursor = "pointer"; } });
     }
     function buildSecurity() {
       var mt = $("#motion-tiles");
       MOTION.filter(function (m) { return hasMotion(m[0]); }).forEach(function (m) {
-        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + m[1] + '</span><span class="st-state">' + motionStateLabel(false, false) + '</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
+        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-motion-sensor st-ico"></i><span class="st-txt"><span class="st-name">' + zoneHtml(m[1]) + '</span><span class="st-state">' + motionStateLabel(false, false) + '</span></span>' + PEN, { type: "button", "data-sensor": m[0], "data-img": "sensore_movimento", "data-ov": "mov_" + m[0], "data-label": motionImageLabel(m[1]), "data-on": "0" });
         b.addEventListener("click", function () { if (LIVE) moreInfo(availId(ENT.motion[m[0]])); else motion(m[0]); });
         mt.appendChild(b);
       });
       var ot = $("#open-tiles");
       Object.keys(OPENS).filter(function (id) { return !LIVE || ENT.opens[id]; }).forEach(function (id) {
         var o = OPENS[id];
-        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi mdi-door-closed st-ico"></i><span class="st-txt"><span class="st-name">' + o[0] + '</span><span class="st-state">' + o[3] + "</span></span>" + PEN, { type: "button", "data-op": id, "data-img": o[1], "data-ov": "op_" + id, "data-label": o[0], "data-on": "0" });
+        var b = el("button", "stile", '<img class="st-img" alt="" draggable="false"><i class="mdi ' + (ZONE_LOCKS[id] ? "mdi-lock" : "mdi-door-closed") + ' st-ico"></i><span class="st-txt"><span class="st-name">' + zoneHtml(o[0]) + '</span><span class="st-state">' + zoneHtml(o[3]) + "</span></span>" + PEN, { type: "button", "data-op": id, "data-img": o[1], "data-ov": "op_" + id, "data-label": o[0], "data-on": "0" });
         b.addEventListener("click", function () { onOpenTap(id); });
+        if (LIVE && ZONE_LOCKS[id]) longPress(b, function () { moreInfo(ENT.opens[id]); });
         ot.appendChild(b);
       });
     }
@@ -1972,7 +2009,36 @@
 
       $("#open-sub").textContent = openingSummaryLabel(n, nn);
     }
-    function onOpenTap(id) { if (LIVE) moreInfo(ENT.opens[id]); else setOpenUI(id, !OP[id], false); }
+    function zoneLockLabels() {
+      var texts = {
+        fr: { lock: "Verrouiller", unlock: "Déverrouiller", unavailable: "appareil indisponible", busy: "opération en cours ou serrure bloquée", unchanged: "l’état n’a pas changé après la commande" },
+        en: { lock: "Lock", unlock: "Unlock", unavailable: "device unavailable", busy: "operation in progress or lock jammed", unchanged: "the state did not change after the command" },
+        it: { lock: "Bloccare", unlock: "Sbloccare", unavailable: "dispositivo non disponibile", busy: "operazione in corso o serratura bloccata", unchanged: "lo stato non è cambiato dopo il comando" }
+      };
+      return texts[LANG] || texts.it;
+    }
+    // Serrure de zone : une seule commande, après confirmation, sur l'entité de cette puce.
+    function toggleZoneLock(id) {
+      var entity = ENT.opens[id], name = OPENS[id][0], labels = zoneLockLabels(), live = sv(entity);
+      if (isUnavail(live)) { toast(name + ": " + labels.unavailable, "mdi-alert-circle", "var(--warn)"); return; }
+      var unlock;
+      if (live.state === "locked") unlock = true;
+      else if (live.state === "unlocked" || live.state === "open") unlock = false;
+      else { toast(name + ": " + labels.busy, "mdi-alert-circle", "var(--warn)"); return; }
+      if (!window.confirm((unlock ? labels.unlock : labels.lock) + " « " + name + " » ?")) return;
+      var before = live.state;
+      call("lock", unlock ? "unlock" : "lock", { entity_id: entity });
+      later(function () {
+        var after = sv(entity);
+        if (isUnavail(after)) toast(name + ": " + labels.unavailable, "mdi-alert-circle", "var(--warn)");
+        else if (after.state === before) toast(name + ": " + labels.unchanged, "mdi-alert-circle", "var(--warn)");
+      }, 10000);
+    }
+    function onOpenTap(id) {
+      if (LIVE && ZONE_LOCKS[id]) toggleZoneLock(id);
+      else if (LIVE) moreInfo(ENT.opens[id]);
+      else setOpenUI(id, !OP[id], false);
+    }
     function motionSummaryLabel(activeName, total, unavailable) {
       var translations = {
         it: {
